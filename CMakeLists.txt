@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24) # set the minimun version of cmake
-project(my_tensor VERSION 0.1.0 LANGUAGES CUDA CXX) # the project name, version and language
+project(my_tensor VERSION 0.1.0 LANGUAGES C CXX CUDA) # the project name, version and language
 
 # set default build type to debug
 if(CMAKE_BUILD_TYPE STREQUAL "")
