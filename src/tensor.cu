@@ -1,4 +1,5 @@
 #include <tensor.cuh>
+#include <utils.cuh>
 
 #include <numeric>
 #include <iostream>
@@ -16,11 +17,11 @@ Tensor::Tensor(const Tensor& tensor)
 
 void Tensor::CopyData(const Tensor& tensor, std::size_t cnt) {
   if (this->OnCPU() && tensor.OnGPU()) {
-    cudaMemcpy(data_, tensor.data_, cnt, cudaMemcpyDeviceToHost);
+    ErrorCheck(cudaMemcpy(data_, tensor.data_, cnt, cudaMemcpyDeviceToHost), __FILE__, __LINE__);
   } else if (this->OnGPU() && tensor.OnCPU()) {
-    cudaMemcpy(data_, tensor.data_, cnt, cudaMemcpyHostToDevice);
+    ErrorCheck(cudaMemcpy(data_, tensor.data_, cnt, cudaMemcpyHostToDevice), __FILE__, __LINE__);
   } else if (this->OnGPU() && tensor.OnGPU()) {
-    cudaMemcpy(data_, tensor.data_, cnt, cudaMemcpyDeviceToDevice);
+    ErrorCheck(cudaMemcpy(data_, tensor.data_, cnt, cudaMemcpyDeviceToDevice), __FILE__, __LINE__);
   } else {
     memcpy(data_, tensor.data_, cnt);
   }
@@ -34,7 +35,7 @@ void Tensor::FreeMemory() {
   if (OnCPU()) {
     free(data_);
   } else {
-    cudaFree(data_);
+    ErrorCheck(cudaFree(data_), __FILE__, __LINE__);
   }
   data_ = nullptr;
 }
@@ -44,12 +45,7 @@ void Tensor::AllocateMemory() {
   if (OnCPU()) {
     data_ = (float*) malloc(cnt);
   } else {
-    cudaError_t err = cudaMalloc(&data_, cnt);
-    if (err != cudaSuccess) {
-      std::cerr << "Malloc failed in the line " << __LINE__
-       << " of the file " << __FILE__ << std::endl;
-      throw std::bad_alloc();
-    }
+    ErrorCheck(cudaMalloc(&data_, cnt), __FILE__, __LINE__);
   }
   if (data_ == nullptr) {
     std::cerr << "Malloc failed in the line " << __LINE__
