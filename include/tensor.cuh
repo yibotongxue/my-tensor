@@ -29,6 +29,8 @@ public:
 
   const float* GetData() const { return data_; }
   float* GetMutableData() { return data_; }
+  const float* GetDiff() const { return diff_; }
+  float* GetMutableDiff() { return diff_; }
 
   const std::vector<int> GetShape() const { return shape_; }
 
@@ -40,6 +42,7 @@ public:
 private:
   DeviceType device_type_;
   float* data_;
+  float* diff_;
   std::vector<int> shape_;
 
   // Helper methods
