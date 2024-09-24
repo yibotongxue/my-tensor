@@ -44,12 +44,17 @@ void Tensor::AllocateMemory() {
   if (OnCPU()) {
     data_ = (float*) malloc(cnt);
   } else {
-    cudaMalloc(&data_, cnt);
+    cudaError_t err = cudaMalloc(&data_, cnt);
+    if (err != cudaSuccess) {
+      std::cerr << "Malloc failed in the line " << __LINE__
+       << " of the file " << __FILE__ << std::endl;
+      throw std::bad_alloc();
+    }
   }
   if (data_ == nullptr) {
     std::cerr << "Malloc failed in the line " << __LINE__
      << " of the file " << __FILE__ << std::endl;
-     std::exit(-1);
+    throw std::bad_alloc();
   }
 }
 
