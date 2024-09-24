@@ -45,6 +45,7 @@ TEST(tensor_test_construct, tensor_test_construct_data_position_cpu) {
     cudaMemcpy(data, tensor.GetData(), 6 * sizeof(float), cudaMemcpyHostToDevice);
   EXPECT_EQ(error, cudaSuccess);
   cudaFree(data);
+  cudaDeviceSynchronize();
 }
 
 TEST(tensor_test_construct, tensor_test_construct_data_position_gpu) {
@@ -56,6 +57,7 @@ TEST(tensor_test_construct, tensor_test_construct_data_position_gpu) {
     cudaMemcpy(data, tensor.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToDevice);
   EXPECT_EQ(error, cudaSuccess);
   cudaFree(data);
+  cudaDeviceSynchronize();
 }
 /*************************TENSOR_TEST_CONSTRUCT**************************** */
 
@@ -110,6 +112,7 @@ TEST(tensor_test_copy_construct, tensor_test_copy_construct_data_position_cpu) {
     cudaMemcpy(data, another.GetData(), 6 * sizeof(float), cudaMemcpyHostToDevice);
   EXPECT_EQ(error, cudaSuccess);
   cudaFree(data);
+  cudaDeviceSynchronize();
 }
 
 TEST(tensor_test_copy_construct, tensor_test_copy_construct_data_position_gpu) {
@@ -122,6 +125,7 @@ TEST(tensor_test_copy_construct, tensor_test_copy_construct_data_position_gpu) {
     cudaMemcpy(data, another.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToDevice);
   EXPECT_EQ(error, cudaSuccess);
   cudaFree(data);
+  cudaDeviceSynchronize();
 }
 /**********************TENSOR_TEST_COPY_CONSTRUCT************************** */
 
@@ -151,6 +155,7 @@ TEST(tensor_test_copy, tensor_test_copy_device_cpu2cpu) {
     cudaMemcpy(data, another.GetData(), 6 * sizeof(float), cudaMemcpyHostToDevice);
   EXPECT_EQ(error, cudaSuccess);
   cudaFree(data);
+  cudaDeviceSynchronize();
 }
 
 TEST(tensor_test_copy, tensor_test_copy_device_cpu2gpu) {
@@ -167,6 +172,7 @@ TEST(tensor_test_copy, tensor_test_copy_device_cpu2gpu) {
     cudaMemcpy(data, another.GetData(), 6 * sizeof(float), cudaMemcpyHostToDevice);
   EXPECT_EQ(error, cudaSuccess);
   cudaFree(data);
+  cudaDeviceSynchronize();
 }
 
 TEST(tensor_test_copy, tensor_test_copy_device_gpu2cpu) {
@@ -183,6 +189,7 @@ TEST(tensor_test_copy, tensor_test_copy_device_gpu2cpu) {
     cudaMemcpy(data, another.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToDevice);
   EXPECT_EQ(error, cudaSuccess);
   cudaFree(data);
+  cudaDeviceSynchronize();
 }
 
 TEST(tensor_test_copy, tensor_test_copy_device_gpu2gpu) {
@@ -199,6 +206,7 @@ TEST(tensor_test_copy, tensor_test_copy_device_gpu2gpu) {
     cudaMemcpy(data, another.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToDevice);
   EXPECT_EQ(error, cudaSuccess);
   cudaFree(data);
+  cudaDeviceSynchronize();
 }
 
 TEST(tensor_test_copy, tensor_test_copy_data_cpu2cpu) {
@@ -240,12 +248,14 @@ TEST(tensor_test_copy, tensor_test_copy_data_gpu2cpu) {
     *(data + i) = (float)i;
   }
   cudaMemcpy(tensor.GetMutableData(), data, 6 * sizeof(float), cudaMemcpyHostToDevice);
+  cudaDeviceSynchronize();
   free(data);
   data = nullptr;
   my_tensor::Tensor another { another_shape };
   another = tensor;
   float *another_data = (float*) malloc(6 * sizeof(float));
   cudaMemcpy(another_data, another.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToHost);
+  cudaDeviceSynchronize();
   for (int i = 0; i < 6; ++i) {
     EXPECT_EQ(*(another_data + i), static_cast<float>(i));
   }
@@ -261,12 +271,14 @@ TEST(tensor_test_copy, tensor_test_copy_data_gpu2gpu) {
     *(data + i) = (float)i;
   }
   cudaMemcpy(tensor.GetMutableData(), data, 6 * sizeof(float), cudaMemcpyHostToDevice);
+  cudaDeviceSynchronize();
   free(data);
   data = nullptr;
   my_tensor::Tensor another { another_shape, my_tensor::DeviceType::GPU };
   another = tensor;
   float *another_data = (float*) malloc(6 * sizeof(float));
   cudaMemcpy(another_data, another.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToHost);
+  cudaDeviceSynchronize();
   for (int i = 0; i < 6; ++i) {
     EXPECT_EQ(*(another_data + i), static_cast<float>(i));
   }
@@ -342,6 +354,7 @@ TEST(tensor_test_move_construct, tensor_test_move_construct_data_position_cpu) {
     cudaMemcpy(data, another.GetData(), 6 * sizeof(float), cudaMemcpyHostToDevice);
   EXPECT_EQ(error, cudaSuccess);
   cudaFree(data);
+  cudaDeviceSynchronize();
 }
 
 TEST(tensor_test_move_construct, tensor_test_move_construct_data_position_gpu) {
@@ -354,6 +367,7 @@ TEST(tensor_test_move_construct, tensor_test_move_construct_data_position_gpu) {
     cudaMemcpy(data, another.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToDevice);
   EXPECT_EQ(error, cudaSuccess);
   cudaFree(data);
+  cudaDeviceSynchronize();
 }
 /***********************TENSOR_TEST_MOVE_CONSTRUCT************************* */
 
@@ -427,6 +441,7 @@ TEST(tensor_test_move, tensor_test_move_device_cpu2cpu) {
     cudaMemcpy(data, another.GetData(), 6 * sizeof(float), cudaMemcpyHostToDevice);
   EXPECT_EQ(error, cudaSuccess);
   cudaFree(data);
+  cudaDeviceSynchronize();
 }
 
 TEST(tensor_test_move, tensor_test_move_device_cpu2gpu) {
@@ -443,6 +458,7 @@ TEST(tensor_test_move, tensor_test_move_device_cpu2gpu) {
     cudaMemcpy(data, another.GetData(), 6 * sizeof(float), cudaMemcpyHostToDevice);
   EXPECT_EQ(error, cudaSuccess);
   cudaFree(data);
+  cudaDeviceSynchronize();
 }
 
 TEST(tensor_test_move, tensor_test_move_device_gpu2cpu) {
@@ -459,6 +475,7 @@ TEST(tensor_test_move, tensor_test_move_device_gpu2cpu) {
     cudaMemcpy(data, another.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToDevice);
   EXPECT_EQ(error, cudaSuccess);
   cudaFree(data);
+  cudaDeviceSynchronize();
 }
 
 TEST(tensor_test_move, tensor_test_move_device_gpu2gpu) {
@@ -475,6 +492,7 @@ TEST(tensor_test_move, tensor_test_move_device_gpu2gpu) {
     cudaMemcpy(data, another.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToDevice);
   EXPECT_EQ(error, cudaSuccess);
   cudaFree(data);
+  cudaDeviceSynchronize();
 }
 
 TEST(tensor_test_move, tensor_test_move_data_cpu2cpu) {
@@ -516,12 +534,14 @@ TEST(tensor_test_move, tensor_test_move_data_gpu2cpu) {
     *(data + i) = (float)i;
   }
   cudaMemcpy(tensor.GetMutableData(), data, 6 * sizeof(float), cudaMemcpyHostToDevice);
+  cudaDeviceSynchronize();
   free(data);
   data = nullptr;
   my_tensor::Tensor another { another_shape };
   another = std::move(tensor);
   float *another_data = (float*) malloc(6 * sizeof(float));
   cudaMemcpy(another_data, another.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToHost);
+  cudaDeviceSynchronize();
   for (int i = 0; i < 6; ++i) {
     EXPECT_EQ(*(another_data + i), static_cast<float>(i));
   }
@@ -537,12 +557,14 @@ TEST(tensor_test_move, tensor_test_move_data_gpu2gpu) {
     *(data + i) = (float)i;
   }
   cudaMemcpy(tensor.GetMutableData(), data, 6 * sizeof(float), cudaMemcpyHostToDevice);
+  cudaDeviceSynchronize();
   free(data);
   data = nullptr;
   my_tensor::Tensor another { another_shape, my_tensor::DeviceType::GPU };
   another = std::move(tensor);
   float *another_data = (float*) malloc(6 * sizeof(float));
   cudaMemcpy(another_data, another.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToHost);
+  cudaDeviceSynchronize();
   for (int i = 0; i < 6; ++i) {
     EXPECT_EQ(*(another_data + i), static_cast<float>(i));
   }
