@@ -1,8 +1,7 @@
 #include <tensor.cuh>
-#include <error.h>
 
 #include <numeric>
-#include <sstream>
+#include <iostream>
 
 namespace my_tensor {
 Tensor::Tensor(const std::vector<int>& shape, DeviceType deviceType)
@@ -37,6 +36,7 @@ void Tensor::FreeMemory() {
   } else {
     cudaFree(data_);
   }
+  data_ = nullptr;
 }
 
 void Tensor::AllocateMemory() {
@@ -47,9 +47,9 @@ void Tensor::AllocateMemory() {
     cudaMalloc(&data_, cnt);
   }
   if (data_ == nullptr) {
-    std::stringstream ss;
-    ss << "Malloc failed in the line " << __LINE__ << " of the file " << __FILE__;
-    throw MemoryError(ss.str());
+    std::cerr << "Malloc failed in the line " << __LINE__
+     << " of the file " << __FILE__ << std::endl;
+     std::exit(-1);
   }
 }
 
@@ -59,9 +59,10 @@ Tensor& Tensor::operator=(const Tensor& tensor) {
   }
   shape_ = tensor.shape_;
   FreeMemory();
+  device_type_ = tensor.device_type_;
   AllocateMemory();
   CopyData(tensor, GetBytesCount());
-  device_type_ = tensor.device_type_;
+  return *this;
 }
 
 Tensor::Tensor(Tensor&& tensor)
@@ -74,6 +75,7 @@ Tensor& Tensor::operator=(Tensor&& tensor) {
   device_type_ = tensor.device_type_;
   data_ = tensor.data_;
   tensor.data_ = nullptr;
+  return *this;
 }
 
 Tensor::~Tensor() {

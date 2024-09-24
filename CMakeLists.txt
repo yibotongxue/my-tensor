@@ -46,5 +46,23 @@ find_library(gmock_main libgmock_main.a third_parts/googletest/lib)
 # enable test
 enable_testing()
 
+add_library(tensor_lib STATIC src/tensor.cu)
+
+add_executable(tensor_test test/tensor-test.cu)
+add_test(tensor_google_test tensor_test)
+
+set_target_properties(tensor_test PROPERTIES CUDA_ARCHITECTURES native)
+set_target_properties(tensor_test PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+target_link_libraries(tensor_test
+    PRIVATE
+    ${gtest}
+    ${gtest_main}
+    ${gmock}
+    ${gmock_main}
+    tensor_lib
+    pthread
+)
+
 # add the main target
 add_executable(my_tensor main.cpp)

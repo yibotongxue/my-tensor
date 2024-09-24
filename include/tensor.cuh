@@ -13,8 +13,6 @@ class Tensor {
 public:
   // The explicit constructors.
   explicit Tensor(const std::vector<int>& shape, DeviceType device_type = DeviceType::CPU);
-  // explicit Tensor(const std::vector<int>& shape, float value, DeviceType deviceType = DeviceType::CPU);
-  // explicit Tensor(const std::vector<int>& shape, float* data, DeviceType deviceType = DeviceType::CPU);
 
   // The Tensor is copable.
   Tensor(const Tensor& tensor);
@@ -44,6 +42,7 @@ private:
   float* data_;
   std::vector<int> shape_;
 
+  // Helper methods
   void CopyData(const Tensor& tensor, std::size_t cnt);
   void FreeMemory();
   void AllocateMemory();
