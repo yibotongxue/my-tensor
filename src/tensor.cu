@@ -17,11 +17,11 @@ Tensor::Tensor(const Tensor& tensor)
 
 void Tensor::CopyData(const Tensor& tensor, std::size_t cnt) {
   if (this->OnCPU() && tensor.OnGPU()) {
-    ErrorCheck(cudaMemcpy(data_, tensor.data_, cnt, cudaMemcpyDeviceToHost), __FILE__, __LINE__);
+    ERROR_CHECK(cudaMemcpy(data_, tensor.data_, cnt, cudaMemcpyDeviceToHost));
   } else if (this->OnGPU() && tensor.OnCPU()) {
-    ErrorCheck(cudaMemcpy(data_, tensor.data_, cnt, cudaMemcpyHostToDevice), __FILE__, __LINE__);
+    ERROR_CHECK(cudaMemcpy(data_, tensor.data_, cnt, cudaMemcpyHostToDevice));
   } else if (this->OnGPU() && tensor.OnGPU()) {
-    ErrorCheck(cudaMemcpy(data_, tensor.data_, cnt, cudaMemcpyDeviceToDevice), __FILE__, __LINE__);
+    ERROR_CHECK(cudaMemcpy(data_, tensor.data_, cnt, cudaMemcpyDeviceToDevice));
   } else {
     memcpy(data_, tensor.data_, cnt);
   }
@@ -35,7 +35,7 @@ void Tensor::FreeMemory() {
   if (OnCPU()) {
     free(data_);
   } else {
-    ErrorCheck(cudaFree(data_), __FILE__, __LINE__);
+    ERROR_CHECK(cudaFree(data_));
   }
   data_ = nullptr;
 }
@@ -45,7 +45,7 @@ void Tensor::AllocateMemory() {
   if (OnCPU()) {
     data_ = (float*) malloc(cnt);
   } else {
-    ErrorCheck(cudaMalloc(&data_, cnt), __FILE__, __LINE__);
+    ERROR_CHECK(cudaMalloc(&data_, cnt));
   }
   if (data_ == nullptr) {
     std::cerr << "Malloc failed in the line " << __LINE__

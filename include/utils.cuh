@@ -27,4 +27,16 @@ inline cudaError_t ErrorCheck(cudaError_t error_code, const char* filename, int 
     return error_code;
 }
 
+#define ERROR_CHECK(function) \
+do { \
+  cudaError_t error_code = function; \
+  if (error_code != cudaSuccess) { \
+        std::cerr << "CUDA error:\r\ncode=" << error_code \
+          << ", name=" << cudaGetErrorName(error_code) \
+          << ", description=" << cudaGetErrorString(error_code) \
+          << "\r\nfile=" << __FILE__ \
+          << ", line" << __LINE__ << "\r\n"; \
+  } \
+} while(0);
+
 #endif // MYTENSOR_INCLUDE_UTILS_H_
