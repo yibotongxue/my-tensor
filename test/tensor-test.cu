@@ -275,6 +275,90 @@ TEST(tensor_test_copy, tensor_test_copy_data_gpu2gpu) {
 /****************************TENSOR_TEST_COPY****************************** */
 
 
+/****************************TENSOR_TEST_MOVE****************************** */
+TEST(tensor_test_move_construct, tensor_test_move_construct_cpu) {
+  std::vector<int> shape {1, 2, 3};
+  my_tensor::Tensor tensor { shape };
+  const float *data = tensor.GetData();
+  my_tensor::Tensor another { std::move(tensor) };
+  EXPECT_EQ(another.GetData(), data);
+  EXPECT_EQ(tensor.GetData(), nullptr);
+}
+
+TEST(tensor_test_move_construct, tensor_test_move_construct_gpu) {
+  std::vector<int> shape {1, 2, 3};
+  my_tensor::Tensor tensor { shape, my_tensor::DeviceType::GPU };
+  const float *data = tensor.GetData();
+  my_tensor::Tensor another { std::move(tensor) };
+  EXPECT_EQ(another.GetData(), data);
+  EXPECT_EQ(tensor.GetData(), nullptr);
+}
+
+TEST(tensor_test_move_construct, tensor_test_move_construct_shape_cpu) {
+  std::vector<int> shape {1, 2, 3};
+  my_tensor::Tensor tensor { shape };
+  my_tensor::Tensor another { std::move(tensor) };
+  EXPECT_EQ(another.GetShape(), shape);
+}
+
+TEST(tensor_test_move_construct, tensor_test_move_construct_shape_gpu) {
+  std::vector<int> shape {1, 2, 3};
+  my_tensor::Tensor tensor { shape, my_tensor::DeviceType::GPU };
+  my_tensor::Tensor another { std::move(tensor) };
+  EXPECT_EQ(another.GetShape(), shape);
+}
+
+TEST(tensor_test_move_construct, tensor_test_move_construct_device_cpu) {
+  std::vector<int> shape { 1, 2, 3 };
+  my_tensor::Tensor tensor { shape };
+  my_tensor::Tensor another { std::move(tensor) };
+  EXPECT_TRUE(another.OnCPU());
+  EXPECT_FALSE(another.OnGPU());
+}
+
+TEST(tensor_test_move_construct, tensor_test_move_construct_device_explicit_cpu) {
+  std::vector<int> shape { 1, 2, 3 };
+  my_tensor::Tensor tensor { shape, my_tensor::DeviceType::CPU };
+  my_tensor::Tensor another { std::move(tensor) };
+  EXPECT_TRUE(another.OnCPU());
+  EXPECT_FALSE(another.OnGPU());
+}
+
+TEST(tensor_test_move_construct, tensor_test_move_construct_device_gpu) {
+  std::vector<int> shape { 1, 2, 3 };
+  my_tensor::Tensor tensor { shape, my_tensor::DeviceType::GPU };
+  my_tensor::Tensor another { std::move(tensor) };
+  EXPECT_FALSE(another.OnCPU());
+  EXPECT_TRUE(another.OnGPU());
+}
+
+TEST(tensor_test_move_construct, tensor_test_move_construct_data_position_cpu) {
+  std::vector<int> shape { 1, 2, 3 };
+  my_tensor::Tensor tensor { shape };
+  my_tensor::Tensor another { std::move(tensor) };
+  float* data = nullptr;
+  cudaMalloc(&data, 6 * sizeof(float));
+  cudaError_t error =
+    cudaMemcpy(data, another.GetData(), 6 * sizeof(float), cudaMemcpyHostToDevice);
+  EXPECT_EQ(error, cudaSuccess);
+  cudaFree(data);
+}
+
+TEST(tensor_test_move_construct, tensor_test_move_construct_data_position_gpu) {
+  std::vector<int> shape { 1, 2, 3 };
+  my_tensor::Tensor tensor { shape, my_tensor::DeviceType::GPU };
+  my_tensor::Tensor another { std::move(tensor) };
+  float* data = nullptr;
+  cudaMalloc(&data, 6 * sizeof(float));
+  cudaError_t error = 
+    cudaMemcpy(data, another.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToDevice);
+  EXPECT_EQ(error, cudaSuccess);
+  cudaFree(data);
+}
+
+/****************************TENSOR_TEST_MOVE****************************** */
+
+
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
