@@ -64,5 +64,23 @@ target_link_libraries(tensor_test
     pthread
 )
 
+add_library(relu_lib STATIC src/relu.cu src/tensor.cu)
+
+add_executable(relu_test test/relu-test.cu)
+add_test(relu_google_test relu_test)
+
+set_target_properties(relu_test PROPERTIES CUDA_ARCHITECTURES native)
+set_target_properties(relu_test PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+target_link_libraries(relu_test
+    PRIVATE
+    ${gtest}
+    ${gtest_main}
+    ${gmock}
+    ${gmock_main}
+    relu_lib
+    pthread
+)
+
 # add the main target
 add_executable(my_tensor main.cpp)
