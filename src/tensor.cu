@@ -13,6 +13,7 @@ Tensor::Tensor(const std::vector<int>& shape, DeviceType deviceType)
 Tensor::Tensor(const Tensor& tensor)
   : shape_(tensor.shape_), device_type_(tensor.device_type_) {
     AllocateMemory();
+    CopyData(tensor, GetBytesCount());
 }
 
 void Tensor::CopyData(const Tensor& tensor, std::size_t cnt) {

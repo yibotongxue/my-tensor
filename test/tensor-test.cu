@@ -127,6 +127,40 @@ TEST(tensor_test_copy_construct, tensor_test_copy_construct_data_position_gpu) {
   cudaFree(data);
   cudaDeviceSynchronize();
 }
+
+TEST(tensor_test_copy_construct, tensor_test_copy_construct_data_cpu2cpu) {
+  std::vector<int> shape { 1, 2, 3 };
+  my_tensor::Tensor tensor { shape };
+  float* data = tensor.GetMutableData();
+  for (int i = 0; i < 6; ++i) {
+    *(data + i) = static_cast<float>(i);
+  }
+  my_tensor::Tensor another { tensor };
+  for (int i = 0; i < 6; ++i) {
+    EXPECT_EQ(*(another.GetData() + i), static_cast<float>(i));
+  }
+}
+
+TEST(tensor_test_copy_construct, tensor_test_copy_construct_data_gpu2gpu) {
+  std::vector<int> shape { 1, 2, 3 };
+  my_tensor::Tensor tensor { shape, my_tensor::DeviceType::GPU };
+  float* data = (float*) malloc(6 * sizeof(float));
+  for (int i = 0; i < 6; ++i) {
+    *(data + i) = (float)i;
+  }
+  cudaMemcpy(tensor.GetMutableData(), data, 6 * sizeof(float), cudaMemcpyHostToDevice);
+  cudaDeviceSynchronize();
+  free(data);
+  data = nullptr;
+  my_tensor::Tensor another { tensor };
+  float *another_data = (float*) malloc(6 * sizeof(float));
+  cudaMemcpy(another_data, another.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToHost);
+  cudaDeviceSynchronize();
+  for (int i = 0; i < 6; ++i) {
+    EXPECT_EQ(*(another_data + i), static_cast<float>(i));
+  }
+  free(another_data);
+}
 /**********************TENSOR_TEST_COPY_CONSTRUCT************************** */
 
 
