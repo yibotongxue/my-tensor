@@ -5,10 +5,19 @@
 #include <numeric>
 
 namespace my_tensor {
+namespace {
 __global__ void CudaForward(const float* bottom_data, float* top_data, int n) {
   CUDA_KERNEL_LOOP(i, n) {
     *(top_data + i) = *(bottom_data + i) > 0 ? *(bottom_data + i) : 0;
   }
+}
+
+__global__ void CudaBackward(
+  const float *top_diff, const float *bottom_data, float *bottom_diff, int n) {
+  CUDA_KERNEL_LOOP(i, n) {
+    *(bottom_diff + i) = *(bottom_data + i) > 0 ? *(top_diff + i) : 0;
+  }
+}
 }
 
 void Relu::Forward(const std::shared_ptr<Tensor> bottom, std::shared_ptr<Tensor> top) {
@@ -27,13 +36,6 @@ void Relu::Forward(const std::shared_ptr<Tensor> bottom, std::shared_ptr<Tensor>
   } else {
     CudaForward<<<CudaGetBlocks(n), kCudaThreadNum>>>(bottom_data, top_data, n);
     cudaDeviceSynchronize();
-  }
-}
-
-__global__ void CudaBackward(
-  const float *top_diff, const float *bottom_data, float *bottom_diff, int n) {
-  CUDA_KERNEL_LOOP(i, n) {
-    *(bottom_diff + i) = *(bottom_data + i) > 0 ? *(top_diff + i) : 0;
   }
 }
 
