@@ -1,8 +1,6 @@
 #include <sigmoid.cuh>
 #include <utils.cuh>
 
-#include <numeric>
-
 namespace my_tensor {
 namespace {
 __global__ void CudaForward(const float* bottom_data, float* top_data, int n) {
@@ -26,8 +24,7 @@ void Sigmoid::Forward(const std::shared_ptr<Tensor> bottom, std::shared_ptr<Tens
   }
   const float* bottom_data = bottom->GetData();
   float* top_data = top->GetMutableData();
-  auto shape = bottom->GetShape();
-  int n = std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<int>());
+  int n = bottom->GetSize();
   if (bottom->OnCPU()) {
     for (int i = 0; i < n; i++) {
       *(top_data + i) = 1.0f / (1.0f + std::exp(-*(bottom_data + i)));
@@ -48,8 +45,7 @@ void Sigmoid::Backward(const std::shared_ptr<Tensor> top, std::shared_ptr<Tensor
   const float *top_diff = top->GetDiff();
   const float *top_data = top->GetData();
   float *bottom_diff = bottom->GetMutableDiff();
-  auto shape = bottom->GetShape();
-  int n = std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<int>());
+  int n = top->GetSize();
   if (bottom->OnCPU()) {
     for (int i = 0; i < n; i++) {
       *(bottom_diff + i) = *(top_diff + i) * *(top_data + i) * (1 - *(top_data + i));

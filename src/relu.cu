@@ -1,9 +1,6 @@
 #include <relu.cuh>
 #include <utils.cuh>
 
-#include <stdexcept>
-#include <numeric>
-
 namespace my_tensor {
 namespace {
 __global__ void CudaForward(const float* bottom_data, float* top_data, int n) {
@@ -25,8 +22,7 @@ void Relu::Forward(const std::shared_ptr<Tensor> bottom, std::shared_ptr<Tensor>
       bottom->OnGPU() && top->OnCPU()) {
     throw std::runtime_error("Device not match");
   }
-  auto shape = bottom->GetShape();
-  int n = std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<int>());
+  int n = bottom->GetSize();
   const float* bottom_data = bottom->GetData();
   float* top_data = top->GetMutableData();
   if (bottom->OnCPU()) {
@@ -44,8 +40,7 @@ void Relu::Backward(const std::shared_ptr<Tensor> top, std::shared_ptr<Tensor> b
       top->OnGPU() && bottom->OnCPU()) {
     throw std::runtime_error("Device not match");
   }
-  auto shape = top->GetShape();
-  int n = std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<int>());
+  int n = top->GetSize();
   const float* bottom_data = bottom->GetData();
   const float* top_diff = top->GetDiff();
   float* bottom_diff = bottom->GetMutableDiff();

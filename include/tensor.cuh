@@ -33,8 +33,8 @@ public:
   float* GetMutableDiff() { return diff_; }
 
   const std::vector<int> GetShape() const { return shape_; }
-
-  std::size_t GetBytesCount() const;
+  
+  int GetSize() const { return size_; }
 
   bool OnCPU() const { return device_type_ == DeviceType::CPU; }
   bool OnGPU() const { return device_type_ == DeviceType::GPU; }
@@ -44,6 +44,7 @@ private:
   float* data_;
   float* diff_;
   std::vector<int> shape_;
+  int size_;
 
   // Helper methods
   void CopyData(const Tensor& tensor, std::size_t cnt);

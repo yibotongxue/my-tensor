@@ -7,13 +7,14 @@
 namespace my_tensor {
 Tensor::Tensor(const std::vector<int>& shape, DeviceType deviceType)
   : shape_(shape), device_type_(deviceType) {
+  size_ = std::accumulate(shape_.begin(), shape_.end(), 1, std::multiplies<int>());
   AllocateMemory();
 }
 
 Tensor::Tensor(const Tensor& tensor)
-  : shape_(tensor.shape_), device_type_(tensor.device_type_) {
+  : shape_(tensor.shape_), device_type_(tensor.device_type_), size_(tensor.size_) {
     AllocateMemory();
-    CopyData(tensor, GetBytesCount());
+    CopyData(tensor, size_ * sizeof(float));
 }
 
 void Tensor::CopyData(const Tensor& tensor, std::size_t cnt) {
@@ -35,10 +36,6 @@ void Tensor::CopyData(const Tensor& tensor, std::size_t cnt) {
   }
 }
 
-std::size_t Tensor::GetBytesCount() const {
-  return std::accumulate(shape_.begin(), shape_.end(), 1, std::multiplies<int>()) * sizeof(float);
-}
-
 void Tensor::FreeMemory() {
   if (OnCPU()) {
     free(data_);
@@ -53,7 +50,7 @@ void Tensor::FreeMemory() {
 }
 
 void Tensor::AllocateMemory() {
-  std::size_t cnt = GetBytesCount();
+  std::size_t cnt = size_ * sizeof(float);
   if (OnCPU()) {
     data_ = (float*) malloc(cnt);
     diff_ = (float*) malloc(cnt);
@@ -74,15 +71,16 @@ Tensor& Tensor::operator=(const Tensor& tensor) {
     return *this;
   }
   shape_ = tensor.shape_;
+  size_ = tensor.size_;
   FreeMemory();
   device_type_ = tensor.device_type_;
   AllocateMemory();
-  CopyData(tensor, GetBytesCount());
+  CopyData(tensor, size_ * sizeof(float));
   return *this;
 }
 
 Tensor::Tensor(Tensor&& tensor)
-  : shape_(tensor.shape_), device_type_(tensor.device_type_),
+  : shape_(tensor.shape_), device_type_(tensor.device_type_), size_(tensor.size_),
     data_(tensor.data_), diff_(tensor.diff_) {
     tensor.data_ = nullptr;
     tensor.diff_ = nullptr;
@@ -91,6 +89,7 @@ Tensor::Tensor(Tensor&& tensor)
 Tensor& Tensor::operator=(Tensor&& tensor) {
   shape_ = tensor.shape_;
   device_type_ = tensor.device_type_;
+  size_ = tensor.size_;
   data_ = tensor.data_;
   diff_ = tensor.diff_;
   tensor.data_ = nullptr;
@@ -112,7 +111,7 @@ Tensor Tensor::gpu() {
 
 Tensor Tensor::Clone(DeviceType device_type) {
   Tensor tensor { shape_, device_type };
-  tensor.CopyData(*this, GetBytesCount());
+  tensor.CopyData(*this, size_ * sizeof(float));
   return tensor;
 }
 }
