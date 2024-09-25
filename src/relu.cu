@@ -5,27 +5,27 @@
 #include <numeric>
 
 namespace my_tensor {
-__global__ void CudaForward(const float* input_data, float* output_data, int n) {
+__global__ void CudaForward(const float* bottom_data, float* top_data, int n) {
   CUDA_KERNEL_LOOP(i, n) {
-    *(output_data + i) = *(input_data + i) > 0 ? *(input_data + i) : 0;
+    *(top_data + i) = *(bottom_data + i) > 0 ? *(bottom_data + i) : 0;
   }
 }
 
-void Relu::Forward(const std::shared_ptr<Tensor> input, std::shared_ptr<Tensor> output) {
-  if (input->OnCPU() && output->OnGPU() ||
-      input->OnGPU() && output->OnCPU()) {
+void Relu::Forward(const std::shared_ptr<Tensor> bottom, std::shared_ptr<Tensor> top) {
+  if (bottom->OnCPU() && top->OnGPU() ||
+      bottom->OnGPU() && top->OnCPU()) {
     throw std::runtime_error("Device not match");
   }
-  auto shape = input->GetShape();
+  auto shape = bottom->GetShape();
   int n = std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<int>());
-  const float* input_data = input->GetData();
-  float* output_data = output->GetMutableData();
-  if (input->OnCPU()) {
+  const float* bottom_data = bottom->GetData();
+  float* top_data = top->GetMutableData();
+  if (bottom->OnCPU()) {
     for (int i = 0; i < n; i++) {
-      *(output_data + i) = *(input_data + i) > 0 ? *(input_data + i) : 0;
+      *(top_data + i) = *(bottom_data + i) > 0 ? *(bottom_data + i) : 0;
     }
   } else {
-    CudaForward<<<CudaGetBlocks(n), kCudaThreadNum>>>(input_data, output_data, n);
+    CudaForward<<<CudaGetBlocks(n), kCudaThreadNum>>>(bottom_data, top_data, n);
     cudaDeviceSynchronize();
   }
 }

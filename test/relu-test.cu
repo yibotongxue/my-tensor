@@ -7,88 +7,88 @@
 
 TEST(relu_forward_test, all_positive_on_cpu) {
   std::vector<int> shape {1, 2, 3, 4};
-  std::shared_ptr<my_tensor::Tensor> input = std::make_shared<my_tensor::Tensor>(shape);
-  float *data = input->GetMutableData();
+  std::shared_ptr<my_tensor::Tensor> bottom = std::make_shared<my_tensor::Tensor>(shape);
+  float *data = bottom->GetMutableData();
   for (int i = 0; i < 24; i++) {
     *(data + i) = i + 1;
   }
   data = nullptr;
   my_tensor::Relu relu;
-  std::shared_ptr<my_tensor::Tensor> output = std::make_shared<my_tensor::Tensor>(shape);
-  relu.Forward(input, output);
-  const float *output_data = output->GetData();
+  std::shared_ptr<my_tensor::Tensor> top = std::make_shared<my_tensor::Tensor>(shape);
+  relu.Forward(bottom, top);
+  const float *top_data = top->GetData();
   for (int i = 0; i < 24; i++) {
-    EXPECT_EQ(*(output_data + i), i + 1);
+    EXPECT_EQ(*(top_data + i), i + 1);
   }
 }
 
 TEST(relu_forward_test, all_positive_on_gpu) {
   std::vector<int> shape {1, 2, 3, 4};
-  std::shared_ptr<my_tensor::Tensor> input =
+  std::shared_ptr<my_tensor::Tensor> bottom =
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
   float *data = (float*) malloc(24 * sizeof(float));
   for (int i = 0; i < 24; i++) {
     *(data + i) = i + 1;
   }
-  cudaMemcpy(input->GetMutableData(), data, 24 * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(bottom->GetMutableData(), data, 24 * sizeof(float), cudaMemcpyHostToDevice);
   cudaDeviceSynchronize();
   free(data);
   data = nullptr;
   my_tensor::Relu relu;
-  std::shared_ptr<my_tensor::Tensor> output =
+  std::shared_ptr<my_tensor::Tensor> top =
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
-  relu.Forward(input, output);
-  float *output_data = (float*) malloc(24 * sizeof(float));
-  cudaMemcpy(output_data, output->GetData(), 24 * sizeof(float), cudaMemcpyDeviceToHost);
+  relu.Forward(bottom, top);
+  float *top_data = (float*) malloc(24 * sizeof(float));
+  cudaMemcpy(top_data, top->GetData(), 24 * sizeof(float), cudaMemcpyDeviceToHost);
   cudaDeviceSynchronize();
   for (int i = 0; i < 24; i++) {
-    EXPECT_EQ(*(output_data + i), i + 1);
+    EXPECT_EQ(*(top_data + i), i + 1);
   }
-  free(output_data);
-  output_data = nullptr;
+  free(top_data);
+  top_data = nullptr;
 }
 
 TEST(relu_forward_test, all_negative_on_cpu) {
   std::vector<int> shape {1, 2, 3, 4};
-  std::shared_ptr<my_tensor::Tensor> input = std::make_shared<my_tensor::Tensor>(shape);
-  float *data = input->GetMutableData();
+  std::shared_ptr<my_tensor::Tensor> bottom = std::make_shared<my_tensor::Tensor>(shape);
+  float *data = bottom->GetMutableData();
   for (int i = 0; i < 24; i++) {
     *(data + i) = -(i + 1);
   }
   data = nullptr;
   my_tensor::Relu relu;
-  std::shared_ptr<my_tensor::Tensor> output = std::make_shared<my_tensor::Tensor>(shape);
-  relu.Forward(input, output);
-  const float *output_data = output->GetData();
+  std::shared_ptr<my_tensor::Tensor> top = std::make_shared<my_tensor::Tensor>(shape);
+  relu.Forward(bottom, top);
+  const float *top_data = top->GetData();
   for (int i = 0; i < 24; i++) {
-    EXPECT_EQ(*(output_data + i), 0);
+    EXPECT_EQ(*(top_data + i), 0);
   }
 }
 
 TEST(relu_forward_test, all_negative_on_gpu) {
   std::vector<int> shape {1, 2, 3, 4};
-  std::shared_ptr<my_tensor::Tensor> input =
+  std::shared_ptr<my_tensor::Tensor> bottom =
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
   float *data = (float*) malloc(24 * sizeof(float));
   for (int i = 0; i < 24; i++) {
     *(data + i) = -(i + 1);
   }
-  cudaMemcpy(input->GetMutableData(), data, 24 * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(bottom->GetMutableData(), data, 24 * sizeof(float), cudaMemcpyHostToDevice);
   cudaDeviceSynchronize();
   free(data);
   data = nullptr;
   my_tensor::Relu relu;
-  std::shared_ptr<my_tensor::Tensor> output =
+  std::shared_ptr<my_tensor::Tensor> top =
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
-  relu.Forward(input, output);
-  float *output_data = (float*) malloc(24 * sizeof(float));
-  cudaMemcpy(output_data, output->GetData(), 24 * sizeof(float), cudaMemcpyDeviceToHost);
+  relu.Forward(bottom, top);
+  float *top_data = (float*) malloc(24 * sizeof(float));
+  cudaMemcpy(top_data, top->GetData(), 24 * sizeof(float), cudaMemcpyDeviceToHost);
   cudaDeviceSynchronize();
   for (int i = 0; i < 24; i++) {
-    EXPECT_EQ(*(output_data + i), 0);
+    EXPECT_EQ(*(top_data + i), 0);
   }
-  free(output_data);
-  output_data = nullptr;
+  free(top_data);
+  top_data = nullptr;
 }
 
 TEST(relu_forward_test, random_on_cpu) {
@@ -96,17 +96,17 @@ TEST(relu_forward_test, random_on_cpu) {
   std::mt19937 gen(rd());
   std::uniform_real_distribution<> dis(-1.0f, 1.0f);
   std::vector<int> shape = { 1000 };
-  std::shared_ptr<my_tensor::Tensor> input = std::make_shared<my_tensor::Tensor>(shape);
-  float *data = input->GetMutableData();
+  std::shared_ptr<my_tensor::Tensor> bottom = std::make_shared<my_tensor::Tensor>(shape);
+  float *data = bottom->GetMutableData();
   for (int i = 0; i < 1000; i++) {
     *(data + i) = dis(gen);
   }
   my_tensor::Relu relu;
-  std::shared_ptr<my_tensor::Tensor> output = std::make_shared<my_tensor::Tensor>(shape);
-  relu.Forward(input, output);
-  const float *output_data = output->GetData();
+  std::shared_ptr<my_tensor::Tensor> top = std::make_shared<my_tensor::Tensor>(shape);
+  relu.Forward(bottom, top);
+  const float *top_data = top->GetData();
   for (int i = 0; i < 1000; i++) {
-    EXPECT_EQ(*(output_data + i), max(*(data + i), 0.0f));
+    EXPECT_EQ(*(top_data + i), max(*(data + i), 0.0f));
   }
 }
 
@@ -115,28 +115,28 @@ TEST(relu_forward_test, random_on_gpu) {
   std::mt19937 gen(rd());
   std::uniform_real_distribution<> dis(-1.0f, 1.0f);
   std::vector<int> shape = { 1000 };
-  std::shared_ptr<my_tensor::Tensor> input =
+  std::shared_ptr<my_tensor::Tensor> bottom =
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
   float *data = (float*) malloc(1000 * sizeof(float));
   for (int i = 0; i < 1000; i++) {
     *(data + i) = dis(gen);
   }
-  cudaMemcpy(input->GetMutableData(), data, 1000 * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(bottom->GetMutableData(), data, 1000 * sizeof(float), cudaMemcpyHostToDevice);
   cudaDeviceSynchronize();
   my_tensor::Relu relu;
-  std::shared_ptr<my_tensor::Tensor> output =
+  std::shared_ptr<my_tensor::Tensor> top =
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
-  relu.Forward(input, output);
-  float *output_data = (float*) malloc(1000 * sizeof(float));
-  cudaMemcpy(output_data, output->GetData(), 1000 * sizeof(float), cudaMemcpyDeviceToHost);
+  relu.Forward(bottom, top);
+  float *top_data = (float*) malloc(1000 * sizeof(float));
+  cudaMemcpy(top_data, top->GetData(), 1000 * sizeof(float), cudaMemcpyDeviceToHost);
   cudaDeviceSynchronize();
   for (int i = 0; i < 1000; i++) {
-    EXPECT_EQ(*(output_data + i), max(*(data + i), 0.0f));
+    EXPECT_EQ(*(top_data + i), max(*(data + i), 0.0f));
   }
   free(data);
-  free(output_data);
+  free(top_data);
   data = nullptr;
-  output_data = nullptr;
+  top_data = nullptr;
 }
 
 TEST(relu_backward_test, all_positive_on_cpu) {

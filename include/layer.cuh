@@ -17,7 +17,7 @@ public:
 
   virtual ~Layer() = default;
 
-  virtual void Forward(const std::shared_ptr<Tensor> input, std::shared_ptr<Tensor> output) = 0;
+  virtual void Forward(const std::shared_ptr<Tensor> bottom, std::shared_ptr<Tensor> top) = 0;
   virtual void Backward(const std::shared_ptr<Tensor> top, std::shared_ptr<Tensor> bottome) = 0;
 };
 } // namespace my_tensor

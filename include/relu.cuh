@@ -19,7 +19,7 @@ public:
   virtual ~Relu() = default;
 
   virtual void Forward(
-    const std::shared_ptr<Tensor> input, std::shared_ptr<Tensor> output) override;
+    const std::shared_ptr<Tensor> bottom, std::shared_ptr<Tensor> top) override;
   virtual void Backward(
     const std::shared_ptr<Tensor> top, std::shared_ptr<Tensor> bottom) override;
 };
