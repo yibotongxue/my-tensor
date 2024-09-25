@@ -17,7 +17,7 @@ TEST(sigmoid_forward_test, random_on_cpu) {
   }
   std::shared_ptr<my_tensor::Tensor> top = std::make_shared<my_tensor::Tensor>(shape);
   my_tensor::Sigmoid sigmoid;
-  sigmoid.Forward(bottom, top);
+  EXPECT_NO_THROW(sigmoid.Forward(bottom, top));
   const float *top_data = top->GetData();
   for (int i = 0; i < 10000; i++) {
     const float actual = *(top_data + i);
@@ -45,7 +45,7 @@ TEST(sigmoid_forward_test, random_on_gpu) {
   std::shared_ptr<my_tensor::Tensor> top =
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
   my_tensor::Sigmoid sigmoid;
-  sigmoid.Forward(bottom, top);
+  EXPECT_NO_THROW(sigmoid.Forward(bottom, top));
   float *top_data = (float*) malloc(10000 * sizeof(float));
   cudaMemcpy(top_data, top->GetData(), 10000 * sizeof(float), cudaMemcpyDeviceToHost);
   cudaDeviceSynchronize();
@@ -73,14 +73,14 @@ TEST(sigmoid_backward_test, random_on_cpu) {
   }
   std::shared_ptr<my_tensor::Tensor> top = std::make_shared<my_tensor::Tensor>(shape);
   my_tensor::Sigmoid sigmoid;
-  sigmoid.Forward(bottom, top);
+  EXPECT_NO_THROW(sigmoid.Forward(bottom, top));
   bottom_data = nullptr;
   const float *top_data = top->GetData();
   float* top_diff = top->GetMutableDiff();
   for (int i = 0; i < 10000; i++) {
     *(top_diff + i) = dis(gen);
   }
-  sigmoid.Backward(top, bottom);
+  EXPECT_NO_THROW(sigmoid.Backward(top, bottom));
   const float *bottom_diff = bottom->GetDiff();
   for (int i = 0; i < 10000; i++) {
     const float actual = *(bottom_diff + i);
@@ -110,7 +110,7 @@ TEST(sigmoid_backward_test, random_on_gpu) {
   std::shared_ptr<my_tensor::Tensor> top =
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
   my_tensor::Sigmoid sigmoid;
-  sigmoid.Forward(bottom, top);
+  EXPECT_NO_THROW(sigmoid.Forward(bottom, top));
   float *top_data = (float*) malloc(10000 * sizeof(float));
   cudaMemcpy(top_data, top->GetData(), 10000 * sizeof(float), cudaMemcpyDeviceToHost);
   cudaDeviceSynchronize();
@@ -120,7 +120,7 @@ TEST(sigmoid_backward_test, random_on_gpu) {
   }
   cudaMemcpy(top->GetMutableDiff(), top_diff, 10000 * sizeof(float), cudaMemcpyHostToDevice);
   cudaDeviceSynchronize();
-  sigmoid.Backward(top, bottom);
+  EXPECT_NO_THROW(sigmoid.Backward(top, bottom));
   float *bottom_diff = (float*) malloc(10000 * sizeof(float));
   cudaMemcpy(bottom_diff, bottom->GetDiff(), 10000 * sizeof(float), cudaMemcpyDeviceToHost);
   for (int i = 0; i < 10000; i++) {
