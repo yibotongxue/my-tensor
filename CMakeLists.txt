@@ -82,5 +82,23 @@ target_link_libraries(relu_test
     pthread
 )
 
+add_library(sigmoid_lib STATIC src/sigmoid.cu src/tensor.cu)
+
+add_executable(sigmoid_test test/sigmoid-test.cu)
+add_test(sigmoid_google_test sigmoid_test)
+
+set_target_properties(sigmoid_test PROPERTIES CUDA_ARCHITECTURES native)
+set_target_properties(sigmoid_test PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+target_link_libraries(sigmoid_test
+    PRIVATE
+    ${gtest}
+    ${gtest_main}
+    ${gmock}
+    ${gmock_main}
+    sigmoid_lib
+    pthread
+)
+
 # add the main target
 add_executable(my_tensor main.cpp)
