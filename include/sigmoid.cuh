@@ -1,5 +1,5 @@
-#ifndef MYTENSOR_INCLUDE_SIGMOID_CUH_
-#define MYTENSOR_INCLUDE_SIGMOID_CUH_
+#ifndef INCLUDE_SIGMOID_CUH_
+#define INCLUDE_SIGMOID_CUH_
 
 #include <tensor.cuh>
 #include <layer.cuh>
@@ -8,7 +8,7 @@
 
 namespace my_tensor {
 class Sigmoid : public Layer {
-public:
+ public:
   Sigmoid() = default;
 
   Sigmoid(const Sigmoid&) = delete;
@@ -18,12 +18,12 @@ public:
 
   virtual ~Sigmoid() = default;
 
-  virtual void Forward(
+  void Forward(
     const std::shared_ptr<Tensor> bottom, std::shared_ptr<Tensor> top) override;
-  virtual void Backward(
+  void Backward(
     const std::shared_ptr<Tensor> top, std::shared_ptr<Tensor> bottom) override;
-}; // class Sigmoid
-} // namespace my_tensor
+};
+}  // namespace my_tensor
 
 
-#endif // MYTENSOR_INCLUDE_SIGMOID_CUH_
+#endif  // INCLUDE_SIGMOID_CUH_

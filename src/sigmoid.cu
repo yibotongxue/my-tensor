@@ -12,12 +12,14 @@ __global__ void CudaForward(const float* bottom_data, float* top_data, int n) {
 __global__ void CudaBackward(
   const float* top_diff, const float* top_data, float* bottom_diff, int n) {
   CUDA_KERNEL_LOOP(i, n) {
-    *(bottom_diff + i) = *(top_diff + i) * *(top_data + i) * (1 - *(top_data + i));
+    *(bottom_diff + i) =
+      *(top_diff + i) * *(top_data + i) * (1 - *(top_data + i));
   }
 }
-}
+}  // namespace
 
-void Sigmoid::Forward(const std::shared_ptr<Tensor> bottom, std::shared_ptr<Tensor> top) {
+void Sigmoid::Forward(
+  const std::shared_ptr<Tensor> bottom, std::shared_ptr<Tensor> top) {
   if (bottom->OnCPU() && top->OnGPU() ||
       bottom->OnGPU() && top->OnCPU()) {
     throw std::runtime_error("Device no match.");
@@ -37,7 +39,8 @@ void Sigmoid::Forward(const std::shared_ptr<Tensor> bottom, std::shared_ptr<Tens
   }
 }
 
-void Sigmoid::Backward(const std::shared_ptr<Tensor> top, std::shared_ptr<Tensor> bottom) {
+void Sigmoid::Backward(
+  const std::shared_ptr<Tensor> top, std::shared_ptr<Tensor> bottom) {
   if (bottom->OnCPU() && top->OnGPU() ||
       bottom->OnGPU() && top->OnCPU()) {
     throw std::runtime_error("Device no match.");
@@ -48,11 +51,13 @@ void Sigmoid::Backward(const std::shared_ptr<Tensor> top, std::shared_ptr<Tensor
   int n = top->GetSize();
   if (bottom->OnCPU()) {
     for (int i = 0; i < n; i++) {
-      *(bottom_diff + i) = *(top_diff + i) * *(top_data + i) * (1 - *(top_data + i));
+      *(bottom_diff + i) =
+        *(top_diff + i) * *(top_data + i) * (1 - *(top_data + i));
     }
   } else {
-    CudaBackward<<<CudaGetBlocks(n), kCudaThreadNum>>>(top_diff, top_data, bottom_diff, n);
+    CudaBackward<<<CudaGetBlocks(n), kCudaThreadNum>>>(
+      top_diff, top_data, bottom_diff, n);
     cudaDeviceSynchronize();
   }
 }
-} // namespace my_tensor
+}  // namespace my_tensor

@@ -144,7 +144,7 @@ TEST(tensor_test_copy_construct, tensor_test_copy_construct_data_cpu2cpu) {
 TEST(tensor_test_copy_construct, tensor_test_copy_construct_data_gpu2gpu) {
   std::vector<int> shape { 1, 2, 3 };
   my_tensor::Tensor tensor { shape, my_tensor::DeviceType::GPU };
-  float* data = (float*) malloc(6 * sizeof(float));
+  float* data = reinterpret_cast<float *>(malloc(6 * sizeof(float)));
   for (int i = 0; i < 6; ++i) {
     *(data + i) = (float)i;
   }
@@ -153,7 +153,7 @@ TEST(tensor_test_copy_construct, tensor_test_copy_construct_data_gpu2gpu) {
   free(data);
   data = nullptr;
   my_tensor::Tensor another { tensor };
-  float *another_data = (float*) malloc(6 * sizeof(float));
+  float *another_data = reinterpret_cast<float *>(malloc(6 * sizeof(float)));
   cudaMemcpy(another_data, another.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToHost);
   cudaDeviceSynchronize();
   for (int i = 0; i < 6; ++i) {
@@ -277,7 +277,7 @@ TEST(tensor_test_copy, tensor_test_copy_data_gpu2cpu) {
   std::vector<int> shape { 1, 2, 3 };
   std::vector<int> another_shape { 3, 2, 4 };
   my_tensor::Tensor tensor { shape, my_tensor::DeviceType::GPU };
-  float* data = (float*) malloc(6 * sizeof(float));
+  float* data = reinterpret_cast<float *>(malloc(6 * sizeof(float)));
   for (int i = 0; i < 6; ++i) {
     *(data + i) = (float)i;
   }
@@ -287,7 +287,7 @@ TEST(tensor_test_copy, tensor_test_copy_data_gpu2cpu) {
   data = nullptr;
   my_tensor::Tensor another { another_shape };
   another = tensor;
-  float *another_data = (float*) malloc(6 * sizeof(float));
+  float *another_data = reinterpret_cast<float *>(malloc(6 * sizeof(float)));
   cudaMemcpy(another_data, another.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToHost);
   cudaDeviceSynchronize();
   for (int i = 0; i < 6; ++i) {
@@ -300,7 +300,7 @@ TEST(tensor_test_copy, tensor_test_copy_data_gpu2gpu) {
   std::vector<int> shape { 1, 2, 3 };
   std::vector<int> another_shape { 3, 2, 4 };
   my_tensor::Tensor tensor { shape, my_tensor::DeviceType::GPU };
-  float* data = (float*) malloc(6 * sizeof(float));
+  float* data = reinterpret_cast<float *>(malloc(6 * sizeof(float)));
   for (int i = 0; i < 6; ++i) {
     *(data + i) = (float)i;
   }
@@ -310,7 +310,7 @@ TEST(tensor_test_copy, tensor_test_copy_data_gpu2gpu) {
   data = nullptr;
   my_tensor::Tensor another { another_shape, my_tensor::DeviceType::GPU };
   another = tensor;
-  float *another_data = (float*) malloc(6 * sizeof(float));
+  float *another_data = reinterpret_cast<float *>(malloc(6 * sizeof(float)));
   cudaMemcpy(another_data, another.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToHost);
   cudaDeviceSynchronize();
   for (int i = 0; i < 6; ++i) {
@@ -563,7 +563,7 @@ TEST(tensor_test_move, tensor_test_move_data_gpu2cpu) {
   std::vector<int> shape { 1, 2, 3 };
   std::vector<int> another_shape { 3, 2, 4 };
   my_tensor::Tensor tensor { shape, my_tensor::DeviceType::GPU };
-  float* data = (float*) malloc(6 * sizeof(float));
+  float* data = reinterpret_cast<float *>(malloc(6 * sizeof(float)));
   for (int i = 0; i < 6; ++i) {
     *(data + i) = (float)i;
   }
@@ -573,7 +573,7 @@ TEST(tensor_test_move, tensor_test_move_data_gpu2cpu) {
   data = nullptr;
   my_tensor::Tensor another { another_shape };
   another = std::move(tensor);
-  float *another_data = (float*) malloc(6 * sizeof(float));
+  float *another_data = reinterpret_cast<float *>(malloc(6 * sizeof(float)));
   cudaMemcpy(another_data, another.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToHost);
   cudaDeviceSynchronize();
   for (int i = 0; i < 6; ++i) {
@@ -586,7 +586,7 @@ TEST(tensor_test_move, tensor_test_move_data_gpu2gpu) {
   std::vector<int> shape { 1, 2, 3 };
   std::vector<int> another_shape { 3, 2, 4 };
   my_tensor::Tensor tensor { shape, my_tensor::DeviceType::GPU };
-  float* data = (float*) malloc(6 * sizeof(float));
+  float* data = reinterpret_cast<float *>(malloc(6 * sizeof(float)));
   for (int i = 0; i < 6; ++i) {
     *(data + i) = (float)i;
   }
@@ -596,7 +596,7 @@ TEST(tensor_test_move, tensor_test_move_data_gpu2gpu) {
   data = nullptr;
   my_tensor::Tensor another { another_shape, my_tensor::DeviceType::GPU };
   another = std::move(tensor);
-  float *another_data = (float*) malloc(6 * sizeof(float));
+  float *another_data = reinterpret_cast<float *>(malloc(6 * sizeof(float)));
   cudaMemcpy(another_data, another.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToHost);
   cudaDeviceSynchronize();
   for (int i = 0; i < 6; ++i) {
@@ -650,7 +650,7 @@ TEST(tensor_test_cpu, tensor_test_cpu_data_on_cpu) {
 TEST(tensor_test_cpu, tensor_test_cpu_data_on_gpu) {
   std::vector<int> shape {1, 2, 3};
   my_tensor::Tensor tensor { shape, my_tensor::DeviceType::GPU };
-  float *data = (float*) malloc(6 * sizeof(float));
+  float *data = reinterpret_cast<float *>(malloc(6 * sizeof(float)));
   for (int i = 0; i < 6; ++i) {
     *(data + i) = i + 1;
   }
@@ -705,7 +705,7 @@ TEST(tensor_test_gpu, tensor_test_gpu_data_on_cpu) {
     cudaMemcpy(gpu_data, gpu_tensor.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToDevice);
   EXPECT_EQ(error, cudaSuccess);
   cudaFree(gpu_data);
-  float *cpu_data = (float*) malloc(6 * sizeof(float));
+  float *cpu_data = reinterpret_cast<float *>(malloc(6 * sizeof(float)));
   cudaMemcpy(cpu_data, gpu_tensor.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToHost);
   for (int i = 0; i < 6; ++i) {
     EXPECT_EQ(*(cpu_data + i), i + 1);
@@ -717,7 +717,7 @@ TEST(tensor_test_gpu, tensor_test_gpu_data_on_cpu) {
 TEST(tensor_test_gpu, tensor_test_gpu_data_on_gpu) {
   std::vector<int> shape {1, 2, 3};
   my_tensor::Tensor tensor { shape, my_tensor::DeviceType::GPU };
-  float *data = (float*) malloc(6 * sizeof(float));
+  float *data = reinterpret_cast<float *>(malloc(6 * sizeof(float)));
   for (int i = 0; i < 6; ++i) {
     *(data + i) = i + 1;
   }
@@ -731,7 +731,7 @@ TEST(tensor_test_gpu, tensor_test_gpu_data_on_gpu) {
     cudaMemcpy(gpu_data, gpu_tensor.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToDevice);
   EXPECT_EQ(error, cudaSuccess);
   cudaFree(gpu_data);
-  float *cpu_data = (float*) malloc(6 * sizeof(float));
+  float *cpu_data = reinterpret_cast<float *>(malloc(6 * sizeof(float)));
   cudaMemcpy(cpu_data, gpu_tensor.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToHost);
   for (int i = 0; i < 6; ++i) {
     EXPECT_EQ(*(cpu_data + i), i + 1);

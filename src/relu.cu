@@ -15,9 +15,10 @@ __global__ void CudaBackward(
     *(bottom_diff + i) = *(bottom_data + i) > 0 ? *(top_diff + i) : 0;
   }
 }
-}
+}  // namespace
 
-void Relu::Forward(const std::shared_ptr<Tensor> bottom, std::shared_ptr<Tensor> top) {
+void Relu::Forward(
+  const std::shared_ptr<Tensor> bottom, std::shared_ptr<Tensor> top) {
   if (bottom->OnCPU() && top->OnGPU() ||
       bottom->OnGPU() && top->OnCPU()) {
     throw std::runtime_error("Device not match");
@@ -35,7 +36,8 @@ void Relu::Forward(const std::shared_ptr<Tensor> bottom, std::shared_ptr<Tensor>
   }
 }
 
-void Relu::Backward(const std::shared_ptr<Tensor> top, std::shared_ptr<Tensor> bottom) {
+void Relu::Backward(
+  const std::shared_ptr<Tensor> top, std::shared_ptr<Tensor> bottom) {
   if (top->OnCPU() && bottom->OnGPU() ||
       top->OnGPU() && bottom->OnCPU()) {
     throw std::runtime_error("Device not match");
@@ -49,8 +51,9 @@ void Relu::Backward(const std::shared_ptr<Tensor> top, std::shared_ptr<Tensor> b
       *(bottom_diff + i) = *(bottom_data + i) > 0 ? *(top_diff + i) : 0;
     }
   } else {
-    CudaBackward<<<CudaGetBlocks(n), kCudaThreadNum>>>(top_diff, bottom_data, bottom_diff, n);
+    CudaBackward<<<CudaGetBlocks(n), kCudaThreadNum>>>(
+      top_diff, bottom_data, bottom_diff, n);
     cudaDeviceSynchronize();
   }
 }
-} // namespace my_tensor
+}  // namespace my_tensor

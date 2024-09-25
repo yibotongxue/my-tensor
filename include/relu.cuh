@@ -1,5 +1,5 @@
-#ifndef MYTENSOR_INCLUDE_RELU_CUH_
-#define MYTENSOR_INCLUDE_RELU_CUH_
+#ifndef INCLUDE_RELU_CUH_
+#define INCLUDE_RELU_CUH_
 
 #include <layer.cuh>
 #include <tensor.cuh>
@@ -8,7 +8,7 @@
 
 namespace my_tensor {
 class Relu : public Layer {
-public:
+ public:
   Relu() = default;
 
   Relu(const Relu&) = delete;
@@ -18,12 +18,12 @@ public:
 
   virtual ~Relu() = default;
 
-  virtual void Forward(
+  void Forward(
     const std::shared_ptr<Tensor> bottom, std::shared_ptr<Tensor> top) override;
-  virtual void Backward(
+  void Backward(
     const std::shared_ptr<Tensor> top, std::shared_ptr<Tensor> bottom) override;
 };
-} // namespace my_tensor
+}  // namespace my_tensor
 
 
-#endif // MYTENSOR_INCLUDE_RELU_CUH_
+#endif  // INCLUDE_RELU_CUH_

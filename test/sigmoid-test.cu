@@ -36,7 +36,7 @@ TEST(sigmoid_forward_test, random_on_gpu) {
   std::vector<int> shape = { 10000 };
   std::shared_ptr<my_tensor::Tensor> bottom =
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
-  float *bottom_data = (float*) malloc(10000 * sizeof(float));
+  float *bottom_data = reinterpret_cast<float *>(malloc(10000 * sizeof(float)));
   for (int i = 0; i < 10000; i++) {
     *(bottom_data + i) = dis(gen);
   }
@@ -46,7 +46,7 @@ TEST(sigmoid_forward_test, random_on_gpu) {
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
   my_tensor::Sigmoid sigmoid;
   EXPECT_NO_THROW(sigmoid.Forward(bottom, top));
-  float *top_data = (float*) malloc(10000 * sizeof(float));
+  float *top_data = reinterpret_cast<float *>(malloc(10000 * sizeof(float)));
   cudaMemcpy(top_data, top->GetData(), 10000 * sizeof(float), cudaMemcpyDeviceToHost);
   cudaDeviceSynchronize();
   for (int i = 0; i < 10000; i++) {
@@ -99,7 +99,7 @@ TEST(sigmoid_backward_test, random_on_gpu) {
   std::vector<int> shape = { 10000 };
   std::shared_ptr<my_tensor::Tensor> bottom =
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
-  float *bottom_data = (float*) malloc(10000 * sizeof(float));
+  float *bottom_data = reinterpret_cast<float *>(malloc(10000 * sizeof(float)));
   for (int i = 0; i < 10000; i++) {
     *(bottom_data + i) = dis(gen);
   }
@@ -111,17 +111,17 @@ TEST(sigmoid_backward_test, random_on_gpu) {
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
   my_tensor::Sigmoid sigmoid;
   EXPECT_NO_THROW(sigmoid.Forward(bottom, top));
-  float *top_data = (float*) malloc(10000 * sizeof(float));
+  float *top_data = reinterpret_cast<float *>(malloc(10000 * sizeof(float)));
   cudaMemcpy(top_data, top->GetData(), 10000 * sizeof(float), cudaMemcpyDeviceToHost);
   cudaDeviceSynchronize();
-  float *top_diff = (float*) malloc(10000 * sizeof(float));
+  float *top_diff = reinterpret_cast<float *>(malloc(10000 * sizeof(float)));
   for (int i = 0; i < 10000; i++) {
     *(top_diff + i) = dis(gen);
   }
   cudaMemcpy(top->GetMutableDiff(), top_diff, 10000 * sizeof(float), cudaMemcpyHostToDevice);
   cudaDeviceSynchronize();
   EXPECT_NO_THROW(sigmoid.Backward(top, bottom));
-  float *bottom_diff = (float*) malloc(10000 * sizeof(float));
+  float *bottom_diff = reinterpret_cast<float *>(malloc(10000 * sizeof(float)));
   cudaMemcpy(bottom_diff, bottom->GetDiff(), 10000 * sizeof(float), cudaMemcpyDeviceToHost);
   for (int i = 0; i < 10000; i++) {
     const float actual = *(bottom_diff + i);

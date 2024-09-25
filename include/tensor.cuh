@@ -1,5 +1,5 @@
-#ifndef MYTENSOR_INCLUDE_TENSOR_H_
-#define MYTENSOR_INCLUDE_TENSOR_H_
+#ifndef INCLUDE_TENSOR_CUH_
+#define INCLUDE_TENSOR_CUH_
 
 #include <vector>
 #include <string>
@@ -10,9 +10,10 @@ enum class DeviceType { CPU, GPU };
 
 // Tensor class
 class Tensor {
-public:
+ public:
   // The explicit constructors.
-  explicit Tensor(const std::vector<int>& shape, DeviceType device_type = DeviceType::CPU);
+  explicit Tensor(
+    const std::vector<int>& shape, DeviceType device_type = DeviceType::CPU);
 
   // The Tensor is copable.
   Tensor(const Tensor& tensor);
@@ -33,13 +34,13 @@ public:
   float* GetMutableDiff() { return diff_; }
 
   const std::vector<int> GetShape() const { return shape_; }
-  
+
   int GetSize() const { return size_; }
 
   bool OnCPU() const { return device_type_ == DeviceType::CPU; }
   bool OnGPU() const { return device_type_ == DeviceType::GPU; }
 
-private:
+ private:
   DeviceType device_type_;
   float* data_;
   float* diff_;
@@ -51,7 +52,7 @@ private:
   void FreeMemory();
   void AllocateMemory();
   Tensor Clone(DeviceType device_type);
-}; // class Tensor
-} // namespace my_tensor
+};
+}  // namespace my_tensor
 
-#endif // MYTENSOR_INCLUDE_TENSOR_H_
+#endif  // INCLUDE_TENSOR_CUH_

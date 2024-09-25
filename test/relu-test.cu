@@ -26,7 +26,7 @@ TEST(relu_forward_test, all_positive_on_gpu) {
   std::vector<int> shape {1, 2, 3, 4};
   std::shared_ptr<my_tensor::Tensor> bottom =
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
-  float *data = (float*) malloc(24 * sizeof(float));
+  float *data = reinterpret_cast<float *>(malloc(24 * sizeof(float)));
   for (int i = 0; i < 24; i++) {
     *(data + i) = i + 1;
   }
@@ -38,7 +38,7 @@ TEST(relu_forward_test, all_positive_on_gpu) {
   std::shared_ptr<my_tensor::Tensor> top =
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
   EXPECT_NO_THROW(relu.Forward(bottom, top));
-  float *top_data = (float*) malloc(24 * sizeof(float));
+  float *top_data = reinterpret_cast<float *>(malloc(24 * sizeof(float)));
   cudaMemcpy(top_data, top->GetData(), 24 * sizeof(float), cudaMemcpyDeviceToHost);
   cudaDeviceSynchronize();
   for (int i = 0; i < 24; i++) {
@@ -69,7 +69,7 @@ TEST(relu_forward_test, all_negative_on_gpu) {
   std::vector<int> shape {1, 2, 3, 4};
   std::shared_ptr<my_tensor::Tensor> bottom =
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
-  float *data = (float*) malloc(24 * sizeof(float));
+  float *data = reinterpret_cast<float *>(malloc(24 * sizeof(float)));
   for (int i = 0; i < 24; i++) {
     *(data + i) = -(i + 1);
   }
@@ -81,7 +81,7 @@ TEST(relu_forward_test, all_negative_on_gpu) {
   std::shared_ptr<my_tensor::Tensor> top =
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
   EXPECT_NO_THROW(relu.Forward(bottom, top));
-  float *top_data = (float*) malloc(24 * sizeof(float));
+  float *top_data = reinterpret_cast<float *>(malloc(24 * sizeof(float)));
   cudaMemcpy(top_data, top->GetData(), 24 * sizeof(float), cudaMemcpyDeviceToHost);
   cudaDeviceSynchronize();
   for (int i = 0; i < 24; i++) {
@@ -117,7 +117,7 @@ TEST(relu_forward_test, random_on_gpu) {
   std::vector<int> shape = { 10000 };
   std::shared_ptr<my_tensor::Tensor> bottom =
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
-  float *data = (float*) malloc(10000 * sizeof(float));
+  float *data = reinterpret_cast<float *>(malloc(10000 * sizeof(float)));
   for (int i = 0; i < 10000; i++) {
     *(data + i) = dis(gen);
   }
@@ -127,7 +127,7 @@ TEST(relu_forward_test, random_on_gpu) {
   std::shared_ptr<my_tensor::Tensor> top =
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
   EXPECT_NO_THROW(relu.Forward(bottom, top));
-  float *top_data = (float*) malloc(10000 * sizeof(float));
+  float *top_data = reinterpret_cast<float *>(malloc(10000 * sizeof(float)));
   cudaMemcpy(top_data, top->GetData(), 10000 * sizeof(float), cudaMemcpyDeviceToHost);
   cudaDeviceSynchronize();
   for (int i = 0; i < 10000; i++) {
@@ -167,7 +167,7 @@ TEST(relu_backward_test, all_positive_on_gpu) {
   std::vector<int> shape {1, 2, 3, 4};
   std::shared_ptr<my_tensor::Tensor> bottom =
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
-  float *data = (float*) malloc(24 * sizeof(float));
+  float *data = reinterpret_cast<float *>(malloc(24 * sizeof(float)));
   for (int i = 0; i < 24; i++) {
     *(data + i) = i + 1;
   }
@@ -179,7 +179,7 @@ TEST(relu_backward_test, all_positive_on_gpu) {
   std::shared_ptr<my_tensor::Tensor> top =
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
   EXPECT_NO_THROW(relu.Forward(bottom, top));
-  float *diff = (float*) malloc(24 * sizeof(float));
+  float *diff = reinterpret_cast<float *>(malloc(24 * sizeof(float)));
   for (int i = 0; i < 24; i++) {
     *(diff + i) = i - 12;
   }
@@ -188,7 +188,7 @@ TEST(relu_backward_test, all_positive_on_gpu) {
   free(diff);
   diff = nullptr;
   EXPECT_NO_THROW(relu.Backward(top, bottom));
-  float *bottom_diff = (float*) malloc(24 * sizeof(float));
+  float *bottom_diff = reinterpret_cast<float *>(malloc(24 * sizeof(float)));
   cudaMemcpy(bottom_diff, bottom->GetDiff(), 24 * sizeof(float), cudaMemcpyDeviceToHost);
   cudaDeviceSynchronize();
   for (int i = 0; i < 24; i++) {
@@ -226,7 +226,7 @@ TEST(relu_backward_test, all_negative_on_gpu) {
   std::vector<int> shape {1, 2, 3, 4};
   std::shared_ptr<my_tensor::Tensor> bottom =
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
-  float *data = (float*) malloc(24 * sizeof(float));
+  float *data = reinterpret_cast<float *>(malloc(24 * sizeof(float)));
   for (int i = 0; i < 24; i++) {
     *(data + i) = -(i + 1);
   }
@@ -238,7 +238,7 @@ TEST(relu_backward_test, all_negative_on_gpu) {
   std::shared_ptr<my_tensor::Tensor> top =
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
   EXPECT_NO_THROW(relu.Forward(bottom, top));
-  float *diff = (float*) malloc(24 * sizeof(float));
+  float *diff = reinterpret_cast<float *>(malloc(24 * sizeof(float)));
   for (int i = 0; i < 24; i++) {
     *(diff + i) = i - 12;
   }
@@ -247,7 +247,7 @@ TEST(relu_backward_test, all_negative_on_gpu) {
   free(diff);
   diff = nullptr;
   EXPECT_NO_THROW(relu.Backward(top, bottom));
-  float *bottom_diff = (float*) malloc(24 * sizeof(float));
+  float *bottom_diff = reinterpret_cast<float *>(malloc(24 * sizeof(float)));
   cudaMemcpy(bottom_diff, bottom->GetDiff(), 24 * sizeof(float), cudaMemcpyDeviceToHost);
   cudaDeviceSynchronize();
   for (int i = 0; i < 24; i++) {
@@ -292,7 +292,7 @@ TEST(relu_backward_test, random_on_gpu) {
   std::vector<int> shape = { 10000 };
   std::shared_ptr<my_tensor::Tensor> bottom =
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
-  float *data = (float*) malloc(10000 * sizeof(float));
+  float *data = reinterpret_cast<float *>(malloc(10000 * sizeof(float)));
   for (int i = 0; i < 10000; i++) {
     *(data + i) = dis(gen);
   }
@@ -302,14 +302,14 @@ TEST(relu_backward_test, random_on_gpu) {
   std::shared_ptr<my_tensor::Tensor> top =
     std::make_shared<my_tensor::Tensor>(shape, my_tensor::DeviceType::GPU);
   EXPECT_NO_THROW(relu.Forward(bottom, top));
-  float *diff = (float*) malloc(10000 * sizeof(float));
+  float *diff = reinterpret_cast<float *>(malloc(10000 * sizeof(float)));
   for (int i = 0; i < 10000; i++) {
     *(diff + i) = dis(gen);
   }
   cudaMemcpy(top->GetMutableDiff(), diff, 10000 * sizeof(float), cudaMemcpyHostToDevice);
   cudaDeviceSynchronize();
   EXPECT_NO_THROW(relu.Backward(top, bottom));
-  float *bottom_diff = (float*) malloc(10000 * sizeof(float));
+  float *bottom_diff = reinterpret_cast<float *>(malloc(10000 * sizeof(float)));
   cudaMemcpy(bottom_diff, bottom->GetDiff(), 10000 * sizeof(float), cudaMemcpyDeviceToHost);
   for (int i = 0; i < 10000; i++) {
     if (*(data + i) > 0) {

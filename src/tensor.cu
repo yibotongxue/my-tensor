@@ -7,12 +7,14 @@
 namespace my_tensor {
 Tensor::Tensor(const std::vector<int>& shape, DeviceType deviceType)
   : shape_(shape), device_type_(deviceType) {
-  size_ = std::accumulate(shape_.begin(), shape_.end(), 1, std::multiplies<int>());
+  size_ = std::accumulate(
+    shape_.begin(), shape_.end(), 1, std::multiplies<int>());
   AllocateMemory();
 }
 
 Tensor::Tensor(const Tensor& tensor)
-  : shape_(tensor.shape_), device_type_(tensor.device_type_), size_(tensor.size_) {
+  : shape_(tensor.shape_), device_type_(tensor.device_type_),
+    size_(tensor.size_) {
     AllocateMemory();
     CopyData(tensor, size_ * sizeof(float));
 }
@@ -52,8 +54,8 @@ void Tensor::FreeMemory() {
 void Tensor::AllocateMemory() {
   std::size_t cnt = size_ * sizeof(float);
   if (OnCPU()) {
-    data_ = (float*) malloc(cnt);
-    diff_ = (float*) malloc(cnt);
+    data_ = reinterpret_cast<float*>(malloc(cnt));
+    diff_ = reinterpret_cast<float*>(malloc(cnt));
   } else {
     ERROR_CHECK(cudaMalloc(&data_, cnt));
     ERROR_CHECK(cudaMalloc(&diff_, cnt));
@@ -80,7 +82,8 @@ Tensor& Tensor::operator=(const Tensor& tensor) {
 }
 
 Tensor::Tensor(Tensor&& tensor)
-  : shape_(tensor.shape_), device_type_(tensor.device_type_), size_(tensor.size_),
+  : shape_(tensor.shape_), device_type_(tensor.device_type_),
+    size_(tensor.size_),
     data_(tensor.data_), diff_(tensor.diff_) {
     tensor.data_ = nullptr;
     tensor.diff_ = nullptr;
@@ -114,4 +117,4 @@ Tensor Tensor::Clone(DeviceType device_type) {
   tensor.CopyData(*this, size_ * sizeof(float));
   return tensor;
 }
-}
+}  // namespace my_tensor
