@@ -64,7 +64,9 @@ target_link_libraries(tensor_test
     pthread
 )
 
-add_library(relu_lib STATIC src/relu.cu src/tensor.cu)
+add_library(relu_lib STATIC src/relu.cu)
+
+target_link_libraries(relu_lib PUBLIC tensor_lib)
 
 add_executable(relu_test test/relu-test.cu)
 add_test(relu_google_test relu_test)
@@ -82,7 +84,9 @@ target_link_libraries(relu_test
     pthread
 )
 
-add_library(sigmoid_lib STATIC src/sigmoid.cu src/tensor.cu)
+add_library(sigmoid_lib STATIC src/sigmoid.cu)
+
+target_link_libraries(sigmoid_lib PUBLIC tensor_lib)
 
 add_executable(sigmoid_test test/sigmoid-test.cu)
 add_test(sigmoid_google_test sigmoid_test)

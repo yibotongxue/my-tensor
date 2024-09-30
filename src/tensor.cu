@@ -83,8 +83,7 @@ Tensor& Tensor::operator=(const Tensor& tensor) {
 
 Tensor::Tensor(Tensor&& tensor)
   : shape_(tensor.shape_), device_type_(tensor.device_type_),
-    size_(tensor.size_),
-    data_(tensor.data_), diff_(tensor.diff_) {
+    size_(tensor.size_), data_(tensor.data_), diff_(tensor.diff_) {
     tensor.data_ = nullptr;
     tensor.diff_ = nullptr;
 }
