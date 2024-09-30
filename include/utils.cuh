@@ -13,14 +13,19 @@ inline int CudaGetBlocks(const int N) {
   for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < (n); \
        i += blockDim.x * gridDim.x)
 
+#ifdef DEBUG
 #define ERROR_CHECK(function) \
 do { \
   cudaError_t error_code = function; \
   if (error_code != cudaSuccess) { \
-    printf("CUDA error:\r\ncode = %d, name = %s, description = %s\r\nfile = %s, line%d\r\n", \
-      error_code, cudaGetErrorName(error_code), \
-      cudaGetErrorString(error_code), __FILE__, __LINE__); \
+    std::cerr << "CUDA error:\r\ncode = " << error_code \
+      << ", name = " << cudaGetErrorName(error_code) \
+      << ", description = " << cudaGetErrorString(error_code) \
+      << "\r\nfile = " << __FILE__ << ", line" << __LINE__ << "\r\n"; \
   } \
 } while (0);
+#else
+#define ERROR_CHECK(function) function 
+#endif // DEBUG
 
 #endif  // INCLUDE_UTILS_CUH_
