@@ -25,7 +25,7 @@ do { \
   } \
 } while (0);
 #else
-#define ERROR_CHECK(function) function 
-#endif // DEBUG
+#define ERROR_CHECK(function) function
+#endif  // DEBUG
 
 #endif  // INCLUDE_UTILS_CUH_

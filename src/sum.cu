@@ -33,8 +33,9 @@ void Sum(float* result, const std::shared_ptr<Tensor> tensor) {
   } else {
     int n = tensor->GetSize();
     float *data = nullptr;
-    cudaMalloc(&data, n * sizeof(float));
-    cudaMemcpy(data, tensor->GetData(), n * sizeof(float), cudaMemcpyDeviceToDevice);
+    cudaMalloc(&data, tensor->GetByteSize());
+    cudaMemcpy(data, tensor->GetData(), tensor->GetByteSize(),
+      cudaMemcpyDeviceToDevice);
     float *temp_sum;
     cudaMalloc(&temp_sum, CudaGetBlocks(n) * sizeof(float));
     int num = n;

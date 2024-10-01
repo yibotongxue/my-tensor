@@ -36,6 +36,7 @@ class Tensor {
   const std::vector<int> GetShape() const { return shape_; }
 
   int GetSize() const { return size_; }
+  std::size_t GetByteSize() const { return size_ * sizeof(float); }
 
   bool OnCPU() const { return device_type_ == DeviceType::CPU; }
   bool OnGPU() const { return device_type_ == DeviceType::GPU; }

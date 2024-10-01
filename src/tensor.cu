@@ -16,7 +16,7 @@ Tensor::Tensor(const Tensor& tensor)
   : shape_(tensor.shape_), device_type_(tensor.device_type_),
     size_(tensor.size_) {
     AllocateMemory();
-    CopyData(tensor, size_ * sizeof(float));
+    CopyData(tensor, GetByteSize());
 }
 
 void Tensor::CopyData(const Tensor& tensor, std::size_t cnt) {
@@ -77,7 +77,7 @@ Tensor& Tensor::operator=(const Tensor& tensor) {
   FreeMemory();
   device_type_ = tensor.device_type_;
   AllocateMemory();
-  CopyData(tensor, size_ * sizeof(float));
+  CopyData(tensor, GetByteSize());
   return *this;
 }
 
@@ -113,7 +113,7 @@ Tensor Tensor::gpu() {
 
 Tensor Tensor::Clone(DeviceType device_type) {
   Tensor tensor { shape_, device_type };
-  tensor.CopyData(*this, size_ * sizeof(float));
+  tensor.CopyData(*this, GetByteSize());
   return tensor;
 }
 }  // namespace my_tensor
