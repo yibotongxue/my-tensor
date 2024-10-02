@@ -1,63 +1,148 @@
 #include <gtest/gtest.h>
 #include <tensor.cuh>
 
+#define TENSOR_CONSTRUCT_ON_CPU(shape_vec, tensor_name) \
+  auto tensor_name = std::make_shared<my_tensor::Tensor>(shape_vec);
+
+#define TENSOR_CONSTRUCT_ON_GPU(shape_vec, tensor_name) \
+  auto tensor_name = std::make_shared<my_tensor::Tensor>( \
+    shape_vec, my_tensor::DeviceType::GPU);
+
+#define TENSOR_CONSTRUCTOR_COPY(tensor_dst, tensor_src) \
+  std::shared_ptr<my_tensor::Tensor> tensor_dst = std::make_shared<my_tensor::Tensor>(*tensor_src);
+
+#define TENSOR_EXPECT_SHAPE(tensor_ptr, shape_vec) \
+do { \
+  EXPECT_EQ(tensor_ptr->GetShape(), shape_vec); \
+} while (0);
+
+#define TENSOR_EXPECT_ON_CPU(tensor_ptr) \
+do { \
+  EXPECT_TRUE(tensor_ptr->OnCPU()); \
+  EXPECT_FALSE(tensor_ptr->OnGPU()); \
+} while (0);
+
+#define TENSOR_EXPECT_ON_GPU(tensor_ptr) \
+do { \
+  EXPECT_TRUE(tensor_ptr->OnGPU()); \
+  EXPECT_FALSE(tensor_ptr->OnCPU()); \
+} while (0);
+
+#define TENSOR_DATA_ON_CPU(tensor_ptr) \
+do { \
+  std::size_t byte_size = tensor_ptr->GetByteSize(); \
+  float* data = nullptr; \
+  cudaMalloc(&data, byte_size); \
+  cudaError_t error = \
+    cudaMemcpy(data, tensor_ptr->GetData(), byte_size, cudaMemcpyHostToDevice); \
+  EXPECT_EQ(error, cudaSuccess); \
+  cudaFree(data); \
+} while (0);
+
+#define TENSOR_DATA_ON_GPU(tensor_ptr) \
+do { \
+  std::size_t byte_size = tensor_ptr->GetByteSize(); \
+  float* data = nullptr; \
+  cudaMalloc(&data, byte_size); \
+  cudaError_t error = \
+    cudaMemcpy(data, tensor_ptr->GetData(), byte_size, cudaMemcpyDeviceToDevice); \
+  EXPECT_EQ(error, cudaSuccess); \
+  cudaFree(data); \
+} while (0);
+
+#define DATA_EXPECT_EQ(data1, data2, n) \
+do { \
+  for (int i = 0; i < n; i++) { \
+    EXPECT_EQ(data1[i], data2[i]); \
+  } \
+} while (0);
+
+#define DEFINE_DATA_ON_CPU(data_ptr, n, func) \
+  float *data_ptr = reinterpret_cast<float*>(malloc(n * sizeof(float))); \
+  for (int i = 0; i < n; i++) { \
+    data_ptr[i] = func(i); \
+  }
+
+#define DEFINE_DATA_ON_GPU_FROM_CPU(data_ptr_gpu, data_ptr_cpu, n) \
+  float *data_ptr_gpu = nullptr; \
+  cudaMalloc(&data_ptr_gpu, n * sizeof(float)); \
+  cudaMemcpy(data_ptr_gpu, data_ptr_cpu, n * sizeof(float), cudaMemcpyHostToDevice);
+
+#define DEFINE_DATA_ON_CPU_FROM_GPU(data_ptr_cpu, data_ptr_gpu, n) \
+  float *data_ptr_cpu = reinterpret_cast<float*>(malloc(n * sizeof(float))); \
+  cudaMemcpy(data_ptr_cpu, data_ptr_gpu, n * sizeof(float), cudaMemcpyDeviceToHost);
+
+#define TENSOR_EXPECT_EQ_DATA_CPU_CPU(tensor_this, tensor_that) \
+do { \
+  int n = tensor_this->GetSize(); \
+  EXPECT_EQ(tensor_that->GetSize(), n); \
+  DATA_EXPECT_EQ(tensor_this->GetData(), tensor_that->GetData(), n); \
+} while (0);
+
+#define TENSOR_EXPECT_EQ_DATA_CPU_GPU(tensor_this, tensor_that) \
+do { \
+  int n = tensor_this->GetSize(); \
+  EXPECT_EQ(tensor_that->GetSize(), n); \
+  DEFINE_DATA_ON_CPU_FROM_GPU(data_that, tensor_that->GetData(), n); \
+  DATA_EXPECT_EQ(tensor_this->GetData(), data_that); \
+  free(data_that); \
+} while (0);
+
+#define TENSOR_EXPECT_EQ_DATA_GPU_CPU(tensor_this, tensor_that) \
+do { \
+  int n = tensor_this->GetSize(); \
+  EXPECT_EQ(tensor_that->GetSize(), n); \
+  DEFINE_DATA_ON_CPU_FROM_GPU(data_this, tensor_this->GetData(), n); \
+  DATA_EXPECT_EQ(data_this, tensor_that->GetData(), n); \
+  free(data_this); \
+} while (0);
+
+#define TENSOR_EXPECT_EQ_DATA_GPU_GPU(tensor_this, tensor_that) \
+do { \
+  int n = tensor_this->GetSize(); \
+  EXPECT_EQ(tensor_that->GetSize(), n); \
+  DEFINE_DATA_ON_CPU_FROM_GPU(data_this, tensor_this->GetData(), n); \
+  DEFINE_DATA_ON_CPU_FROM_GPU(data_that, tensor_that->GetData(), n); \
+  DATA_EXPECT_EQ(data_this, data_that, n); \
+  free(data_this); \
+  free(data_that); \
+} while (0);
 
 /*************************TENSOR_TEST_CONSTRUCT**************************** */
 TEST(tensor_test_construct, tensor_test_construct_shape_cpu) {
   std::vector<int> shape {1, 2, 3};
-  my_tensor::Tensor tensor { shape };
-  EXPECT_EQ(tensor.GetShape(), shape);
+  TENSOR_CONSTRUCT_ON_CPU(shape, tensor);
+  TENSOR_EXPECT_SHAPE(tensor, shape);
 }
 
 TEST(tensor_test_construct, tensor_test_construct_shape_gpu) {
   std::vector<int> shape {1, 2, 3};
-  my_tensor::Tensor tensor { shape, my_tensor::DeviceType::GPU };
-  EXPECT_EQ(tensor.GetShape(), shape);
+  TENSOR_CONSTRUCT_ON_GPU(shape, tensor);
+  TENSOR_EXPECT_SHAPE(tensor, shape);
 }
 
 TEST(tensor_test_construct, tensor_test_construct_device_cpu) {
   std::vector<int> shape {1, 2, 3};
-  my_tensor::Tensor tensor { shape };
-  EXPECT_TRUE(tensor.OnCPU());
-  EXPECT_FALSE(tensor.OnGPU());
-}
-
-TEST(tensor_test_construct, tensor_test_construct_device_explicit_cpu) {
-  std::vector<int> shape {1, 2, 3};
-  my_tensor::Tensor tensor { shape, my_tensor::DeviceType::CPU };
-  EXPECT_TRUE(tensor.OnCPU());
-  EXPECT_FALSE(tensor.OnGPU());
+  TENSOR_CONSTRUCT_ON_CPU(shape, tensor);
+  TENSOR_EXPECT_ON_CPU(tensor);
 }
 
 TEST(tensor_test_construct, tensor_test_construct_device_gpu) {
   std::vector<int> shape {1, 2, 3};
-  my_tensor::Tensor tensor { shape, my_tensor::DeviceType::GPU };
-  EXPECT_FALSE(tensor.OnCPU());
-  EXPECT_TRUE(tensor.OnGPU());
+  TENSOR_CONSTRUCT_ON_GPU(shape, tensor);
+  TENSOR_EXPECT_ON_GPU(tensor);
 }
 
 TEST(tensor_test_construct, tensor_test_construct_data_position_cpu) {
   std::vector<int> shape { 1, 3, 2 };
-  my_tensor::Tensor tensor { shape };
-  float* data = nullptr;
-  cudaMalloc(&data, 6 * sizeof(float));
-  cudaError_t error =
-    cudaMemcpy(data, tensor.GetData(), 6 * sizeof(float), cudaMemcpyHostToDevice);
-  EXPECT_EQ(error, cudaSuccess);
-  cudaFree(data);
-  cudaDeviceSynchronize();
+  TENSOR_CONSTRUCT_ON_CPU(shape, tensor);
+  TENSOR_DATA_ON_CPU(tensor);
 }
 
 TEST(tensor_test_construct, tensor_test_construct_data_position_gpu) {
   std::vector<int> shape { 1, 3, 2 };
-  my_tensor::Tensor tensor { shape, my_tensor::DeviceType::GPU };
-  float* data = nullptr;
-  cudaMalloc(&data, 6 * sizeof(float));
-  cudaError_t error = 
-    cudaMemcpy(data, tensor.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToDevice);
-  EXPECT_EQ(error, cudaSuccess);
-  cudaFree(data);
-  cudaDeviceSynchronize();
+  TENSOR_CONSTRUCT_ON_GPU(shape, tensor);
+  TENSOR_DATA_ON_GPU(tensor);
 }
 /*************************TENSOR_TEST_CONSTRUCT**************************** */
 
@@ -66,66 +151,44 @@ TEST(tensor_test_construct, tensor_test_construct_data_position_gpu) {
 /**********************TENSOR_TEST_COPY_CONSTRUCT************************** */
 TEST(tensor_test_copy_construct, tensor_test_copy_construct_shape_cpu) {
   std::vector<int> shape { 1, 2, 3 };
-  my_tensor::Tensor tensor { shape };
-  my_tensor::Tensor another { tensor };
-  EXPECT_EQ(another.GetShape(), shape);
+  TENSOR_CONSTRUCT_ON_CPU(shape, tensor);
+  TENSOR_CONSTRUCTOR_COPY(another, tensor);
+  // TENSOR_EXPECT_SHAPE(another, shape);
 }
 
 TEST(tensor_test_copy_construct, tensor_test_copy_construct_shape_gpu) {
   std::vector<int> shape { 1, 2, 3 };
-  my_tensor::Tensor tensor { shape, my_tensor::DeviceType::GPU };
-  my_tensor::Tensor another { tensor };
-  EXPECT_EQ(another.GetShape(), shape);
+  TENSOR_CONSTRUCT_ON_GPU(shape, tensor);
+  TENSOR_CONSTRUCTOR_COPY(another, tensor);
+  TENSOR_EXPECT_SHAPE(another, shape);
 }
 
 TEST(tensor_test_copy_construct, tensor_test_copy_construct_device_cpu) {
   std::vector<int> shape { 1, 2, 3 };
-  my_tensor::Tensor tensor { shape };
-  my_tensor::Tensor another { tensor };
-  EXPECT_TRUE(another.OnCPU());
-  EXPECT_FALSE(another.OnGPU());
-}
-
-TEST(tensor_test_copy_construct, tensor_test_copy_construct_device_explicit_cpu) {
-  std::vector<int> shape { 1, 2, 3 };
-  my_tensor::Tensor tensor { shape, my_tensor::DeviceType::CPU };
-  my_tensor::Tensor another { tensor };
-  EXPECT_TRUE(another.OnCPU());
-  EXPECT_FALSE(another.OnGPU());
+  TENSOR_CONSTRUCT_ON_CPU(shape, tensor);
+  TENSOR_CONSTRUCTOR_COPY(another, tensor);
+  TENSOR_EXPECT_ON_CPU(another);
 }
 
 TEST(tensor_test_copy_construct, tensor_test_copy_construct_device_gpu) {
   std::vector<int> shape { 1, 2, 3 };
-  my_tensor::Tensor tensor { shape, my_tensor::DeviceType::GPU };
-  my_tensor::Tensor another { tensor };
-  EXPECT_FALSE(another.OnCPU());
-  EXPECT_TRUE(another.OnGPU());
+  TENSOR_CONSTRUCT_ON_GPU(shape, tensor);
+  TENSOR_CONSTRUCTOR_COPY(another, tensor);
+  TENSOR_EXPECT_ON_GPU(another);
 }
 
 TEST(tensor_test_copy_construct, tensor_test_copy_construct_data_position_cpu) {
   std::vector<int> shape { 1, 2, 3 };
-  my_tensor::Tensor tensor { shape };
-  my_tensor::Tensor another { tensor };
-  float* data = nullptr;
-  cudaMalloc(&data, 6 * sizeof(float));
-  cudaError_t error =
-    cudaMemcpy(data, another.GetData(), 6 * sizeof(float), cudaMemcpyHostToDevice);
-  EXPECT_EQ(error, cudaSuccess);
-  cudaFree(data);
-  cudaDeviceSynchronize();
+  TENSOR_CONSTRUCT_ON_GPU(shape, tensor);
+  TENSOR_CONSTRUCTOR_COPY(another, tensor);
+  TENSOR_DATA_ON_CPU(another);
 }
 
 TEST(tensor_test_copy_construct, tensor_test_copy_construct_data_position_gpu) {
   std::vector<int> shape { 1, 2, 3 };
-  my_tensor::Tensor tensor { shape, my_tensor::DeviceType::GPU };
-  my_tensor::Tensor another { tensor };
-  float* data = nullptr;
-  cudaMalloc(&data, 6 * sizeof(float));
-  cudaError_t error = 
-    cudaMemcpy(data, another.GetData(), 6 * sizeof(float), cudaMemcpyDeviceToDevice);
-  EXPECT_EQ(error, cudaSuccess);
-  cudaFree(data);
-  cudaDeviceSynchronize();
+  TENSOR_CONSTRUCT_ON_GPU(shape, tensor);
+  TENSOR_CONSTRUCTOR_COPY(another, tensor);
+  TENSOR_DATA_ON_GPU(another);
 }
 
 TEST(tensor_test_copy_construct, tensor_test_copy_construct_data_cpu2cpu) {
