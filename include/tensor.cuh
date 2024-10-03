@@ -28,6 +28,7 @@ class Tensor {
   Tensor cpu();
   Tensor gpu();
 
+  // Get methods.
   const float* GetData() const { return data_; }
   float* GetMutableData() { return data_; }
   const float* GetDiff() const { return diff_; }
@@ -38,6 +39,7 @@ class Tensor {
   int GetSize() const { return size_; }
   std::size_t GetByteSize() const { return size_ * sizeof(float); }
 
+  // Check device.
   bool OnCPU() const { return device_type_ == DeviceType::CPU; }
   bool OnGPU() const { return device_type_ == DeviceType::GPU; }
 

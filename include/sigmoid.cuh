@@ -7,6 +7,7 @@
 #include <memory>
 
 namespace my_tensor {
+// Sigmoid class, implements Layer class.
 class Sigmoid : public Layer {
  public:
   Sigmoid() = default;
@@ -18,6 +19,7 @@ class Sigmoid : public Layer {
 
   virtual ~Sigmoid() = default;
 
+  // Override forward and backward methods of Layer class.
   void Forward(
     const std::shared_ptr<Tensor> bottom, std::shared_ptr<Tensor> top) override;
   void Backward(

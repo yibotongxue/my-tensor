@@ -78,8 +78,8 @@ void AddGPU(const float *data_src, float *data_dst, const float delta, int n)
     top_data = nullptr;                                                    \
     for (int i = 0; i < 10000; i++)                                        \
     {                                                                      \
-      float actual = cpu_top_data[i] + 1e-1;                               \
-      float expect = std::max(cpu_bottom_data[i], 0.0f) + 1e-1;            \
+      float actual = cpu_top_data[i];                                      \
+      float expect = std::max(cpu_bottom_data[i], 0.0f);                   \
       EXPECT_NEAR(actual, expect, 0.001);                                  \
     }                                                                      \
     free(cpu_bottom_data);                                                 \
@@ -106,9 +106,8 @@ void AddGPU(const float *data_src, float *data_dst, const float delta, int n)
     for (int i = 0; i < 10000; i++)                                                                                                       \
     {                                                                                                                                     \
       float expect = ((static_cast<double>(cpu_top_delta_data[i]) - static_cast<double>(cpu_top_data[i])) / static_cast<double>(0.001)) * \
-                         static_cast<double>(cpu_top_diff[i]) +                                                                           \
-                     1e-1;                                                                                                                \
-      float actual = cpu_bottom_diff[i] + 1e-1;                                                                                           \
+                     static_cast<double>(cpu_top_diff[i]);                                                                                \
+      float actual = cpu_bottom_diff[i];                                                                                                  \
       EXPECT_NEAR(actual, expect, 0.001);                                                                                                 \
     }                                                                                                                                     \
     free(cpu_bottom_diff);                                                                                                                \
