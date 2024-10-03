@@ -22,6 +22,8 @@ class Layer {
   virtual void Backward(
     const std::shared_ptr<Tensor> top, std::shared_ptr<Tensor> bottome) = 0;
 };
+
+using LayerPtr = std::unique_ptr<Layer>;
 }  // namespace my_tensor
 
 

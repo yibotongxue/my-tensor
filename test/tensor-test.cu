@@ -1,18 +1,19 @@
 #include <gtest/gtest.h>
 #include <tensor.cuh>
+#include <functional>
 
 #define TENSOR_CONSTRUCT_ON_CPU(shape_vec, tensor_name) \
-  auto tensor_name = std::make_shared<my_tensor::Tensor>(shape_vec);
+  auto tensor_name = std::make_unique<my_tensor::Tensor>(shape_vec);
 
 #define TENSOR_CONSTRUCT_ON_GPU(shape_vec, tensor_name) \
-  auto tensor_name = std::make_shared<my_tensor::Tensor>( \
+  auto tensor_name = std::make_unique<my_tensor::Tensor>( \
     shape_vec, my_tensor::DeviceType::GPU);
 
 #define TENSOR_CONSTRUCTOR_COPY(tensor_dst, tensor_src) \
-  std::shared_ptr<my_tensor::Tensor> tensor_dst = std::make_shared<my_tensor::Tensor>(*tensor_src);
+  std::unique_ptr<my_tensor::Tensor> tensor_dst = std::make_unique<my_tensor::Tensor>(*tensor_src);
 
 #define TENSOR_CONSTRUCTOR_MOVE(tensor_dst, tensor_src) \
-  std::shared_ptr<my_tensor::Tensor> tensor_dst = std::make_shared<my_tensor::Tensor>(std::move(*tensor_src));
+  std::unique_ptr<my_tensor::Tensor> tensor_dst = std::make_unique<my_tensor::Tensor>(std::move(*tensor_src));
 
 #define TENSOR_EXPECT_SHAPE(tensor_ptr, shape_vec) \
 do { \
@@ -123,295 +124,234 @@ do { \
   free(data_that); \
 } while (0);
 
+// define basic test of shape, oncpu and ongpu, and data position
+#define TENSOR_SHAPE_TEST(common, device) \
+TEST_F(common##device, shape_test) { \
+  TENSOR_EXPECT_SHAPE(tensor, shape); \
+}
+
+#define TENSOR_ON_DEVICE_TEST(common, device) \
+TEST_F(common##device, ondevice_test) { \
+  TENSOR_EXPECT_ON_##device(tensor); \
+}
+
+#define TENSOR_DATA_ON_DEVICE_TEST(common, device) \
+TEST_F(common##device, data_ondevice_##device) { \
+  TENSOR_DATA_ON_##device(tensor); \
+}
+
+#define TENSOR_CONSTRUCT_BASIC_TEST_SPECIFIC_DEVICE(common, device) \
+  TENSOR_SHAPE_TEST(common, device) \
+  TENSOR_ON_DEVICE_TEST(common, device) \
+  TENSOR_DATA_ON_DEVICE_TEST(common, device)
+
+#define TENSOR_CONSTRUCT_BASIC_TEST(common) \
+  TENSOR_CONSTRUCT_BASIC_TEST_SPECIFIC_DEVICE(common, CPU) \
+  TENSOR_CONSTRUCT_BASIC_TEST_SPECIFIC_DEVICE(common, GPU)
+
+
+// define basic test of shape, oncpu and ongpu, and data position of two devices
+#define TENSOR_SHAPE_TWO_DEVICES_TEST(common, device_from, device_to) \
+TEST_F(common##device_from##2##device_to, shape_test) { \
+  TENSOR_EXPECT_SHAPE(tensor, shape); \
+}
+
+#define TENSOR_ON_DEVICE_TWO_DEVICES_TEST(common, device_from, device_to) \
+TEST_F(common##device_from##2##device_to, ondevice_test) { \
+  TENSOR_EXPECT_ON_##device_from(tensor); \
+}
+
+#define TENSOR_DATA_ON_DEVICE_TWO_DEVICES_TEST(common, device_from, device_to) \
+TEST_F(common##device_from##2##device_to, data_ondevice) { \
+  TENSOR_DATA_ON_##device_from(tensor); \
+}
+
+#define TENSOR_MOVE_OR_COPY_BASIC_TEST_SPECIFIC_DEVICES(common, device_from, device_to) \
+  TENSOR_SHAPE_TWO_DEVICES_TEST(common, device_from, device_to) \
+  TENSOR_ON_DEVICE_TWO_DEVICES_TEST(common, device_from, device_to) \
+  TENSOR_DATA_ON_DEVICE_TWO_DEVICES_TEST(common, device_from, device_to)
+
+#define TENSOR_MOVE_OR_COPY_BASIC_TEST(common) \
+  TENSOR_MOVE_OR_COPY_BASIC_TEST_SPECIFIC_DEVICES(common, CPU, CPU) \
+  TENSOR_MOVE_OR_COPY_BASIC_TEST_SPECIFIC_DEVICES(common, CPU, GPU) \
+  TENSOR_MOVE_OR_COPY_BASIC_TEST_SPECIFIC_DEVICES(common, GPU, CPU) \
+  TENSOR_MOVE_OR_COPY_BASIC_TEST_SPECIFIC_DEVICES(common, GPU, GPU)
+
 /*************************TENSOR_TEST_CONSTRUCT**************************** */
-#define SET_UP_SIX_ELEMENTS_FOR_TEST_CONSTRUCT(device) \
-  std::vector<int> shape {1, 2, 3}; \
-  TENSOR_CONSTRUCT_ON_##device(shape, tensor);
+#define TENSOR_CONSTRUCT_TEST_CLASS(device) \
+  class TensorConstructTest##device : public ::testing::Test { \
+   protected: \
+    void SetUp() override { \
+      tensor = \
+        std::move(std::make_unique<my_tensor::Tensor>(shape, my_tensor::DeviceType::device)); \
+    } \
+    std::vector<int> shape {1, 2, 3}; \
+    std::unique_ptr<my_tensor::Tensor> tensor; \
+  };
 
-TEST(tensor_test_construct, tensor_test_construct_shape_cpu) {
-  SET_UP_SIX_ELEMENTS_FOR_TEST_CONSTRUCT(CPU);
-  TENSOR_EXPECT_SHAPE(tensor, shape);
-}
+TENSOR_CONSTRUCT_TEST_CLASS(CPU);
+TENSOR_CONSTRUCT_TEST_CLASS(GPU);
 
-TEST(tensor_test_construct, tensor_test_construct_shape_gpu) {
-  SET_UP_SIX_ELEMENTS_FOR_TEST_CONSTRUCT(GPU);
-  TENSOR_EXPECT_SHAPE(tensor, shape);
-}
-
-TEST(tensor_test_construct, tensor_test_construct_device_cpu) {
-  SET_UP_SIX_ELEMENTS_FOR_TEST_CONSTRUCT(CPU);
-  TENSOR_EXPECT_ON_CPU(tensor);
-}
-
-TEST(tensor_test_construct, tensor_test_construct_device_gpu) {
-  SET_UP_SIX_ELEMENTS_FOR_TEST_CONSTRUCT(GPU);
-  TENSOR_EXPECT_ON_GPU(tensor);
-}
-
-TEST(tensor_test_construct, tensor_test_construct_data_position_cpu) {
-  SET_UP_SIX_ELEMENTS_FOR_TEST_CONSTRUCT(CPU);
-  TENSOR_DATA_ON_CPU(tensor);
-}
-
-TEST(tensor_test_construct, tensor_test_construct_data_position_gpu) {
-  SET_UP_SIX_ELEMENTS_FOR_TEST_CONSTRUCT(GPU);
-  TENSOR_DATA_ON_GPU(tensor);
-}
+TENSOR_CONSTRUCT_BASIC_TEST(TensorConstructTest)
 /*************************TENSOR_TEST_CONSTRUCT**************************** */
 
 
 
 /**********************TENSOR_TEST_COPY_CONSTRUCT************************** */
-#define SET_UP_SIX_ELEMENTS_COPY_CONSTRUCT(device) \
-  std::vector<int> shape { 1, 2, 3 }; \
-  TENSOR_CONSTRUCT_ON_##device(shape, tensor); \
-  float* data = tensor->GetMutableData(); \
-  auto func = [](int x) -> float { return static_cast<float>(x); }; \
-  SET_DATA_ON_##device(data, 6, func); \
-  TENSOR_CONSTRUCTOR_COPY(another, tensor);
+#define TENSOR_COPY_CONSTRUCT_TEST_CLASS(device) \
+  class TensorCopyConstructTest##device : public ::testing::Test { \
+   protected: \
+    void SetUp() override { \
+      another = \
+        std::move(std::make_unique<my_tensor::Tensor>(shape, my_tensor::DeviceType::device)); \
+      auto func = [](int x) -> float { return x; }; \
+      float *data = another->GetMutableData(); \
+      SET_DATA_ON_##device(data, 6, func); \
+      tensor = \
+        std::move(std::make_unique<my_tensor::Tensor>(*another)); \
+    } \
+    std::vector<int> shape {1, 2, 3}; \
+    std::unique_ptr<my_tensor::Tensor> another; \
+    std::unique_ptr<my_tensor::Tensor> tensor; \
+  };
 
-TEST(tensor_test_copy_construct, tensor_test_copy_construct_shape_cpu) {
-  SET_UP_SIX_ELEMENTS_COPY_CONSTRUCT(CPU);
-  TENSOR_EXPECT_SHAPE(another, shape);
+TENSOR_COPY_CONSTRUCT_TEST_CLASS(CPU);
+TENSOR_COPY_CONSTRUCT_TEST_CLASS(GPU);
+
+TENSOR_CONSTRUCT_BASIC_TEST(TensorCopyConstructTest)
+
+#define TENSOR_COPY_CONSTRUCT_SUCCESSFULLY(device) \
+TEST_F(TensorCopyConstructTest##device, data_copy) { \
+  TENSOR_EXPECT_EQ_DATA_##device##_##device(another, tensor); \
 }
 
-TEST(tensor_test_copy_construct, tensor_test_copy_construct_shape_gpu) {
-  SET_UP_SIX_ELEMENTS_COPY_CONSTRUCT(GPU);
-  TENSOR_EXPECT_SHAPE(another, shape);
-}
-
-TEST(tensor_test_copy_construct, tensor_test_copy_construct_device_cpu) {
-  SET_UP_SIX_ELEMENTS_COPY_CONSTRUCT(CPU);
-  TENSOR_EXPECT_ON_CPU(another);
-}
-
-TEST(tensor_test_copy_construct, tensor_test_copy_construct_device_gpu) {
-  SET_UP_SIX_ELEMENTS_COPY_CONSTRUCT(GPU);
-  TENSOR_EXPECT_ON_GPU(another);
-}
-
-TEST(tensor_test_copy_construct, tensor_test_copy_construct_data_position_cpu) {
-  SET_UP_SIX_ELEMENTS_COPY_CONSTRUCT(CPU);
-  TENSOR_DATA_ON_CPU(another);
-}
-
-TEST(tensor_test_copy_construct, tensor_test_copy_construct_data_position_gpu) {
-  SET_UP_SIX_ELEMENTS_COPY_CONSTRUCT(GPU);
-  TENSOR_DATA_ON_GPU(another);
-}
-
-TEST(tensor_test_copy_construct, tensor_test_copy_construct_data_cpu2cpu) {
-  SET_UP_SIX_ELEMENTS_COPY_CONSTRUCT(CPU);
-  TENSOR_EXPECT_EQ_DATA_CPU_CPU(tensor, another);
-}
-
-TEST(tensor_test_copy_construct, tensor_test_copy_construct_data_gpu2gpu) {
-  SET_UP_SIX_ELEMENTS_COPY_CONSTRUCT(GPU);
-  TENSOR_EXPECT_EQ_DATA_GPU_GPU(tensor, another);
-}
+TENSOR_COPY_CONSTRUCT_SUCCESSFULLY(CPU)
+TENSOR_COPY_CONSTRUCT_SUCCESSFULLY(GPU)
 /**********************TENSOR_TEST_COPY_CONSTRUCT************************** */
-
-
-
-/****************************TENSOR_TEST_COPY****************************** */
-#define SET_UP_SIX_ELEMENTS_FOR_TEST_COPY(device_from, device_to) \
-  std::vector<int> shape { 1, 2, 3 }; \
-  std::vector<int> another_shape { 3, 2, 4 }; \
-  TENSOR_CONSTRUCT_ON_##device_from(shape, tensor); \
-  float* data = tensor->GetMutableData(); \
-  auto func = [](int x) -> float { return static_cast<float>(x); }; \
-  SET_DATA_ON_##device_from(data, 6, func); \
-  TENSOR_CONSTRUCT_ON_##device_to(another_shape, another); \
-  *another = *tensor;
-
-TEST(tensor_test_copy, tensor_test_copy_shape) {
-  SET_UP_SIX_ELEMENTS_FOR_TEST_COPY(CPU, CPU);
-  TENSOR_EXPECT_SHAPE(another, shape);
-}
-
-TEST(tensor_test_copy, tensor_test_copy_device_cpu2cpu) {
-  SET_UP_SIX_ELEMENTS_FOR_TEST_COPY(CPU, CPU);
-  TENSOR_EXPECT_ON_CPU(another);
-  TENSOR_DATA_ON_CPU(another);
-}
-
-TEST(tensor_test_copy, tensor_test_copy_device_cpu2gpu) {
-  SET_UP_SIX_ELEMENTS_FOR_TEST_COPY(CPU, GPU);
-  TENSOR_EXPECT_ON_CPU(another);
-  TENSOR_DATA_ON_CPU(another);
-}
-
-TEST(tensor_test_copy, tensor_test_copy_device_gpu2cpu) {
-  SET_UP_SIX_ELEMENTS_FOR_TEST_COPY(GPU, CPU);
-  TENSOR_EXPECT_ON_GPU(another);
-  TENSOR_DATA_ON_GPU(another);
-}
-
-TEST(tensor_test_copy, tensor_test_copy_device_gpu2gpu) {
-  SET_UP_SIX_ELEMENTS_FOR_TEST_COPY(GPU, GPU);
-  TENSOR_EXPECT_ON_GPU(another);
-  TENSOR_DATA_ON_GPU(another);
-}
-
-TEST(tensor_test_copy, tensor_test_copy_data_cpu2cpu) {
-  SET_UP_SIX_ELEMENTS_FOR_TEST_COPY(CPU, CPU);
-  TENSOR_EXPECT_EQ_DATA_CPU_CPU(tensor, another);
-}
-
-TEST(tensor_test_copy, tensor_test_copy_data_cpu2gpu) {
-  SET_UP_SIX_ELEMENTS_FOR_TEST_COPY(CPU, GPU);
-  TENSOR_EXPECT_EQ_DATA_CPU_CPU(tensor, another);
-}
-
-TEST(tensor_test_copy, tensor_test_copy_data_gpu2cpu) {
-  SET_UP_SIX_ELEMENTS_FOR_TEST_COPY(GPU, CPU);
-  TENSOR_EXPECT_EQ_DATA_GPU_GPU(tensor, another);
-}
-
-TEST(tensor_test_copy, tensor_test_copy_data_gpu2gpu) {
-  SET_UP_SIX_ELEMENTS_FOR_TEST_COPY(GPU, GPU);
-  TENSOR_EXPECT_EQ_DATA_GPU_GPU(tensor, another);
-}
-/****************************TENSOR_TEST_COPY****************************** */
 
 
 /***********************TENSOR_TEST_MOVE_CONSTRUCT************************* */
-#define SET_UP_SIX_ELEMENTS_FOR_TEST_MOVE_CONSTRUCT(device) \
-  std::vector<int> shape {1, 2, 3}; \
-  TENSOR_CONSTRUCT_ON_##device(shape, tensor); \
-  const float *temp_data = tensor->GetData(); \
-  TENSOR_CONSTRUCTOR_MOVE(another, tensor); \
-  const float *tensor_data = tensor->GetData(); \
-  const float *another_data = another->GetData();
+#define TENSOR_MOVE_CONSTRUCT_TEST_CLASS(device) \
+  class TensorMoveConstructTest##device : public ::testing::Test { \
+   protected: \
+    void SetUp() override { \
+      another = \
+        std::move(std::make_unique<my_tensor::Tensor>(shape, my_tensor::DeviceType::device)); \
+      auto func = [](int x) -> float { return x; }; \
+      float *data = another->GetMutableData(); \
+      SET_DATA_ON_##device(data, 6, func); \
+      temp_data = another->GetData(); \
+      tensor = \
+        std::move(std::make_unique<my_tensor::Tensor>(std::move(*another))); \
+    } \
+    std::vector<int> shape {1, 2, 3}; \
+    std::unique_ptr<my_tensor::Tensor> another; \
+    std::unique_ptr<my_tensor::Tensor> tensor; \
+    const float *temp_data; \
+  };
+
+TENSOR_MOVE_CONSTRUCT_TEST_CLASS(CPU)
+TENSOR_MOVE_CONSTRUCT_TEST_CLASS(GPU)
+
+TENSOR_CONSTRUCT_BASIC_TEST(TensorMoveConstructTest)
+
+#define TENSOR_MOVE_CONSTRUCT_SUCCESSFULLY(device) \
+TEST_F(TensorMoveConstructTest##device, data_move) { \
+  EXPECT_EQ(tensor->GetData(), temp_data); \
+  EXPECT_EQ(another->GetData(), nullptr); \
+}
+
+TENSOR_MOVE_CONSTRUCT_SUCCESSFULLY(CPU)
+TENSOR_MOVE_CONSTRUCT_SUCCESSFULLY(GPU)
 
 #define TENSOR_MOVE_SUCCESSFULY \
 do { \
   EXPECT_EQ(another_data, temp_data); \
   EXPECT_EQ(tensor_data, nullptr); \
 } while (0);
-
-TEST(tensor_test_move_construct, tensor_test_move_construct_cpu) {
-  SET_UP_SIX_ELEMENTS_FOR_TEST_MOVE_CONSTRUCT(CPU);
-  TENSOR_MOVE_SUCCESSFULY;
-}
-
-TEST(tensor_test_move_construct, tensor_test_move_construct_gpu) {
-  SET_UP_SIX_ELEMENTS_FOR_TEST_MOVE_CONSTRUCT(GPU);
-  TENSOR_MOVE_SUCCESSFULY;
-}
-
-TEST(tensor_test_move_construct, tensor_test_move_construct_shape_cpu) {
-  SET_UP_SIX_ELEMENTS_FOR_TEST_MOVE_CONSTRUCT(CPU);
-  TENSOR_EXPECT_SHAPE(another, shape);
-}
-
-TEST(tensor_test_move_construct, tensor_test_move_construct_shape_gpu) {
-  SET_UP_SIX_ELEMENTS_FOR_TEST_MOVE_CONSTRUCT(GPU);
-  TENSOR_EXPECT_SHAPE(another, shape);
-}
-
-TEST(tensor_test_move_construct, tensor_test_move_construct_device_cpu) {
-  SET_UP_SIX_ELEMENTS_FOR_TEST_MOVE_CONSTRUCT(CPU);
-  TENSOR_DATA_ON_CPU(another);
-}
-
-TEST(tensor_test_move_construct, tensor_test_move_construct_device_gpu) {
-  SET_UP_SIX_ELEMENTS_FOR_TEST_MOVE_CONSTRUCT(GPU);
-  TENSOR_DATA_ON_GPU(another);
-}
-
-TEST(tensor_test_move_construct, tensor_test_move_construct_data_position_cpu) {
-  SET_UP_SIX_ELEMENTS_FOR_TEST_MOVE_CONSTRUCT(CPU);
-  TENSOR_DATA_ON_CPU(another);
-}
-
-TEST(tensor_test_move_construct, tensor_test_move_construct_data_position_gpu) {
-  SET_UP_SIX_ELEMENTS_FOR_TEST_MOVE_CONSTRUCT(GPU);
-  TENSOR_DATA_ON_GPU(another);
-}
 /***********************TENSOR_TEST_MOVE_CONSTRUCT************************* */
 
 
 
+/****************************TENSOR_TEST_COPY****************************** */
+#define TENSOR_COPY_TEST_CLASS(device_from, device_to) \
+  class TensorCopyTest##device_from##2##device_to : public ::testing::Test { \
+   protected: \
+    void SetUp() override { \
+      another = \
+        std::move(std::make_unique<my_tensor::Tensor>(shape, my_tensor::DeviceType::device_from)); \
+      auto func = [](int x) -> float { return x; }; \
+      float *data = another->GetMutableData(); \
+      SET_DATA_ON_##device_from(data, 6, func); \
+      tensor = \
+        std::move(std::make_unique<my_tensor::Tensor>(other_shape, my_tensor::DeviceType::device_to)); \
+      *tensor = *another; \
+    } \
+    std::vector<int> shape {1, 2, 3}; \
+    std::vector<int> other_shape {2, 3, 4}; \
+    std::unique_ptr<my_tensor::Tensor> another; \
+    std::unique_ptr<my_tensor::Tensor> tensor; \
+  };
+
+TENSOR_COPY_TEST_CLASS(CPU, CPU);
+TENSOR_COPY_TEST_CLASS(CPU, GPU);
+TENSOR_COPY_TEST_CLASS(GPU, CPU);
+TENSOR_COPY_TEST_CLASS(GPU, GPU);
+
+TENSOR_MOVE_OR_COPY_BASIC_TEST(TensorCopyTest)
+
+#define TENSOR_COPY_SUCCESSFULLY(device_from, device_to) \
+TEST_F(TensorCopyTest##device_from##2##device_to, data_copy) { \
+  TENSOR_EXPECT_EQ_DATA_##device_from##_##device_from(another, tensor); \
+}
+
+TENSOR_COPY_SUCCESSFULLY(CPU, CPU);
+TENSOR_COPY_SUCCESSFULLY(CPU, GPU);
+TENSOR_COPY_SUCCESSFULLY(GPU, CPU);
+TENSOR_COPY_SUCCESSFULLY(GPU, GPU);
+/****************************TENSOR_TEST_COPY****************************** */
+
+
+
 /***************************TENSOR_TEST_MOVE******************************* */
-#define SET_UP_SIX_ELEMENTS_TEST_MOVE(device_from, device_to) \
-  std::vector<int> shape {1, 2, 3}; \
-  std::vector<int> another_shape {2, 3, 4}; \
-  TENSOR_CONSTRUCT_ON_##device_from(shape, tensor); \
-  const float *temp_data = tensor->GetData(); \
-  float* data = tensor->GetMutableData(); \
-  auto func = [](int x) -> float { return static_cast<float>(x); }; \
-  SET_DATA_ON_##device_from(data, 6, func); \
-  TENSOR_CONSTRUCTOR_COPY(temp_tensor, tensor); \
-  TENSOR_CONSTRUCT_ON_##device_to(another_shape, another); \
-  *another = std::move(*tensor); \
-  const float *tensor_data = tensor->GetData(); \
-  const float *another_data = another->GetData();
+#define TENSOR_MOVE_TEST_CLASS(device_from, device_to) \
+  class TensorMoveTest##device_from##2##device_to : public ::testing::Test { \
+   protected: \
+    void SetUp() override { \
+      another = \
+        std::move(std::make_unique<my_tensor::Tensor>(shape, my_tensor::DeviceType::device_from)); \
+      auto func = [](int x) -> float { return x; }; \
+      float *data = another->GetMutableData(); \
+      SET_DATA_ON_##device_from(data, 6, func); \
+      temp_data = another->GetData(); \
+      tensor = \
+        std::move(std::make_unique<my_tensor::Tensor>(other_shape, my_tensor::DeviceType::device_to)); \
+      *tensor = std::move(*another); \
+    } \
+    std::vector<int> shape {1, 2, 3}; \
+    std::vector<int> other_shape {2, 3, 4}; \
+    std::unique_ptr<my_tensor::Tensor> another; \
+    std::unique_ptr<my_tensor::Tensor> tensor; \
+    const float *temp_data; \
+  };
 
-TEST(tensor_test_move, tensor_test_move_cpu2cpu) {
-  SET_UP_SIX_ELEMENTS_TEST_MOVE(CPU, CPU);
-  TENSOR_MOVE_SUCCESSFULY;
+TENSOR_MOVE_TEST_CLASS(CPU, CPU)
+TENSOR_MOVE_TEST_CLASS(CPU, GPU)
+TENSOR_MOVE_TEST_CLASS(GPU, CPU)
+TENSOR_MOVE_TEST_CLASS(GPU, GPU)
+
+TENSOR_MOVE_OR_COPY_BASIC_TEST(TensorMoveTest)
+
+#define TENSOR_MOVE_SUCCESSFULLY(device_from, device_to) \
+TEST_F(TensorMoveTest##device_from##2##device_to, data_move) { \
+  EXPECT_EQ(tensor->GetData(), temp_data); \
+  EXPECT_EQ(another->GetData(), nullptr); \
 }
 
-TEST(tensor_test_move, tensor_test_move_cpu2gpu) {
-  SET_UP_SIX_ELEMENTS_TEST_MOVE(CPU, GPU);
-  TENSOR_MOVE_SUCCESSFULY;
-}
-
-TEST(tensor_test_move, tensor_test_move_gpu2cpu) {
-  SET_UP_SIX_ELEMENTS_TEST_MOVE(GPU, CPU);
-  TENSOR_MOVE_SUCCESSFULY;
-}
-
-TEST(tensor_test_move, tensor_test_move_gpu2gpu) {
-  SET_UP_SIX_ELEMENTS_TEST_MOVE(GPU, GPU);
-  TENSOR_MOVE_SUCCESSFULY;
-}
-
-TEST(tensor_test_move, tensor_test_move_shape) {
-  SET_UP_SIX_ELEMENTS_TEST_MOVE(CPU, CPU);
-  TENSOR_EXPECT_SHAPE(another, shape);
-}
-
-TEST(tensor_test_move, tensor_test_move_device_cpu2cpu) {
-  SET_UP_SIX_ELEMENTS_TEST_MOVE(CPU, CPU);
-  TENSOR_EXPECT_ON_CPU(another);
-}
-
-TEST(tensor_test_move, tensor_test_move_device_cpu2gpu) {
-  SET_UP_SIX_ELEMENTS_TEST_MOVE(CPU, GPU);
-  TENSOR_EXPECT_ON_CPU(another);
-}
-
-TEST(tensor_test_move, tensor_test_move_device_gpu2cpu) {
-  SET_UP_SIX_ELEMENTS_TEST_MOVE(GPU, CPU);
-  TENSOR_EXPECT_ON_GPU(another);
-}
-
-TEST(tensor_test_move, tensor_test_move_device_gpu2gpu) {
-  SET_UP_SIX_ELEMENTS_TEST_MOVE(GPU, GPU);
-  TENSOR_EXPECT_ON_GPU(another);
-}
-
-TEST(tensor_test_move, tensor_test_move_data_cpu2cpu) {
-  SET_UP_SIX_ELEMENTS_TEST_MOVE(CPU, CPU);
-  TENSOR_EXPECT_EQ_DATA_CPU_CPU(another, temp_tensor);
-}
-
-TEST(tensor_test_move, tensor_test_move_data_cpu2gpu) {
-  SET_UP_SIX_ELEMENTS_TEST_MOVE(CPU, GPU);
-  TENSOR_EXPECT_EQ_DATA_CPU_CPU(another, temp_tensor);
-}
-
-TEST(tensor_test_move, tensor_test_move_data_gpu2cpu) {
-  SET_UP_SIX_ELEMENTS_TEST_MOVE(GPU, CPU);
-  TENSOR_EXPECT_EQ_DATA_GPU_GPU(another, temp_tensor);
-}
-
-TEST(tensor_test_move, tensor_test_move_data_gpu2gpu) {
-  SET_UP_SIX_ELEMENTS_TEST_MOVE(GPU, GPU);
-  TENSOR_EXPECT_EQ_DATA_GPU_GPU(another, temp_tensor);
-}
+TENSOR_MOVE_SUCCESSFULLY(CPU, CPU)
+TENSOR_MOVE_SUCCESSFULLY(CPU, GPU)
+TENSOR_MOVE_SUCCESSFULLY(GPU, CPU)
+TENSOR_MOVE_SUCCESSFULLY(GPU, GPU)
 /***************************TENSOR_TEST_MOVE******************************* */
 
 
@@ -423,7 +363,7 @@ TEST(tensor_test_move, tensor_test_move_data_gpu2gpu) {
   float* data = tensor->GetMutableData(); \
   auto func = [](int x) -> float { return static_cast<float>(x); }; \
   SET_DATA_ON_##device(data, 6, func); \
-  auto another = std::make_shared<my_tensor::Tensor>(tensor->cpu()); \
+  auto another = std::make_unique<my_tensor::Tensor>(tensor->cpu()); \
 
 TEST(tensor_test_cpu, tensor_test_cpu_on_cpu) {
   SET_UP_SIX_ELEMENTS_FOR_TEST_CPU(CPU);
@@ -458,7 +398,7 @@ TEST(tensor_test_cpu, tensor_test_cpu_data_on_gpu) {
   float* data = tensor->GetMutableData(); \
   auto func = [](int x) -> float { return static_cast<float>(x); }; \
   SET_DATA_ON_##device(data, 6, func); \
-  auto another = std::make_shared<my_tensor::Tensor>(tensor->gpu());
+  auto another = std::make_unique<my_tensor::Tensor>(tensor->gpu());
 
 TEST(tensor_test_gpu, tensor_test_gpu_on_cpu) {
   SET_UP_SIX_ELEMENTS_FOR_TEST_GPU(CPU);
