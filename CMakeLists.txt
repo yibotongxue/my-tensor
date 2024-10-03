@@ -36,6 +36,7 @@ include_directories(third_parts/googletest/googlemock/include)  # 包含gmock等
 
 # include directories
 include_directories(include)
+include_directories(test/include)
 
 # find the library of gtest
 find_library(gtest libgtest.a third_parts/googletest/lib)
