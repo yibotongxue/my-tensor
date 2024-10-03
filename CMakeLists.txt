@@ -69,39 +69,24 @@ add_library(relu_lib STATIC src/relu.cu)
 
 target_link_libraries(relu_lib PUBLIC tensor_lib)
 
-add_executable(relu_test test/relu-test.cu)
-add_test(relu_google_test relu_test)
-
-set_target_properties(relu_test PROPERTIES CUDA_ARCHITECTURES native)
-set_target_properties(relu_test PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-
-target_link_libraries(relu_test
-    PRIVATE
-    ${gtest}
-    ${gtest_main}
-    ${gmock}
-    ${gmock_main}
-    relu_lib
-    pthread
-)
-
 add_library(sigmoid_lib STATIC src/sigmoid.cu)
 
 target_link_libraries(sigmoid_lib PUBLIC tensor_lib)
 
-add_executable(sigmoid_test test/sigmoid-test.cu)
-add_test(sigmoid_google_test sigmoid_test)
+add_executable(layer_test test/layer-test.cu)
+add_test(layer_google_test layer_test)
 
-set_target_properties(sigmoid_test PROPERTIES CUDA_ARCHITECTURES native)
-set_target_properties(sigmoid_test PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+set_target_properties(layer_test PROPERTIES CUDA_ARCHITECTURES native)
+set_target_properties(layer_test PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
-target_link_libraries(sigmoid_test
+target_link_libraries(layer_test
     PRIVATE
     ${gtest}
     ${gtest_main}
     ${gmock}
     ${gmock_main}
     sigmoid_lib
+    relu_lib
     pthread
 )
 

@@ -44,6 +44,7 @@
         cudaMemcpy(data, tensor_ptr->GetData(), byte_size, cudaMemcpyHostToDevice); \
     EXPECT_EQ(error, cudaSuccess);                                                  \
     cudaFree(data);                                                                 \
+    cudaDeviceSynchronize();                                                        \
   } while (0);
 
 #define TENSOR_DATA_ON_GPU(tensor_ptr)                                                \
@@ -56,6 +57,7 @@
         cudaMemcpy(data, tensor_ptr->GetData(), byte_size, cudaMemcpyDeviceToDevice); \
     EXPECT_EQ(error, cudaSuccess);                                                    \
     cudaFree(data);                                                                   \
+    cudaDeviceSynchronize();                                                          \
   } while (0);
 
 #define DATA_EXPECT_EQ(data1, data2, n) \
@@ -85,17 +87,24 @@
   {                                                                             \
     DEFINE_DATA_ON_CPU(temp_data, n, func);                                     \
     cudaMemcpy(data_ptr, temp_data, n * sizeof(float), cudaMemcpyHostToDevice); \
+    cudaDeviceSynchronize();                                                    \
     free(temp_data);                                                            \
   } while (0);
 
-#define DEFINE_DATA_ON_GPU_FROM_CPU(data_ptr_gpu, data_ptr_cpu, n) \
-  float *data_ptr_gpu = nullptr;                                   \
-  cudaMalloc(&data_ptr_gpu, n * sizeof(float));                    \
-  cudaMemcpy(data_ptr_gpu, data_ptr_cpu, n * sizeof(float), cudaMemcpyHostToDevice);
+#define DEFINE_DATA_ON_GPU_FROM_CPU(data_ptr_gpu, data_ptr_cpu, n)                   \
+  float *data_ptr_gpu = nullptr;                                                     \
+  cudaMalloc(&data_ptr_gpu, n * sizeof(float));                                      \
+  cudaMemcpy(data_ptr_gpu, data_ptr_cpu, n * sizeof(float), cudaMemcpyHostToDevice); \
+  cudaDeviceSynchronize();
 
-#define DEFINE_DATA_ON_CPU_FROM_GPU(data_ptr_cpu, data_ptr_gpu, n)            \
-  float *data_ptr_cpu = reinterpret_cast<float *>(malloc(n * sizeof(float))); \
-  cudaMemcpy(data_ptr_cpu, data_ptr_gpu, n * sizeof(float), cudaMemcpyDeviceToHost);
+#define DEFINE_DATA_ON_CPU_FROM_CPU(data_ptr_dst, data_ptr_src, n)            \
+  float *data_ptr_dst = reinterpret_cast<float *>(malloc(n * sizeof(float))); \
+  memcpy(data_ptr_dst, data_ptr_src, n * sizeof(float))
+
+#define DEFINE_DATA_ON_CPU_FROM_GPU(data_ptr_cpu, data_ptr_gpu, n)                   \
+  float *data_ptr_cpu = reinterpret_cast<float *>(malloc(n * sizeof(float)));        \
+  cudaMemcpy(data_ptr_cpu, data_ptr_gpu, n * sizeof(float), cudaMemcpyDeviceToHost); \
+  cudaDeviceSynchronize();
 
 #define TENSOR_EXPECT_EQ_DATA_CPU_CPU(tensor_this, tensor_that)        \
   do                                                                   \
@@ -137,4 +146,4 @@
     free(data_that);                                                   \
   } while (0);
 
-#endif  // TEST_TEST_UTILS_CUH_
+#endif // TEST_TEST_UTILS_CUH_
