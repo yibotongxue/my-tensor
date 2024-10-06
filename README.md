@@ -55,4 +55,8 @@ make -j4 # 如果CPU核心数小于4,应该修改-j选项
 
 ### 测试样例
 
-测试代码在 `test` 目录下的两个源文件中。`tensor-test.cu` 测试 `Tensor` 类的方法，有18个test suite，70个test case，分别测试类型转换构造函数、赋值构造函数、移动构造函数、复制赋值、移动赋值、`cpu` 方法、 `gpu` 方法。`laer-test.cu` 测试两个 `Layer` 子类的方法，有4个test suite，8个test case，分别测试 `Relu` 和 `Sigmoid` 类的 `Forward` 和 `Backward` 方法，其中 `Backward` 方法的测试是通过 10000 个随即生成的数据，通过每个数据加 0.001，通过微分求出梯度，再与 `Backward` 方法求出的梯度比较。
+测试代码在 `test` 目录下的两个源文件中。
+
+1. `tensor-test.cu` 测试 `Tensor` 类的方法，有18个test suite，70个test case，分别测试类型转换构造函数、赋值构造函数、移动构造函数、复制赋值、移动赋值、`cpu` 方法、 `gpu` 方法，对每一个方法的测试一般是形状是否正确、设备类型是否设置正确、数据是否在应该在的设备上（这个通过 `cudaMemcpy` 返回的错误代码判断）、数据是否拷贝或者移动成功（类型转换函数没有这个测试）等。
+2. `laer-test.cu` 测试两个 `Layer` 子类的方法，有4个test suite，8个test case，分别测试 `Relu` 和 `Sigmoid` 类的 `Forward` 和 `Backward` 方法，其中 `Backward` 方法的测试是通过 10000 个随即生成的数据，通过每个数据加 0.001，通过微分求出梯度，再与 `Backward` 方法求出的梯度比较。
+
