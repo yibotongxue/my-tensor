@@ -78,8 +78,28 @@ void AddGPU(const float *data_src, float *data_dst, const float delta, int n)
     top_data = nullptr;                                                    \
     for (int i = 0; i < 10000; i++)                                        \
     {                                                                      \
-      float actual = cpu_top_data[i] + 1e-1;                               \
-      float expect = std::max(cpu_bottom_data[i], 0.0f) + 1e-1;            \
+      float actual = cpu_top_data[i];                                      \
+      float expect = std::max(cpu_bottom_data[i], 0.0f);                   \
+      EXPECT_NEAR(actual, expect, 0.001);                                  \
+    }                                                                      \
+    free(cpu_bottom_data);                                                 \
+    free(cpu_top_data);                                                    \
+  }
+
+#define SIGMOID_FORWARD_TEST(device)                                       \
+  TEST_F(SigmoidTest##device, forward_test)                                \
+  {                                                                        \
+    EXPECT_NO_THROW(layer->Forward(bottom, top));                          \
+    const float *bottom_data = bottom->GetData();                          \
+    DEFINE_DATA_ON_CPU_FROM_##device(cpu_bottom_data, bottom_data, 10000); \
+    bottom_data = nullptr;                                                 \
+    const float *top_data = top->GetData();                                \
+    DEFINE_DATA_ON_CPU_FROM_##device(cpu_top_data, top_data, 10000);       \
+    top_data = nullptr;                                                    \
+    for (int i = 0; i < 10000; i++)                                        \
+    {                                                                      \
+      float actual = cpu_top_data[i];                                      \
+      float expect = 1.0f / (1.0f + std::exp(-cpu_bottom_data[i]));        \
       EXPECT_NEAR(actual, expect, 0.001);                                  \
     }                                                                      \
     free(cpu_bottom_data);                                                 \
@@ -106,9 +126,8 @@ void AddGPU(const float *data_src, float *data_dst, const float delta, int n)
     for (int i = 0; i < 10000; i++)                                                                                                       \
     {                                                                                                                                     \
       float expect = ((static_cast<double>(cpu_top_delta_data[i]) - static_cast<double>(cpu_top_data[i])) / static_cast<double>(0.001)) * \
-                         static_cast<double>(cpu_top_diff[i]) +                                                                           \
-                     1e-1;                                                                                                                \
-      float actual = cpu_bottom_diff[i] + 1e-1;                                                                                           \
+                     static_cast<double>(cpu_top_diff[i]);                                                                                \
+      float actual = cpu_bottom_diff[i];                                                                                                  \
       EXPECT_NEAR(actual, expect, 0.001);                                                                                                 \
     }                                                                                                                                     \
     free(cpu_bottom_diff);                                                                                                                \
@@ -117,41 +136,27 @@ void AddGPU(const float *data_src, float *data_dst, const float delta, int n)
     free(cpu_top_delta_data);                                                                                                             \
   }
 
-#define SIGMOID_FORWARD_TEST(device)                                       \
-  TEST_F(SigmoidTest##device, forward_test)                                \
-  {                                                                        \
-    EXPECT_NO_THROW(layer->Forward(bottom, top));                          \
-    const float *bottom_data = bottom->GetData();                          \
-    DEFINE_DATA_ON_CPU_FROM_##device(cpu_bottom_data, bottom_data, 10000); \
-    bottom_data = nullptr;                                                 \
-    const float *top_data = top->GetData();                                \
-    DEFINE_DATA_ON_CPU_FROM_##device(cpu_top_data, top_data, 10000);       \
-    top_data = nullptr;                                                    \
-    for (int i = 0; i < 10000; i++)                                        \
-    {                                                                      \
-      float actual = cpu_top_data[i];                                      \
-      float expect = 1.0f / (1.0f + std::exp(-cpu_bottom_data[i]));        \
-      EXPECT_NEAR(actual, expect, 0.001);                                  \
-    }                                                                      \
-    free(cpu_bottom_data);                                                 \
-    free(cpu_top_data);                                                    \
-  }
-
+// Define test class
 LAYER_TEST_CLASS(Relu, CPU)
 LAYER_TEST_CLASS(Relu, GPU)
 
+// Relu forward test on cpu and gpu
 RELU_FORWARD_TEST(CPU)
 RELU_FORWARD_TEST(GPU)
 
+// Relu backward test on cpu and gpu
 BACKWARD_TEST(Relu, CPU);
 BACKWARD_TEST(Relu, GPU);
 
+// Define test class
 LAYER_TEST_CLASS(Sigmoid, CPU)
 LAYER_TEST_CLASS(Sigmoid, GPU)
 
+// Sigmoid forward test on cpu and gpu
 SIGMOID_FORWARD_TEST(CPU)
 SIGMOID_FORWARD_TEST(GPU)
 
+// Sigmoid forward test on cpu and gpu
 BACKWARD_TEST(Sigmoid, CPU)
 BACKWARD_TEST(Sigmoid, GPU)
 

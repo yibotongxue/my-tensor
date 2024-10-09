@@ -7,6 +7,7 @@
 #include <memory>
 
 namespace my_tensor {
+// Relu class, implements Layer.
 class Relu : public Layer {
  public:
   Relu() = default;
@@ -18,6 +19,7 @@ class Relu : public Layer {
 
   virtual ~Relu() = default;
 
+  // Override forward and backward methods of Layer class.
   void Forward(
     const std::shared_ptr<Tensor> bottom, std::shared_ptr<Tensor> top) override;
   void Backward(
