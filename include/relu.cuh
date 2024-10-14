@@ -8,20 +8,21 @@
 
 namespace my_tensor {
 // Relu class, implements Layer.
-class Relu : public Layer {
+template <typename T=float>
+class Relu : public Layer<T> {
  public:
   Relu() = default;
 
-  Relu(const Relu&) = delete;
-  Relu& operator=(const Relu&) = delete;
-  Relu(Relu&&) = delete;
-  Relu& operator=(Relu&&) = delete;
+  Relu(const Relu<T>&) = delete;
+  Relu<T>& operator=(const Relu<T>&) = delete;
+  Relu(Relu<T>&&) = delete;
+  Relu<T>& operator=(Relu<T>&&) = delete;
 
   virtual ~Relu() = default;
 
   // Override forward and backward methods of Layer class.
-  void Forward(const TensorPtr& bottom, TensorPtr& top) override;
-  void Backward(const TensorPtr& top, TensorPtr& bottom) override;
+  void Forward(const TensorPtr<T>& bottom, TensorPtr<T>& top) override;
+  void Backward(const TensorPtr<T>& top, TensorPtr<T>& bottom) override;
 };
 }  // namespace my_tensor
 

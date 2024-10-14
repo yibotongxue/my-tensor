@@ -5,27 +5,31 @@
 namespace my_tensor {
 
 namespace {
+template <typename T>
 struct ReluOperator {
-  __device__ __host__ float operator()(float x) {
+  __device__ __host__ T operator()(T x) {
     return x > 0 ? x : 0;
   }
 };
 
+template <typename T>
 struct ReluGradOperator {
-  __device__ __host__ float operator()(float data, float diff) {
+  __device__ __host__ T operator()(T data, T diff) {
     return data > 0 ? diff : 0;
   }
 };
 }  // namespace
 
-void Relu::Forward(const TensorPtr& bottom, TensorPtr& top) {
+template <typename T>
+void Relu<T>::Forward(const TensorPtr<T>& bottom, TensorPtr<T>& top) {
   thrust::transform(bottom->GetData().begin(), bottom->GetData().end(),
-    top->GetMutableData().begin(), ReluOperator());
+    top->GetMutableData().begin(), ReluOperator<T>());
 }
 
-void Relu::Backward(const TensorPtr& top, TensorPtr& bottom) {
+template <typename T>
+void Relu<T>::Backward(const TensorPtr<T>& top, TensorPtr<T>& bottom) {
   thrust::transform(bottom->GetData().begin(), bottom->GetData().end(),
-    top->GetDiff().begin(), bottom->GetMutableDiff().begin(), ReluGradOperator());
+    top->GetDiff().begin(), bottom->GetMutableDiff().begin(), ReluGradOperator<T>());
 }
 
 }  // namespace my_tensor

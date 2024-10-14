@@ -44,35 +44,37 @@ find_library(gtest_main libgtest_main.a third_parts/googletest/lib)
 find_library(gmock libgmock.a third_parts/googletest/lib)
 find_library(gmock_main libgmock_main.a third_parts/googletest/lib)
 
+# 定义一个函数，名为 set_cuda_properties
+function(set_cuda_properties target_name)
+  # 设置 CUDA 架构为 native
+  set_target_properties(${target_name} PROPERTIES CUDA_ARCHITECTURES native)
+  
+  # 开启 CUDA 分离式编译
+  set_target_properties(${target_name} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+endfunction()
+
+function(link_googletest target_name)
+    cmake_parse_arguments(PARSE_ARGV 0 "ARG" "" "" "LIBRARIES")
+    target_link_libraries(${target_name}
+    PRIVATE
+    ${gtest}
+    ${gtest_main}
+    ${gmock}
+    ${gmock_main}
+    )  
+    if(ARG_LIBRARIES)
+        target_link_libraries(${target_name} PRIVATE ${ARG_LIBRARIES})
+    endif()
+    target_link_libraries(${target_name} PRIVATE pthread)
+endfunction()
+    
 # enable test
 enable_testing()
 
-add_library(tensor_lib STATIC src/tensor.cu)
-
-add_library(relu_lib STATIC src/relu.cu)
-
-target_link_libraries(relu_lib PUBLIC tensor_lib)
-
-add_library(sigmoid_lib STATIC src/sigmoid.cu)
-
-target_link_libraries(sigmoid_lib PUBLIC tensor_lib)
-
-# add_executable(layer_test test/layer-test.cu)
-# add_test(layer_google_test layer_test)
-
-# set_target_properties(layer_test PROPERTIES CUDA_ARCHITECTURES native)
-# set_target_properties(layer_test PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-
-# target_link_libraries(layer_test
-#     PRIVATE
-#     ${gtest}
-#     ${gtest_main}
-#     ${gmock}
-#     ${gmock_main}
-#     sigmoid_lib
-#     relu_lib
-#     pthread
-# )
+add_executable(tensor_test src/tensor.cu test/tensor-test.cu)
+add_test(tensor_test tensor_test)
+set_cuda_properties(tensor_test)
+link_googletest(tensor_test)
 
 # add the main target
 add_executable(my_tensor main.cpp)
