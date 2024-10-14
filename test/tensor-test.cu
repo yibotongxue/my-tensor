@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <tensor.cuh>
 #include <error.h>
-#include <test-utils.cuh>
+#include <tensor/tensor-utils.cuh>
 #include <iostream>
 
 class TensorConstructNoDataTest : public ::testing::Test {

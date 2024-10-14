@@ -76,5 +76,10 @@ add_test(tensor_test tensor_test)
 set_cuda_properties(tensor_test)
 link_googletest(tensor_test)
 
+add_executable(relu_test src/tensor.cu src/relu.cu test/relu-test.cu)
+add_test(relu_test relu_test)
+set_cuda_properties(relu_test)
+link_googletest(relu_test)
+
 # add the main target
 add_executable(my_tensor main.cpp)
