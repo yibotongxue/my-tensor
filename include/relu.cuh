@@ -20,10 +20,8 @@ class Relu : public Layer {
   virtual ~Relu() = default;
 
   // Override forward and backward methods of Layer class.
-  void Forward(
-    const std::shared_ptr<Tensor> bottom, std::shared_ptr<Tensor> top) override;
-  void Backward(
-    const std::shared_ptr<Tensor> top, std::shared_ptr<Tensor> bottom) override;
+  void Forward(const TensorPtr& bottom, TensorPtr& top) override;
+  void Backward(const TensorPtr& top, TensorPtr& bottom) override;
 };
 }  // namespace my_tensor
 

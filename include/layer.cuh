@@ -21,10 +21,11 @@ class Layer {
   virtual ~Layer() = default;
 
   // Pure virtual methods, forward and backward.
-  virtual void Forward(
-    const std::shared_ptr<Tensor> bottom, std::shared_ptr<Tensor> top) = 0;
-  virtual void Backward(
-    const std::shared_ptr<Tensor> top, std::shared_ptr<Tensor> bottome) = 0;
+  virtual void Forward(const TensorPtr& bottom, TensorPtr& top) = 0;
+  virtual void Backward(const TensorPtr& top, TensorPtr& bottome) = 0;
+
+ protected:
+  std::vector<TensorPtr> params;
 };
 
 // Layer pointer.

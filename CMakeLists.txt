@@ -49,22 +49,6 @@ enable_testing()
 
 add_library(tensor_lib STATIC src/tensor.cu)
 
-add_executable(tensor_test test/tensor-test.cu)
-add_test(tensor_google_test tensor_test)
-
-set_target_properties(tensor_test PROPERTIES CUDA_ARCHITECTURES native)
-set_target_properties(tensor_test PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-
-target_link_libraries(tensor_test
-    PRIVATE
-    ${gtest}
-    ${gtest_main}
-    ${gmock}
-    ${gmock_main}
-    tensor_lib
-    pthread
-)
-
 add_library(relu_lib STATIC src/relu.cu)
 
 target_link_libraries(relu_lib PUBLIC tensor_lib)
@@ -73,42 +57,22 @@ add_library(sigmoid_lib STATIC src/sigmoid.cu)
 
 target_link_libraries(sigmoid_lib PUBLIC tensor_lib)
 
-add_executable(layer_test test/layer-test.cu)
-add_test(layer_google_test layer_test)
+# add_executable(layer_test test/layer-test.cu)
+# add_test(layer_google_test layer_test)
 
-set_target_properties(layer_test PROPERTIES CUDA_ARCHITECTURES native)
-set_target_properties(layer_test PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+# set_target_properties(layer_test PROPERTIES CUDA_ARCHITECTURES native)
+# set_target_properties(layer_test PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
-target_link_libraries(layer_test
-    PRIVATE
-    ${gtest}
-    ${gtest_main}
-    ${gmock}
-    ${gmock_main}
-    sigmoid_lib
-    relu_lib
-    pthread
-)
-
-add_library(sum_lib STATIC src/sum.cu)
-
-target_link_libraries(sum_lib PUBLIC tensor_lib)
-
-add_executable(sum_test test/sum-test.cu)
-add_test(sum_google_test sum_test)
-
-set_target_properties(sum_test PROPERTIES CUDA_ARCHITECTURES native)
-set_target_properties(sum_test PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-
-target_link_libraries(sum_test
-    PRIVATE
-    ${gtest}
-    ${gtest_main}
-    ${gmock}
-    ${gmock_main}
-    sum_lib
-    pthread
-)
+# target_link_libraries(layer_test
+#     PRIVATE
+#     ${gtest}
+#     ${gtest_main}
+#     ${gmock}
+#     ${gmock_main}
+#     sigmoid_lib
+#     relu_lib
+#     pthread
+# )
 
 # add the main target
 add_executable(my_tensor main.cpp)

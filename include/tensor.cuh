@@ -3,17 +3,20 @@
 
 #include <vector>
 #include <string>
+#include <thrust/device_vector.h>
 
 namespace my_tensor {
-// Device type
-enum class DeviceType { CPU, GPU };
+
+class Tensor;
+
+using TensorPtr = std::shared_ptr<Tensor>;
 
 // Tensor class
 class Tensor {
  public:
   // The explicit constructors.
   explicit Tensor(
-    const std::vector<int>& shape, DeviceType device_type = DeviceType::CPU);
+    const std::vector<int>& shape);
 
   // The Tensor is copable.
   Tensor(const Tensor& tensor);
@@ -22,40 +25,24 @@ class Tensor {
   Tensor& operator=(Tensor&& tensor);
 
   // The destructors, which will free the dynamic allocated memory.
-  ~Tensor();
-
-  // Return same but on specific device.
-  Tensor cpu();
-  Tensor gpu();
+  ~Tensor() = default;
 
   // Get methods.
-  const float* GetData() const { return data_; }
-  float* GetMutableData() { return data_; }
-  const float* GetDiff() const { return diff_; }
-  float* GetMutableDiff() { return diff_; }
+  const thrust::device_vector<float>& GetData() const { return data_; }
+  thrust::device_vector<float>& GetMutableData() { return data_; }
+  const thrust::device_vector<float>& GetDiff() const { return diff_; }
+  thrust::device_vector<float>& GetMutableDiff() { return diff_; }
 
   const std::vector<int> GetShape() const { return shape_; }
 
   int GetSize() const { return size_; }
-  std::size_t GetByteSize() const { return size_ * sizeof(float); }
-
-  // Check device.
-  bool OnCPU() const { return device_type_ == DeviceType::CPU; }
-  bool OnGPU() const { return device_type_ == DeviceType::GPU; }
 
  private:
-  DeviceType device_type_;
-  float* data_;
-  float* diff_;
   std::vector<int> shape_;
   int size_;
-
-  // Helper methods
-  void CopyData(const Tensor& tensor, std::size_t cnt);
-  void FreeMemory();
-  void AllocateMemory();
-  Tensor Clone(DeviceType device_type);
-};
+  thrust::device_vector<float> data_;
+  thrust::device_vector<float> diff_;
+};  // class Tensor
 }  // namespace my_tensor
 
 #endif  // INCLUDE_TENSOR_CUH_
