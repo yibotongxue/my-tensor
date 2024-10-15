@@ -59,7 +59,7 @@ set_cuda_properties(tensor_test)
 link_googletest(tensor_test)
 add_test(NAME tensor_test COMMAND tensor_test)
 
-add_executable(relu_test src/tensor.cu src/relu.cu test/relu-test.cu)
+add_executable(relu_test src/tensor.cu src/layer.cu src/relu.cu test/relu-test.cu)
 set_cuda_properties(relu_test)
 link_googletest(relu_test)
 add_test(NAME relu_test COMMAND relu_test)

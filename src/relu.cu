@@ -32,6 +32,5 @@ void Relu<T>::Backward(const TensorPtr<T>& top, TensorPtr<T>& bottom) {
     top->GetDiff().begin(), bottom->GetMutableDiff().begin(), ReluGradOperator<T>());
 }
 
-template class Layer<>;
 template class Relu<>;
 }  // namespace my_tensor
