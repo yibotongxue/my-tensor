@@ -5,9 +5,14 @@
 
 namespace my_tensor {
 class ShapeError : public std::runtime_error {
-public:
+ public:
   using runtime_error::runtime_error;
 };  // class ShapeError
+
+class BlasError : public std::runtime_error {
+ public:
+  using runtime_error::runtime_error;
+};
 }  // namespace my_tensor
 
 #endif  // INCLUDE_ERROR_H_

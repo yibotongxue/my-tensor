@@ -35,6 +35,11 @@ class Tensor {
   const thrust::device_vector<T>& GetDiff() const { return diff_; }
   thrust::device_vector<T>& GetMutableDiff() { return diff_; }
 
+  const T* GetDataRowPointer() const { return data_.data().get(); }
+  T* GetDataRowPointer() { return data_.data().get(); }
+  const T* GetDiffRowPointer() const { return diff_.data().get(); }
+  T* GetDiffRowPointer() { return diff_.data().get(); }
+
   const std::vector<int>& GetShape() const { return shape_; }
 
   int GetSize() const { return size_; }
