@@ -56,12 +56,16 @@ endfunction()
 enable_testing()
 
 # Define source files
+set(VECTOR_SRC src/synced-vector.cu)
 set(TENSOR_SRC src/tensor.cu)
 set(LAYER_SRC src/layer.cu)
 set(RELU_SRC src/relu.cu)
 set(SIGMOID_SRC src/sigmoid.cu)
 
 # Add libraries
+add_library(vector_lib ${VECTOR_SRC})
+set_cuda_properties(vector_lib)
+
 add_library(tensor_lib ${TENSOR_SRC})
 set_cuda_properties(tensor_lib)
 
