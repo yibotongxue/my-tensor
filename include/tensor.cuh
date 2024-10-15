@@ -44,6 +44,7 @@ class Tensor {
 
   int GetSize() const { return size_; }
 
+  void Reshape(const std::vector<int>& shape);
   void Clear();
 
  private:

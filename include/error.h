@@ -4,6 +4,11 @@
 #include <stdexcept>
 
 namespace my_tensor {
+class VectorError : public std::runtime_error {
+ public:
+  using runtime_error::runtime_error;
+};  // class VectorError
+
 class ShapeError : public std::runtime_error {
  public:
   using runtime_error::runtime_error;

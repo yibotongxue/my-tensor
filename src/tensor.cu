@@ -81,6 +81,12 @@ void Tensor<T>::SetDiff(std::vector<T>&& diff) {
 }
 
 template <typename T>
+void Tensor<T>::Reshape(const std::vector<int>& shape) {
+  shape_ = shape;
+  CheckShape();
+}
+
+template <typename T>
 void Tensor<T>::Clear() {
   shape_ = {0};
   size_ = 0;
