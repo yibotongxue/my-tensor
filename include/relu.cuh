@@ -24,6 +24,8 @@ class Relu : public Layer<T> {
   void Forward(const TensorPtr<T>& bottom, TensorPtr<T>& top) override;
   void Backward(const TensorPtr<T>& top, TensorPtr<T>& bottom) override;
 };
+
+extern template class my_tensor::Relu<>;
 }  // namespace my_tensor
 
 

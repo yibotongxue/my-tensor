@@ -30,4 +30,7 @@ void Sigmoid<T>::Backward(const TensorPtr<T>& top, TensorPtr<T>& bottom) {
   thrust::transform(top->GetDiff().begin(), top->GetDiff().end(),
     top->GetData().begin(), bottom->GetMutableDiff().begin(), SigmoidGradOperator<T>());
 }
+
+template class Layer<>;
+template class Sigmoid<>;
 }  // namespace my_tensor

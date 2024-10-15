@@ -1,85 +1,68 @@
-cmake_minimum_required(VERSION 3.24) # set the minimun version of cmake
-project(my_tensor VERSION 0.1.0 LANGUAGES C CXX CUDA) # the project name, version and language
+cmake_minimum_required(VERSION 3.24)
+project(my_tensor VERSION 0.1.0 LANGUAGES C CXX CUDA)
 
-# set default build type to debug
+# Set default build type to debug
 if(CMAKE_BUILD_TYPE STREQUAL "")
     set(CMAKE_BUILD_TYPE "Debug")
 endif()
 
-# define DEBUG when build in debug type
+# Define DEBUG when building in debug type
 if (CMAKE_BUILD_TYPE STREQUAL Debug)
     add_definitions(-DDEBUG)
 endif()
 
-# set the cxx standard to cxx20
+# Set the CXX standard to CXX20
 set(CMAKE_CXX_STANDARD 20)
-# require the cxx standard
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# check CUDA language
-include(CheckLanguage)
-check_language(CUDA)
-
-# find CUDAToolkit package
+# Find CUDA Toolkit package
 find_package(CUDAToolkit REQUIRED)
 
-# include the head files in CUDAToolkit include directories
+# Include CUDA Toolkit directories
 include_directories(${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
 
-# set the nvcc compile flags
-set(CUDA_NVCC_FLAGS "-g -G")
+# Set NVCC compile flags
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -g -G")
 
-# include gtest include directories
-include_directories(third_parts/googletest)  # 编译gtest
-include_directories(third_parts/googletest/googletest/include)  # 包含gtest等头文件
-include_directories(third_parts/googletest/googlemock/include)  # 包含gmock等头文件
+# Include gtest directories
+include_directories(third_parts/googletest)
+include_directories(third_parts/googletest/googletest/include)
+include_directories(third_parts/googletest/googlemock/include)
 
-# include directories
+# Include directories
 include_directories(include)
 include_directories(test/include)
 
-# find the library of gtest
-find_library(gtest libgtest.a third_parts/googletest/lib)
-find_library(gtest_main libgtest_main.a third_parts/googletest/lib)
-find_library(gmock libgmock.a third_parts/googletest/lib)
-find_library(gmock_main libgmock_main.a third_parts/googletest/lib)
+# Find gtest libraries
+find_library(gtest libgtest.a PATHS third_parts/googletest/lib)
+find_library(gtest_main libgtest_main.a PATHS third_parts/googletest/lib)
+find_library(gmock libgmock.a PATHS third_parts/googletest/lib)
+find_library(gmock_main libgmock_main.a PATHS third_parts/googletest/lib)
 
-# 定义一个函数，名为 set_cuda_properties
+# Set CUDA properties function
 function(set_cuda_properties target_name)
-  # 设置 CUDA 架构为 native
   set_target_properties(${target_name} PROPERTIES CUDA_ARCHITECTURES native)
-  
-  # 开启 CUDA 分离式编译
   set_target_properties(${target_name} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 endfunction()
 
+# Link gtest function
 function(link_googletest target_name)
-    cmake_parse_arguments(PARSE_ARGV 0 "ARG" "" "" "LIBRARIES")
-    target_link_libraries(${target_name}
-    PRIVATE
-    ${gtest}
-    ${gtest_main}
-    ${gmock}
-    ${gmock_main}
-    )  
-    if(ARG_LIBRARIES)
-        target_link_libraries(${target_name} PRIVATE ${ARG_LIBRARIES})
-    endif()
-    target_link_libraries(${target_name} PRIVATE pthread)
+    target_link_libraries(${target_name} PRIVATE ${gtest} ${gtest_main} ${gmock} ${gmock_main} pthread)
 endfunction()
-    
-# enable test
+
+# Enable testing
 enable_testing()
 
+# Add executables and tests
 add_executable(tensor_test src/tensor.cu test/tensor-test.cu)
-add_test(tensor_test tensor_test)
 set_cuda_properties(tensor_test)
 link_googletest(tensor_test)
+add_test(NAME tensor_test COMMAND tensor_test)
 
 add_executable(relu_test src/tensor.cu src/relu.cu test/relu-test.cu)
-add_test(relu_test relu_test)
 set_cuda_properties(relu_test)
 link_googletest(relu_test)
+add_test(NAME relu_test COMMAND relu_test)
 
-# add the main target
+# Add the main target
 add_executable(my_tensor main.cpp)

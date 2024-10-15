@@ -17,15 +17,6 @@ Tensor<T>::Tensor(const std::vector<int>& shape)
 }
 
 template <typename T>
-Tensor<T>::Tensor(const std::vector<int>& shape, const std::vector<T>& data)
-  : shape_(shape), data_(data) {
-  size_ = std::accumulate(
-    shape_.begin(), shape_.end(), 1, std::multiplies<int>());
-  diff_ = thrust::device_vector<T>(size_);
-  CheckShape();
-}
-
-template <typename T>
 Tensor<T>::Tensor(const Tensor<T>& tensor)
   : shape_(tensor.shape_), size_(tensor.size_),
     data_(tensor.data_), diff_(tensor.diff_) {
@@ -66,6 +57,30 @@ Tensor<T>& Tensor<T>::operator=(Tensor<T>&& tensor) {
 }
 
 template <typename T>
+void Tensor<T>::SetData(const std::vector<T>& data) {
+  data_ = data;
+  CheckShape();
+}
+
+template <typename T>
+void Tensor<T>::SetData(std::vector<T>&& data) {
+  data_ = data;
+  CheckShape();
+}
+
+template <typename T>
+void Tensor<T>::SetDiff(const std::vector<T>& diff) {
+  diff_ = diff;
+  CheckShape();
+}
+
+template <typename T>
+void Tensor<T>::SetDiff(std::vector<T>&& diff) {
+  diff_ = diff;
+  CheckShape();
+}
+
+template <typename T>
 void Tensor<T>::Clear() {
   shape_ = {0};
   size_ = 0;
@@ -90,4 +105,5 @@ void Tensor<T>::CheckShape() const {
 }
 
 template class Tensor<>;
+template class Tensor<double>;
 }  // namespace my_tensor

@@ -13,7 +13,6 @@ class Tensor {
  public:
   // The explicit constructors.
   explicit Tensor(const std::vector<int>& shape);
-  explicit Tensor(const std::vector<int>& shape, const std::vector<T>& data);
 
   // The Tensor is copable.
   Tensor(const Tensor<T>& tensor);
@@ -23,6 +22,12 @@ class Tensor {
 
   // The destructors, which will free the dynamic allocated memory.
   ~Tensor() = default;
+
+  // Set methods.
+  void SetData(const std::vector<T>& data);
+  void SetData(std::vector<T>&& data);
+  void SetDiff(const std::vector<T>& diff);
+  void SetDiff(std::vector<T>&& diff);
 
   // Get methods.
   const thrust::device_vector<T>& GetData() const { return data_; }
