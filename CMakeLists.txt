@@ -64,5 +64,10 @@ set_cuda_properties(relu_test)
 link_googletest(relu_test)
 add_test(NAME relu_test COMMAND relu_test)
 
+add_executable(sigmoid_test src/tensor.cu src/layer.cu src/sigmoid.cu test/sigmoid-test.cu)
+set_cuda_properties(sigmoid_test)
+link_googletest(sigmoid_test)
+add_test(NAME sigmoid_test COMMAND sigmoid_test)
+
 # Add the main target
 add_executable(my_tensor main.cpp)
