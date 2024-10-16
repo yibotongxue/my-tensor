@@ -5,6 +5,7 @@
 
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
+#include <memory>
 
 namespace my_tensor {
 
@@ -34,19 +35,19 @@ class SyncedVector {
   T* GetMutableGPUPtr();
 
   inline size_t size() const {
-    CheckInitialized();
-    if (state_ == kHeadAtGPU) {
-      return gpu_data_.size();
-    }
-    return cpu_data_.size();
+    return size_;
   }
 
-  void Resize(size_t size);
+  // void Resize(size_t size);
 
  private:
   VectorState state_;
+  size_t size_;
   thrust::host_vector<T> cpu_data_;
   thrust::device_vector<T> gpu_data_;
+
+  void ToCPU();
+  void ToGPU();
 
   inline void SyncedMemory() {
     CheckInitialized();
@@ -64,6 +65,9 @@ class SyncedVector {
     }
   }
 };
+
+template <typename T>
+using SyncedVectorPtr = std::shared_ptr<SyncedVector<T>>;
 
 extern template class SyncedVector<>;
 extern template class SyncedVector<double>;
