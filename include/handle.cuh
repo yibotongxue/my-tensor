@@ -6,6 +6,9 @@
 #include <memory>
 
 namespace my_tensor {
+class Handle;
+using HandlePtr = std::shared_ptr<Handle>;
+
 class Handle {
 public:
   ~Handle() {
@@ -15,9 +18,9 @@ public:
   Handle(const Handle&) = delete;
   Handle& operator=(const Handle&) = delete;
 
-  static Handle* GetInstance() {
-    if (handle_ == nullptr) {
-      handle_ = new Handle();
+  static HandlePtr GetInstance() {
+    if (handle_.get() == nullptr) {
+      handle_ = std::shared_ptr<Handle>(new Handle());
     }
     return handle_;
   }
@@ -29,14 +32,14 @@ public:
 private:
   cublasHandle_t h_;
 
-  static Handle* handle_;
+  static HandlePtr handle_;
 
   Handle() {
     cublasCreate(&h_);
   }
 };  // class Handle
 
-extern Handle* handle;
+extern HandlePtr handle;
 }  // namespace my_tensor
 
 #endif  // INCLUDE_HANDLE_CUH_
