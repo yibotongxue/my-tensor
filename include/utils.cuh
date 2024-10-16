@@ -31,6 +31,21 @@ inline int CudaGetBlocks(const int N)
 #define ERROR_CHECK(function) function
 #endif // DEBUG
 
+#ifdef DEBUG
+#define CUBLAS_ERROR_CHECK(function)                                            \
+  do                                                                            \
+  {                                                                             \
+    cublasStatus_t status = function;                                           \
+    if (status != CUBLAS_STATUS_SUCCESS)                                        \
+    {                                                                           \
+      std::cerr << "CuBLAS error:\r\nstatus = " << status                       \
+                << "\r\nfile = " << __FILE__ << ", line" << __LINE__ << "\r\n"; \
+    }                                                                           \
+  } while (0);
+#else
+#define CUBLAS_ERROR_CHECK(function) function
+#endif // DEBUG
+
 #define CHECK_GPU_AVAILABLE                                      \
   do                                                             \
   {                                                              \
