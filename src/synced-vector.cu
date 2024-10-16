@@ -135,19 +135,39 @@ inline T* SyncedVector<T>::GetMutableGPUPtr() {
 
 template <typename T>
 inline void SyncedVector<T>::ToCPU() {
-  CheckInitialized();
-  if (state_ == kHeadAtGPU) {
+  switch (state_) {
+  case kUninitialized:
+    cpu_data_.resize(size_);
+    state_ = kHeadAtCPU;
+    break;
+  case kHeadAtGPU:
     cpu_data_.assign(gpu_data_.begin(), gpu_data_.end());
     state_ = kSynced;
+    break;
+  case kHeadAtCPU:
+  case kSynced:
+    break;
+  default:
+    throw VectorError("Unimplemtation error!");
   }
 }
 
 template <typename T>
-inline void SyncedVector<T>::ToGPU() {
-  CheckInitialized();
-  if (state_ == kHeadAtCPU) {
+void SyncedVector<T>::ToGPU() {
+  switch (state_) {
+  case kUninitialized:
+    gpu_data_.resize(size_);
+    state_ = kHeadAtGPU;
+    break;
+  case kHeadAtCPU:
     gpu_data_.assign(cpu_data_.begin(), cpu_data_.end());
     state_ = kSynced;
+    break;
+  case kHeadAtGPU:
+  case kSynced:
+    break;
+  default:
+    throw VectorError("Unimplemention error!");
   }
 }
 

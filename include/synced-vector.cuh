@@ -34,9 +34,7 @@ class SyncedVector {
   const T* GetGPUPtr();
   T* GetMutableGPUPtr();
 
-  inline size_t size() const {
-    return size_;
-  }
+  inline size_t size() const { return size_; }
 
   // void Resize(size_t size);
 
@@ -48,22 +46,6 @@ class SyncedVector {
 
   void ToCPU();
   void ToGPU();
-
-  inline void SyncedMemory() {
-    CheckInitialized();
-    if (state_ == kHeadAtCPU) {
-      gpu_data_.assign(cpu_data_.begin(), cpu_data_.end());
-    } else if (state_ == kHeadAtGPU) {
-      cpu_data_.assign(gpu_data_.begin(), gpu_data_.end());
-    }
-    state_ = kSynced;
-  }
-
-  inline void CheckInitialized() const {
-    if (state_ == kUninitialized) {
-      throw VectorError("The vector is still unintialized!");
-    }
-  }
 };
 
 template <typename T>
