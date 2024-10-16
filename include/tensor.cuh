@@ -1,6 +1,8 @@
 #ifndef INCLUDE_TENSOR_CUH_
 #define INCLUDE_TENSOR_CUH_
 
+#include <synced-vector.cuh>
+
 #include <vector>
 #include <string>
 #include <thrust/device_vector.h>
@@ -24,34 +26,44 @@ class Tensor {
   ~Tensor() = default;
 
   // Set methods.
-  void SetData(const std::vector<T>& data);
-  void SetData(std::vector<T>&& data);
-  void SetDiff(const std::vector<T>& diff);
-  void SetDiff(std::vector<T>&& diff);
+  void SetCPUData(const std::vector<T>& data) { data_->SetCPUData(data); }
+  void SetCPUDiff(const std::vector<T>& diff) { diff_->SetCPUData(diff); }
+  void SetGPUData(const std::vector<T>& data) { data_->SetGPUData(data); }
+  void SetGPUDiff(const std::vector<T>& diff) { diff_->SetGPUData(diff); }
 
   // Get methods.
-  const thrust::device_vector<T>& GetData() const { return data_; }
-  thrust::device_vector<T>& GetMutableData() { return data_; }
-  const thrust::device_vector<T>& GetDiff() const { return diff_; }
-  thrust::device_vector<T>& GetMutableDiff() { return diff_; }
-
-  const T* GetDataRowPointer() const { return data_.data().get(); }
-  T* GetDataRowPointer() { return data_.data().get(); }
-  const T* GetDiffRowPointer() const { return diff_.data().get(); }
-  T* GetDiffRowPointer() { return diff_.data().get(); }
+  // CPU
+  const thrust::host_vector<T>& GetCPUData() const { return data_->GetCPUData(); }
+  thrust::host_vector<T>& GetCPUData() { return data_->GetMutableCPUData(); }
+  const thrust::host_vector<T>& GetCPUDiff() const { return diff_->GetCPUData(); }
+  thrust::host_vector<T>& GetCPUDiff() { return diff_->GetMutableCPUData(); }
+  // GPU
+  const thrust::device_vector<T>& GetGPUData() const { return data_->GetGPUData(); }
+  thrust::device_vector<T>& GetGPUData() { return data_->GetMutableGPUData(); }
+  const thrust::device_vector<T>& GetGPUDiff() const { return diff_->GetGPUData(); }
+  thrust::device_vector<T>& GetGPUDiff() { return diff_->GetMutableGPUData(); }
+  // CPU
+  const T* GetCPUDataPtr() const { return data_->GetCPUPtr(); }
+  T* GetCPUDataPtr() { return data_->GetMutableCPUPtr(); }
+  const T* GetCPUDiffPtr() const { return diff_->GetCPUPtr(); }
+  T* GetCPUDiffPtr() { return diff_->GetMutableCPUPtr(); }
+  // GPU
+  const T* GetGPUDataPtr() const { return data_->GetGPUPtr(); }
+  T* GetGPUDataPtr() { return data_->GetMutableGPUPtr(); }
+  const T* GetGPUDiffPtr() const { return diff_->GetGPUPtr(); }
+  T* GetGPUDiffPtr() { return diff_->GetMutableGPUPtr(); }
 
   const std::vector<int>& GetShape() const { return shape_; }
 
   int GetSize() const { return size_; }
 
   void Reshape(const std::vector<int>& shape);
-  void Clear();
 
  private:
   std::vector<int> shape_;
   int size_;
-  thrust::device_vector<T> data_;
-  thrust::device_vector<T> diff_;
+  SyncedVectorPtr<T> data_;
+  SyncedVectorPtr<T> diff_;
 
   void CheckShape() const;
 };  // class Tensor
