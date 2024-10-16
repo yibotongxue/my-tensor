@@ -29,8 +29,8 @@ class BlasTest : public ::testing::Test {
     }
     lhs = std::make_shared<my_tensor::Tensor<>>(shape);
     rhs = std::make_shared<my_tensor::Tensor<>>(shape);
-    lhs->SetData(lhs_data);
-    rhs->SetData(rhs_data);
+    lhs->SetGPUData(lhs_data);
+    rhs->SetGPUData(rhs_data);
   }
 
   std::vector<float> lhs_data;
@@ -42,9 +42,9 @@ class BlasTest : public ::testing::Test {
 
 TEST_F(BlasTest, Blas_AddTest) {
   auto result = std::make_shared<my_tensor::Tensor<>>(*lhs + *rhs);
-  std::vector<float> result_actual (result->GetData().begin(), result->GetData().end());
+  std::vector<float> result_actual (result->GetGPUData().begin(), result->GetGPUData().end());
   std::vector<float> result_expect(5000);
-  std::ranges::transform(lhs_data, rhs_data, result_expect.begin(), [](float x, float y) { return x + y; });
+  std::ranges::transform(lhs_data, rhs_data, result_expect.begin(), std::plus<float>());
   for (int i = 0; i < 5000; i++) {
     EXPECT_NEAR(result_expect[i], result_actual[i], 0.01);
   }
