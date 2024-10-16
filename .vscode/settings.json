@@ -73,6 +73,7 @@
         "ranges": "cpp",
         "__config": "cpp",
         "__locale": "cpp",
-        "locale": "cpp"
+        "locale": "cpp",
+        "queue": "cpp"
     }
 }
