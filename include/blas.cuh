@@ -15,6 +15,14 @@ Tensor<T> operator+(const Tensor<T>& lhs, const Tensor<T>& rhs) {
 
 template <>
 Tensor<> operator+(const Tensor<>& lhs, const Tensor<>& rhs);
+
+template <typename T>
+Tensor<T> matmul(const Tensor<T>& lhs, const Tensor<T>& rhs) {
+  throw BlasError("Unimplemention error.");
+}
+
+template <>
+Tensor<> matmul(const Tensor<>& lhs, const Tensor<>& rhs);
 }
 
 #endif  // INCLUDE_BLAS_CUH_

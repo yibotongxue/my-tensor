@@ -60,6 +60,7 @@ set(TENSOR_SRC src/synced-vector.cu src/tensor.cu)
 set(LAYER_SRC src/layer.cu)
 set(RELU_SRC src/relu.cu)
 set(SIGMOID_SRC src/sigmoid.cu)
+set(LINEAR_SRC src/linear.cu)
 
 # Add libraries
 add_library(tensor_lib ${TENSOR_SRC})
@@ -77,6 +78,14 @@ add_library(sigmoid_lib ${SIGMOID_SRC})
 set_cuda_properties(sigmoid_lib)
 target_link_libraries(sigmoid_lib PUBLIC layer_lib)
 
+add_library(blas_lib src/handle.cu src/blas.cu)
+set_cuda_properties(blas_lib)
+target_link_libraries(blas_lib PUBLIC tensor_lib cublas)
+
+add_library(linear_lib ${LINEAR_SRC})
+set_cuda_properties(linear_lib)
+target_link_libraries(linear_lib PUBLIC layer_lib blas_lib)
+
 # Add executables and tests
 add_executable(tensor_test test/tensor-test.cu)
 set_cuda_properties(tensor_test)
@@ -93,14 +102,15 @@ set_cuda_properties(sigmoid_test)
 link_googletest(sigmoid_test sigmoid_lib)
 add_test(NAME sigmoid_test COMMAND sigmoid_test)
 
-add_library(blas_lib src/handle.cu src/blas.cu)
-set_cuda_properties(blas_lib)
-target_link_libraries(blas_lib PUBLIC tensor_lib cublas)
-
 add_executable(blas_test test/blas-test.cu)
 set_cuda_properties(blas_test)
 link_googletest(blas_test blas_lib)
 add_test(NAME blas_test COMMAND blas_test)
+
+add_executable(linear_test test/linear-test.cu)
+set_cuda_properties(linear_test)
+link_googletest(linear_test linear_lib)
+add_test(NAMD linear_test COMMAND linear_test)
 
 # Add the main target
 add_executable(my_tensor main.cpp)

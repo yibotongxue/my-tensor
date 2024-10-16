@@ -43,4 +43,10 @@ inline int CudaGetBlocks(const int N)
     }                                                            \
   } while (0);
 
+#define DISABLE_LAYER_COPY(layer_name)                      \
+  layer_name(const layer_name<T> &) = delete;               \
+  layer_name<T> &operator=(const layer_name<T> &) = delete; \
+  layer_name(layer_name<T> &&) = delete;                    \
+  layer_name<T> &operator=(layer_name<T> &&) = delete;
+
 #endif // INCLUDE_UTILS_CUH_

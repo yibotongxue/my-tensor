@@ -17,7 +17,12 @@ class ShapeError : public std::runtime_error {
 class BlasError : public std::runtime_error {
  public:
   using runtime_error::runtime_error;
-};
+};  // class BlasError
+
+class LinearError : public std::runtime_error {
+ public:
+  using runtime_error::runtime_error;
+};  // class LinearError
 }  // namespace my_tensor
 
 #endif  // INCLUDE_ERROR_H_

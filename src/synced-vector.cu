@@ -2,6 +2,8 @@
 #include <synced-vector.cuh>
 #include <utils.cuh>
 
+#include <thrust/copy.h>
+
 namespace my_tensor {
 
 template <typename T>
@@ -21,8 +23,10 @@ SyncedVector<T>& SyncedVector<T>::operator=(const SyncedVector<T>& vec) {
   }
   state_ = vec.state_;
   size_ = vec.size_;
-  cpu_data_.assign(vec.cpu_data_.begin(), vec.cpu_data_.end());
-  gpu_data_.assign(vec.gpu_data_.begin(), vec.gpu_data_.end());
+  cpu_data_.resize(vec.cpu_data_.size());
+  thrust::copy(vec.cpu_data_.begin(), vec.cpu_data_.end(), cpu_data_.begin());
+  gpu_data_.resize(vec.gpu_data_.size());
+  thrust::copy(vec.gpu_data_.begin(), vec.gpu_data_.end(), gpu_data_.begin());
   return *this;
 }
 
@@ -155,7 +159,8 @@ inline void SyncedVector<T>::ToCPU() {
     state_ = kHeadAtCPU;
     break;
   case kHeadAtGPU:
-    cpu_data_.assign(gpu_data_.begin(), gpu_data_.end());
+    cpu_data_.resize(gpu_data_.size());
+    thrust::copy(gpu_data_.begin(), gpu_data_.end(), cpu_data_.begin());
     state_ = kSynced;
     break;
   case kHeadAtCPU:
@@ -174,7 +179,8 @@ void SyncedVector<T>::ToGPU() {
     state_ = kHeadAtGPU;
     break;
   case kHeadAtCPU:
-    gpu_data_.assign(cpu_data_.begin(), cpu_data_.end());
+    gpu_data_.resize(cpu_data_.size());
+    thrust::copy(cpu_data_.begin(), cpu_data_.end(), gpu_data_.begin());
     state_ = kSynced;
     break;
   case kHeadAtGPU:

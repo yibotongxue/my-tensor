@@ -2,6 +2,7 @@
 #define INCLUDE_LAYER_CUH_
 
 #include <tensor.cuh>
+#include <utils.cuh>
 
 #include <memory>
 
@@ -14,10 +15,7 @@ class Layer {
   Layer() = default;
 
   // The layer can not be copied or moved.
-  Layer(const Layer<T>&) = delete;
-  Layer<T>& operator=(const Layer<T>&) = delete;
-  Layer(Layer<T>&&) = delete;
-  Layer<T>& operator=(Layer<T>&&) = delete;
+  DISABLE_LAYER_COPY(Layer)
 
   virtual ~Layer() = default;
 

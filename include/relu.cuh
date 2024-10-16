@@ -9,14 +9,11 @@
 namespace my_tensor {
 // Relu class, implements Layer.
 template <typename T=float>
-class Relu : public Layer<T> {
+class Relu final : public Layer<T> {
  public:
   Relu() = default;
 
-  Relu(const Relu<T>&) = delete;
-  Relu<T>& operator=(const Relu<T>&) = delete;
-  Relu(Relu<T>&&) = delete;
-  Relu<T>& operator=(Relu<T>&&) = delete;
+  DISABLE_LAYER_COPY(Relu)
 
   virtual ~Relu() = default;
 

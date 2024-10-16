@@ -9,16 +9,13 @@
 namespace my_tensor {
 // Sigmoid class, implements Layer class.
 template <typename T=float>
-class Sigmoid : public Layer<T> {
+class Sigmoid final : public Layer<T> {
  public:
   Sigmoid() = default;
 
-  Sigmoid(const Sigmoid<T>&) = delete;
-  Sigmoid<T>& operator=(const Sigmoid<T>&) = delete;
-  Sigmoid(Sigmoid<T>&&) = delete;
-  Sigmoid<T>& operator=(Sigmoid<T>&&) = delete;
+  DISABLE_LAYER_COPY(Sigmoid)
 
-  virtual ~Sigmoid() = default;
+  ~Sigmoid() = default;
 
   // Override forward and backward methods of Layer class.
   // CPU
