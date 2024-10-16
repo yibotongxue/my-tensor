@@ -9,7 +9,7 @@ Tensor<> operator+(const Tensor<>& lhs, const Tensor<>& rhs) {
   }
   Tensor<> result = lhs;
   float alpha = 1.0f;
-  cublasSaxpy(handle->GetHandle(), n, &alpha, rhs.GetDataRowPointer(), 1, result.GetDataRowPointer(), 1);
+  cublasSaxpy(handle->GetHandle(), n, &alpha, rhs.GetGPUDataPtr(), 1, result.GetGPUDataPtr(), 1);
   return result;
 }
 }  // namespace my_tensor
