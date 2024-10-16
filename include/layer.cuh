@@ -22,8 +22,12 @@ class Layer {
   virtual ~Layer() = default;
 
   // Pure virtual methods, forward and backward.
-  virtual void Forward(const TensorPtr<T>& bottom, TensorPtr<T>& top) = 0;
-  virtual void Backward(const TensorPtr<T>& top, TensorPtr<T>& bottome) = 0;
+  // CPU
+  virtual void ForwardCPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) = 0;
+  virtual void BackwardCPU(const TensorPtr<T>& top, TensorPtr<T>& bottome) = 0;
+  // GPU
+  virtual void ForwardGPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) = 0;
+  virtual void BackwardGPU(const TensorPtr<T>& top, TensorPtr<T>& bottome) = 0;
 
  protected:
   std::vector<TensorPtr<T>> params;

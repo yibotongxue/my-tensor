@@ -21,8 +21,12 @@ class Relu : public Layer<T> {
   virtual ~Relu() = default;
 
   // Override forward and backward methods of Layer class.
-  void Forward(const TensorPtr<T>& bottom, TensorPtr<T>& top) override;
-  void Backward(const TensorPtr<T>& top, TensorPtr<T>& bottom) override;
+  // CPU
+  void ForwardCPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) override;
+  void BackwardCPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) override;
+  // GPU
+  void ForwardGPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) override;
+  void BackwardGPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) override;
 };
 
 extern template class my_tensor::Relu<>;

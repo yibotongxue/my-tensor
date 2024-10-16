@@ -20,15 +20,27 @@ struct SigmoidGradOperator {
 }  // namespace
 
 template <typename T>
-void Sigmoid<T>::Forward(const TensorPtr<T>& bottom, TensorPtr<T>& top) {
-  thrust::transform(bottom->GetData().begin(), bottom->GetData().end(),
-    top->GetMutableData().begin(), SigmoidOperator<T>());
+void Sigmoid<T>::ForwardCPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) {
+  thrust::transform(bottom->GetCPUData().begin(), bottom->GetCPUData().end(),
+    top->GetCPUData().begin(), SigmoidOperator<T>());
 }
 
 template <typename T>
-void Sigmoid<T>::Backward(const TensorPtr<T>& top, TensorPtr<T>& bottom) {
-  thrust::transform(top->GetDiff().begin(), top->GetDiff().end(),
-    top->GetData().begin(), bottom->GetMutableDiff().begin(), SigmoidGradOperator<T>());
+void Sigmoid<T>::BackwardCPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) {
+  thrust::transform(top->GetCPUDiff().begin(), top->GetCPUDiff().end(),
+    top->GetCPUData().begin(), bottom->GetCPUDiff().begin(), SigmoidGradOperator<T>());
+}
+
+template <typename T>
+void Sigmoid<T>::ForwardGPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) {
+  thrust::transform(bottom->GetGPUData().begin(), bottom->GetGPUData().end(),
+    top->GetGPUData().begin(), SigmoidOperator<T>());
+}
+
+template <typename T>
+void Sigmoid<T>::BackwardGPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) {
+  thrust::transform(top->GetGPUDiff().begin(), top->GetGPUDiff().end(),
+    top->GetGPUData().begin(), bottom->GetGPUDiff().begin(), SigmoidGradOperator<T>());
 }
 
 template class Sigmoid<>;
