@@ -109,29 +109,43 @@ inline T* SyncedVector<T>::GetMutableGPUPtr() {
   return thrust::raw_pointer_cast(gpu_data_.data());
 }
 
-// template <typename T>
-// void SyncedVector<T>::Resize(size_t size) {
-//   size_ = size;
-//   if (state_ == kHeadAtCPU) {
-//     cpu_data_.resize(size);
-//   } else if (state_ == kHeadAtGPU) {
-//     gpu_data_.resize(size);
-//   } else {
-//     cpu_data_.resize(size);
-//     state_ = kHeadAtCPU;
-//   }
-//   switch (state_) {
-//   case kHeadAtCPU:
-//     cpu_data_.resize(size);
-//     break;
-//   case kHeadAtGPU:
-//     gpu_data_.resize(size);
-//     break;
-//   case kUninitialized:
-//   case kSynced:
+template <typename T>
+void SyncedVector<T>::ClearCPUData() {
+  cpu_data_.clear();
+  switch (state_) {
+  case kHeadAtCPU:
+    size_ = 0;
+    state_ = kUninitialized;
+    break;
+  case kSynced:
+    state_ = kHeadAtGPU;
+    break;
+  case kUninitialized:
+  case kHeadAtGPU:
+    break;
+  default:
+    throw VectorError("Unimplemention error!");
+  }
+}
 
-//   }
-// }
+template <typename T>
+void SyncedVector<T>::ClearGPUData() {
+  gpu_data_.clear();
+  switch (state_) {
+  case kHeadAtGPU:
+    state_ = kUninitialized;
+    size_ = 0;
+    break;
+  case kSynced:
+    state_ = kHeadAtCPU;
+    break;
+  case kUninitialized:
+  case kHeadAtCPU:
+    break;
+  default:
+    throw VectorError("Unimplemention error!");
+  }
+}
 
 template <typename T>
 inline void SyncedVector<T>::ToCPU() {

@@ -34,6 +34,9 @@ class SyncedVector {
   const T* GetGPUPtr();
   T* GetMutableGPUPtr();
 
+  void ClearCPUData();
+  void ClearGPUData();
+
   inline size_t size() const { return size_; }
 
   // void Resize(size_t size);
