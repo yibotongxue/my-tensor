@@ -48,4 +48,21 @@ Tensor<> matmul(const Tensor<>& lhs, const Tensor<>& rhs) {
   ));
   return result;
 }
+
+template <>
+Tensor<> transpose(const Tensor<>& tensor) {
+  const auto& shape = tensor.GetShape();
+  if (shape.size() != 2) {
+    throw BlasError("Tensor transpose shape not two dimension.");
+  }
+  int m = shape[0], n = shape[1];
+  Tensor<> result({n, m});
+  float alpha = 1.0f;
+  float beta = 0.0f;
+  CUBLAS_ERROR_CHECK(cublasSgeam(handle->GetHandle(),
+    CUBLAS_OP_T, CUBLAS_OP_N, m, n, &alpha,
+    tensor.GetGPUDataPtr(), n, &beta, nullptr,
+    m, result.GetGPUDataPtr(), m));
+  return result;
+}
 }  // namespace my_tensor

@@ -42,6 +42,7 @@ class BlasTest : public ::testing::Test {
 
 TEST_F(BlasTest, Blas_AddTest) {
   auto result = std::make_shared<my_tensor::Tensor<>>(*lhs + *rhs);
+  ASSERT_EQ(result->GetShape(), shape);
   std::vector<float> result_actual (result->GetGPUData().begin(), result->GetGPUData().end());
   std::vector<float> result_expect(5000);
   std::ranges::transform(lhs_data, rhs_data, result_expect.begin(), std::plus<float>());
@@ -81,6 +82,7 @@ class BlasMatmulTest : public ::testing::Test {
 
 TEST_F(BlasMatmulTest, Blas_MatmulTest) {
   auto result = std::make_shared<my_tensor::Tensor<>>(matmul(*lhs, *rhs));
+  ASSERT_EQ(result->GetShape(), result_shape);
   std::vector<float> result_actual (result->GetGPUData().begin(), result->GetGPUData().end());
   std::vector<float> result_expect(32000, 0.0f);
   for (int i = 0; i < 32000; i++) {
@@ -92,6 +94,39 @@ TEST_F(BlasMatmulTest, Blas_MatmulTest) {
   }
   for (int i = 0; i < 32000; i++) {
     ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);
+  }
+}
+
+class BlasTransposeTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    data.resize(20000);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dis (-10.0f, 10.0f);
+    for (int i = 0; i < 20000; i++) {
+      data[i] = dis(gen);
+    }
+    tensor = std::make_shared<my_tensor::Tensor<>>(shape);
+    tensor->SetGPUData(data);
+  }
+
+  std::vector<float> data;
+  my_tensor::TensorPtr<> tensor;
+  const std::vector<int> shape {1000, 20};
+  const std::vector<int> transpose_shape {20, 1000};
+};
+
+TEST_F(BlasTransposeTest, Blas_TransposeTest) {
+  auto result = std::make_shared<my_tensor::Tensor<>>(transpose(*tensor));
+  ASSERT_EQ(result->GetShape(), transpose_shape);
+  std::vector<float> result_actual (result->GetGPUData().begin(), result->GetGPUData().end());
+  for (int i = 0; i < 20; i++) {
+    for (int j = 0; j < 1000; j++) {
+      float expect = data[j * 20 + i];
+      float actual = result_actual[i * 1000 + j];
+      ASSERT_NEAR(actual, expect, 0.01);
+    }
   }
 }
 
