@@ -96,4 +96,66 @@ Tensor<> transpose_matmul(const Tensor<>& lhs, const Tensor<>& rhs) {
   ));
   return result;
 }
+
+template <>
+Tensor<> matmul_transpose(const Tensor<>& lhs, const Tensor<>& rhs) {
+  const auto& left_shape = lhs.GetShape();
+  const auto& right_shape = rhs.GetShape();
+  if (left_shape.size() != 2 || right_shape.size() != 2 || left_shape[1] != right_shape[1]) {
+    throw BlasError("Tensor transpose matmul shapes not match.");
+  }
+  int m = left_shape[0], k = left_shape[1], n = right_shape[0];
+  Tensor<> result({m, n});
+  float alpha = 1.0f;
+  float beta = 0.0f;
+  // result<sup>T</sup> = (rhs)(lhs<sup>T</sup>)
+  // also result = (lhs)(rhs<sup>T</sup>)
+  CUBLAS_ERROR_CHECK(cublasSgemm(handle->GetHandle(),  // handle
+    CUBLAS_OP_T,  // transpose of rhs<sup>T</sup>
+    CUBLAS_OP_N,  // no transpose of lhs<sup>T</sup>
+    n,  // row number of rhs and row number of result<sup>T</sup>
+    m,  // col number of lhs<sup>T</sup> and col number of result<sup>T</sup>
+    k,  // col number of rhs and row number of lhs<sup>T</sup>
+    &alpha,  // alpha
+    rhs.GetGPUDataPtr(),  // rhs pointer, in cublas will be rhs<sup>T</sup>
+    k,  // leading dimension of rhs<sup>T</sup>
+    lhs.GetGPUDataPtr(),  // lhs pointer, in cublas will be lhs<sup>T</sup>
+    k,  // leading dimension of lhs<sup>T</sup>
+    &beta,  // beta
+    result.GetGPUDataPtr(),  // result pointer, in cublas will be result<sup>T</sup>
+    n  // leading dimension of result<sup>T</sup>
+  ));
+  return result;
+}
+
+template <>
+Tensor<> transpose_matmul_transpose(const Tensor<>& lhs, const Tensor<>& rhs) {
+  const auto& left_shape = lhs.GetShape();
+  const auto& right_shape = rhs.GetShape();
+  if (left_shape.size() != 2 || right_shape.size() != 2 || left_shape[0] != right_shape[1]) {
+    throw BlasError("Tensor transpose matmul transpose shapes not match.");
+  }
+  int k = left_shape[0], m = left_shape[1], n = right_shape[0];
+  Tensor<> result({m, n});
+  float alpha = 1.0f;
+  float beta = 0.0f;
+  // result<sup>T</sup> = (rhs)(lhs)
+  // also result = (lhs<sup>T</sup>)(rhs<sup>T</sup>)
+  CUBLAS_ERROR_CHECK(cublasSgemm(handle->GetHandle(),  // handle
+    CUBLAS_OP_T,  // transpose of rhs<sup>T</sup>
+    CUBLAS_OP_T,  // transpose of lhs<sup>T</sup>
+    n,  // row number of rhs and row number of result<sup>T</sup>
+    m,  // col number of lhs and col number of result<sup>T</sup>
+    k,  // col number of rhs and row number of lhs<sup>T</sup>
+    &alpha,  // alpha
+    rhs.GetGPUDataPtr(),  // rhs pointer, in cublas will be rhs<sup>T</sup>
+    k,  // leading dimension of rhs<sup>T</sup>
+    lhs.GetGPUDataPtr(),  // lhs pointer, in cublas will be lhs<sup>T</sup>
+    m,  // leading dimension of lhs<sup>T</sup>
+    &beta,  // beta
+    result.GetGPUDataPtr(),  // result pointer, in cublas will be result<sup>T</sup>
+    n  // leading dimension of result<sup>T</sup>
+  ));
+  return result;
+}
 }  // namespace my_tensor

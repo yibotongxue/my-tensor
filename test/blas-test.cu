@@ -101,12 +101,48 @@ TEST_F(BlasMatmulTest, Blas_MatmulTest) {
 TEST_F(BlasMatmulTest, Blas_TransposeMatmulTest) {
   lhs->Reshape({128, 500});
   auto result = std::make_shared<my_tensor::Tensor<>>(transpose_matmul(*lhs, *rhs));
+  ASSERT_EQ(result->GetShape(), result_shape);
   std::vector<float> result_actual (result->GetGPUData().begin(), result->GetGPUData().end());
   for (int i = 0; i < 32000; i++) {
     int row = i / 64;
     int col = i % 64;
     for (int k = 0; k < 128; k++) {
       result_expect[i] += lhs_data[k * 500 + row] * rhs_data[k * 64 + col];
+    }
+  }
+  for (int i = 0; i < 32000; i++) {
+    ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);
+  }
+}
+
+TEST_F(BlasMatmulTest, Blas_MatmulTransposeTest) {
+  rhs->Reshape({64, 128});
+  auto result = std::make_shared<my_tensor::Tensor<>>(matmul_transpose(*lhs, *rhs));
+  ASSERT_EQ(result->GetShape(), result_shape);
+  std::vector<float> result_actual (result->GetGPUData().begin(), result->GetGPUData().end());
+  for (int i = 0; i < 32000; i++) {
+    int row = i / 64;
+    int col = i % 64;
+    for (int k = 0; k < 128; k++) {
+      result_expect[i] += lhs_data[row * 128 + k] * rhs_data[col * 128 + k];
+    }
+  }
+  for (int i = 0; i < 32000; i++) {
+    ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);
+  }
+}
+
+TEST_F(BlasMatmulTest, Blas_TransposeMatmulTransposeTest) {
+  lhs->Reshape({128, 500});
+  rhs->Reshape({64, 128});
+  auto result = std::make_shared<my_tensor::Tensor<>>(transpose_matmul_transpose(*lhs, *rhs));
+  ASSERT_EQ(result->GetShape(), result_shape);
+  std::vector<float> result_actual (result->GetGPUData().begin(), result->GetGPUData().end());
+  for (int i = 0; i < 32000; i++) {
+    int row = i / 64;
+    int col = i % 64;
+    for (int k = 0; k < 128; k++) {
+      result_expect[i] += lhs_data[k * 500 + row] * rhs_data[col * 128 + k];
     }
   }
   for (int i = 0; i < 32000; i++) {

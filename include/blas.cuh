@@ -39,6 +39,22 @@ Tensor<T> transpose_matmul(const Tensor<T>& lhs, const Tensor<T>& rhs) {
 
 template <>
 Tensor<> transpose_matmul(const Tensor<>& lhs, const Tensor<>& rhs);
+
+template <typename T>
+Tensor<T> matmul_transpose(const Tensor<T>& lhs, const Tensor<T>& rhs) {
+  throw BlasError("Unimplemention error.");
+}
+
+template <>
+Tensor<> matmul_transpose(const Tensor<>& lhs, const Tensor<>& rhs);
+
+template <typename T>
+Tensor<T> transpose_matmul_transpose(const Tensor<T>& lhs, const Tensor<T>& rhs) {
+  throw BlasError("Unimplemention error.");
+}
+
+template <>
+Tensor<> transpose_matmul_transpose(const Tensor<>& lhs, const Tensor<>& rhs);
 }
 
 #endif  // INCLUDE_BLAS_CUH_
