@@ -7,10 +7,10 @@ extern HandlePtr handle;
 
 template <>
 Tensor<> operator+(const Tensor<>& lhs, const Tensor<>& rhs) {
-  int n = lhs.GetSize();
-  if (rhs.GetSize() != n) {
-    throw BlasError("Tensor operator + sizes not match.");
+  if (lhs.GetShape() != rhs.GetShape()) {
+    throw BlasError("Tensor operator + shape not match.");
   }
+  int n = lhs.GetSize();
   Tensor<> result = lhs;
   float alpha = 1.0f;
   CUBLAS_ERROR_CHECK(cublasSaxpy(handle->GetHandle(),

@@ -11,7 +11,7 @@ namespace my_tensor {
 template <typename T=float>
 class Sigmoid final : public Layer<T> {
  public:
-  Sigmoid() = default;
+  Sigmoid() : Layer<T>({}) {}
 
   DISABLE_LAYER_COPY(Sigmoid)
 

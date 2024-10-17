@@ -12,7 +12,7 @@ template <typename T=float>
 class Layer {
  public:
   // Default constructor.
-  Layer() = default;
+  Layer(const std::vector<TensorPtr<T>>& params) : params_(params) {}
 
   // The layer can not be copied or moved.
   DISABLE_LAYER_COPY(Layer)
@@ -28,7 +28,7 @@ class Layer {
   virtual void BackwardGPU(const TensorPtr<T>& top, TensorPtr<T>& bottome) = 0;
 
  protected:
-  std::vector<TensorPtr<T>> params;
+  std::vector<TensorPtr<T>> params_;
 };
 
 // Layer pointer.

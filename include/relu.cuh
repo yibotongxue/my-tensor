@@ -11,7 +11,7 @@ namespace my_tensor {
 template <typename T=float>
 class Relu final : public Layer<T> {
  public:
-  Relu() = default;
+  Relu() : Layer<T>({}) {}
 
   DISABLE_LAYER_COPY(Relu)
 

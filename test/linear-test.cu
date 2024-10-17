@@ -10,13 +10,13 @@ TEST(TrivialTest, always_fail) {
   EXPECT_TRUE(false);
 }
 
-// class LinearTest : public ::testing::Test {
-//  protected:
-//   void SetUp() override {
+class LinearTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
 
-//   }
-  
-// };
+  }
+    
+};
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);

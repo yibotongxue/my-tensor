@@ -64,4 +64,13 @@ inline int CudaGetBlocks(const int N)
   layer_name(layer_name<T> &&) = delete;                    \
   layer_name<T> &operator=(layer_name<T> &&) = delete;
 
+#define CHECK_SAME_SHAPE(tensor, another)          \
+  do                                               \
+  {                                                \
+    if (tensor->GetShape() != another->GetShape()) \
+    {                                              \
+      throw ShapeError("Shape not match.");        \
+    }                                              \
+  } while (0);
+
 #endif // INCLUDE_UTILS_CUH_

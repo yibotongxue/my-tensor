@@ -74,6 +74,7 @@
         "__config": "cpp",
         "__locale": "cpp",
         "locale": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "text_encoding": "cpp"
     }
 }
