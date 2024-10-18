@@ -1,4 +1,5 @@
 #include <blas.cuh>
+#include <cublasLt.h>
 #include <handle.cuh>
 #include <utils.cuh>
 
@@ -15,6 +16,47 @@ Tensor<> operator+(const Tensor<>& lhs, const Tensor<>& rhs) {
   float alpha = 1.0f;
   CUBLAS_ERROR_CHECK(cublasSaxpy(handle->GetHandle(),
     n, &alpha, rhs.GetGPUDataPtr(), 1, result.GetGPUDataPtr(), 1));
+  return result;
+}
+
+namespace {
+__global__ void SetAllOnes(float *ones, int n) {
+  CUDA_KERNEL_LOOP(i, n) {
+    ones[i] = 1.0f;
+  }
+}
+}  // namespace
+
+template <>
+Tensor<> add_vector(const Tensor<>& tensor, const Tensor<>& vec) {
+  if (tensor.GetShape().size() != 2 ||
+      vec.GetShape().size() != 2 ||
+      tensor.GetShape()[0] != vec.GetShape()[0] ||
+      vec.GetShape()[1] != 1) {
+    throw BlasError("Tensor operator add vector shape not match.");
+  }
+  int m = tensor.GetShape()[0], n = tensor.GetShape()[1];
+  Tensor<> result(tensor);
+  float alpha = 1.0f;
+  float beta = 1.0f;
+  float *ones = nullptr;
+  cudaMalloc(&ones, n * sizeof(float));
+  SetAllOnes<<<CudaGetBlocks(n), kCudaThreadNum>>>(ones, n);
+  CUBLAS_ERROR_CHECK(cublasSgemm(handle->GetHandle(),
+    CUBLAS_OP_N,
+    CUBLAS_OP_N,
+    n,
+    m,
+    1,
+    &alpha,
+    ones,
+    n,
+    vec.GetGPUDataPtr(),
+    1,
+    &beta,
+    result.GetGPUDataPtr(),
+    n));
+  cudaFree(ones);
   return result;
 }
 

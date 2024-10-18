@@ -21,12 +21,9 @@ class BlasTest : public ::testing::Test {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dis (-10.0f, 10.0f);
-    for (int i = 0; i < 5000; i++) {
-      lhs_data[i] = dis(gen);
-    }
-    for (int i = 0; i < 5000; i++) {
-      rhs_data[i] = dis(gen);
-    }
+    auto random_func = [&gen, &dis]() -> float { return dis(gen); };
+    std::ranges::generate(lhs_data, random_func);
+    std::ranges::generate(rhs_data, random_func);
     lhs = std::make_shared<my_tensor::Tensor<>>(shape);
     rhs = std::make_shared<my_tensor::Tensor<>>(shape);
     lhs->SetGPUData(lhs_data);
@@ -51,6 +48,45 @@ TEST_F(BlasTest, Blas_AddTest) {
   }
 }
 
+class BlasAddVecTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    tensor_data.resize(200000);
+    vec_data.resize(1000);
+    result_expect.resize(200000);
+    tensor = std::make_shared<my_tensor::Tensor<>>(tensor_shape);
+    vec = std::make_shared<my_tensor::Tensor<>>(vec_shape);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dis (-10.0f, 10.0f);
+    auto random_func = [&gen, &dis]() -> float { return dis(gen); };
+    std::ranges::generate(tensor_data, random_func);
+    std::ranges::generate(vec_data, random_func);
+    tensor->SetGPUData(tensor_data);
+    vec->SetGPUData(vec_data);
+  }
+
+  std::vector<float> tensor_data;
+  std::vector<float> vec_data;
+  std::vector<float> result_expect;
+  my_tensor::TensorPtr<> tensor;
+  my_tensor::TensorPtr<> vec;
+  const std::vector<int> tensor_shape {1000, 200};
+  const std::vector<int> vec_shape{1000,1};
+};
+
+TEST_F(BlasAddVecTest, Blas_AddVecTest) {
+  auto result = std::make_shared<my_tensor::Tensor<>>(add_vector(*tensor, *vec));
+  ASSERT_EQ(result->GetShape(), tensor_shape);
+  std::vector<float> result_actual (result->GetGPUData().begin(), result->GetGPUData().end());
+  for (int i = 0; i < 200000; i++) {
+    result_expect[i] = tensor_data[i] + vec_data[i / 200];
+  }
+  for (int i = 0; i < 200000; i++) {
+    ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);
+  }
+}
+
 class BlasMatmulTest : public ::testing::Test {
  protected:
   void SetUp() override {
@@ -59,12 +95,9 @@ class BlasMatmulTest : public ::testing::Test {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dis (-10.0f, 10.0f);
-    for (int i = 0; i < 64000; i++) {
-      lhs_data[i] = dis(gen);
-    }
-    for (int i = 0; i < 8192; i++) {
-      rhs_data[i] = dis(gen);
-    }
+    auto random_func = [&gen, &dis]() -> float { return dis(gen); };
+    std::ranges::generate(lhs_data, random_func);
+    std::ranges::generate(rhs_data, random_func);
     lhs = std::make_shared<my_tensor::Tensor<>>(left_shape);
     rhs = std::make_shared<my_tensor::Tensor<>>(right_shape);
     lhs->SetGPUData(lhs_data);
@@ -157,9 +190,8 @@ class BlasTransposeTest : public ::testing::Test {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dis (-10.0f, 10.0f);
-    for (int i = 0; i < 20000; i++) {
-      data[i] = dis(gen);
-    }
+    auto random_func = [&gen, &dis]() -> float { return dis(gen); };
+    std::ranges::generate(data, random_func);
     tensor = std::make_shared<my_tensor::Tensor<>>(shape);
     tensor->SetGPUData(data);
   }

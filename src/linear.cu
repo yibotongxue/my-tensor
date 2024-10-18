@@ -51,6 +51,7 @@ void Linear<T>::ForwardCPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) {
 template <typename T>
 void Linear<T>::ForwardGPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) {
   *top = matmul(*Layer<T>::params_[0], *bottom);
+  add_vector(*top, *Layer<T>::params_[1]);
 }
 
 template <typename T>

@@ -73,4 +73,6 @@ inline int CudaGetBlocks(const int N)
     }                                              \
   } while (0);
 
+#define BLAS_UNIMPLEMENTION throw BlasError("Unimplemention error.");
+
 #endif // INCLUDE_UTILS_CUH_
