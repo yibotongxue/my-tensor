@@ -75,4 +75,6 @@ inline int CudaGetBlocks(const int N)
 
 #define BLAS_UNIMPLEMENTION throw BlasError("Unimplemention error.");
 
+#define AT_GRAD_GPU_DATA(tensor) at_grad ? tensor.GetGPUDiffPtr() : tensor.GetGPUDataPtr()
+
 #endif // INCLUDE_UTILS_CUH_

@@ -16,9 +16,9 @@ class Linear final : public Layer<T> {
   virtual ~Linear() = default;
 
   void ForwardCPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) override;
-  void BackwardCPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) override {}
+  void BackwardCPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) override;
   void ForwardGPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) override;
-  void BackwardGPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) override {}
+  void BackwardGPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) override;
 
 private:
   void CheckShape(const TensorPtr<T>& top, const TensorPtr<T>& bottom) const;

@@ -28,7 +28,7 @@ __global__ void SetAllOnes(float *ones, int n) {
 }  // namespace
 
 template <>
-Tensor<> add_vector(const Tensor<>& tensor, const Tensor<>& vec) {
+Tensor<> add_vector(const Tensor<>& tensor, const Tensor<>& vec, bool at_grad) {
   if (tensor.GetShape().size() != 2 ||
       vec.GetShape().size() != 2 ||
       tensor.GetShape()[0] != vec.GetShape()[0] ||
@@ -51,17 +51,17 @@ Tensor<> add_vector(const Tensor<>& tensor, const Tensor<>& vec) {
     &alpha,
     ones,
     n,
-    vec.GetGPUDataPtr(),
+    AT_GRAD_GPU_DATA(vec),
     1,
     &beta,
-    result.GetGPUDataPtr(),
+    AT_GRAD_GPU_DATA(result),
     n));
   cudaFree(ones);
   return result;
 }
 
 template <>
-Tensor<> matmul(const Tensor<>& lhs, const Tensor<>& rhs) {
+Tensor<> matmul(const Tensor<>& lhs, const Tensor<>& rhs, bool at_grad) {
   const auto& left_shape = lhs.GetShape();
   const auto& right_shape = rhs.GetShape();
   if (left_shape.size() != 2 || right_shape.size() != 2 || left_shape[1] != right_shape[0]) {
@@ -80,12 +80,12 @@ Tensor<> matmul(const Tensor<>& lhs, const Tensor<>& rhs) {
     m,  // col number of lhs<sup>T</sup> and col number of result<sup>T</sup>
     k,  // col number of rhs<sup>T</sup> and row number of lhs<sup>T</sup>
     &alpha,  // alpha
-    rhs.GetGPUDataPtr(),  // rhs pointer, in cublas will be rhs<sup>T</sup>
+    AT_GRAD_GPU_DATA(rhs),  // rhs pointer, in cublas will be rhs<sup>T</sup>
     n,  // leading dimension of rhs<sup>T</sup>
-    lhs.GetGPUDataPtr(),  // lhs pointer, in cublas will be lhs<sup>T</sup>
+    AT_GRAD_GPU_DATA(lhs),  // lhs pointer, in cublas will be lhs<sup>T</sup>
     k,  // leading dimension of lhs<sup>T</sup>
     &beta,  // beta
-    result.GetGPUDataPtr(),  // result pointer, in cublas will be result<sup>T</sup>
+    AT_GRAD_GPU_DATA(result),  // result pointer, in cublas will be result<sup>T</sup>
     n  // leading dimension of result<sup>T</sup>
   ));
   return result;
@@ -109,7 +109,7 @@ Tensor<> transpose(const Tensor<>& tensor) {
 }
 
 template<>
-Tensor<> transpose_matmul(const Tensor<>& lhs, const Tensor<>& rhs) {
+Tensor<> transpose_matmul(const Tensor<>& lhs, const Tensor<>& rhs, bool at_grad) {
   const auto& left_shape = lhs.GetShape();
   const auto& right_shape = rhs.GetShape();
   if (left_shape.size() != 2 || right_shape.size() != 2 || left_shape[0] != right_shape[0]) {
@@ -128,19 +128,19 @@ Tensor<> transpose_matmul(const Tensor<>& lhs, const Tensor<>& rhs) {
     m,  // col number of lhs and col number of result<sup>T</sup>
     k,  // col number of rhs<sup>T</sup> and row number of lhs
     &alpha,  // alpha
-    rhs.GetGPUDataPtr(),  // rhs pointer, in cublas will be rhs<sup>T</sup>
+    AT_GRAD_GPU_DATA(rhs),  // rhs pointer, in cublas will be rhs<sup>T</sup>
     n,  // leading dimension of rhs<sup>T</sup>
-    lhs.GetGPUDataPtr(),  // lhs pointer, in cublas will be lhs<sup>T</sup>
+    AT_GRAD_GPU_DATA(lhs),  // lhs pointer, in cublas will be lhs<sup>T</sup>
     m,  // leading dimension of lhs<sup>T</sup>
     &beta,  // beta
-    result.GetGPUDataPtr(),  // result pointer, in cublas will be result<sup>T</sup>
+    AT_GRAD_GPU_DATA(result),  // result pointer, in cublas will be result<sup>T</sup>
     n  // leading dimension of result<sup>T</sup>
   ));
   return result;
 }
 
 template <>
-Tensor<> matmul_transpose(const Tensor<>& lhs, const Tensor<>& rhs) {
+Tensor<> matmul_transpose(const Tensor<>& lhs, const Tensor<>& rhs, bool at_grad) {
   const auto& left_shape = lhs.GetShape();
   const auto& right_shape = rhs.GetShape();
   if (left_shape.size() != 2 || right_shape.size() != 2 || left_shape[1] != right_shape[1]) {
@@ -159,19 +159,19 @@ Tensor<> matmul_transpose(const Tensor<>& lhs, const Tensor<>& rhs) {
     m,  // col number of lhs<sup>T</sup> and col number of result<sup>T</sup>
     k,  // col number of rhs and row number of lhs<sup>T</sup>
     &alpha,  // alpha
-    rhs.GetGPUDataPtr(),  // rhs pointer, in cublas will be rhs<sup>T</sup>
+    AT_GRAD_GPU_DATA(rhs),  // rhs pointer, in cublas will be rhs<sup>T</sup>
     k,  // leading dimension of rhs<sup>T</sup>
-    lhs.GetGPUDataPtr(),  // lhs pointer, in cublas will be lhs<sup>T</sup>
+    AT_GRAD_GPU_DATA(lhs),  // lhs pointer, in cublas will be lhs<sup>T</sup>
     k,  // leading dimension of lhs<sup>T</sup>
     &beta,  // beta
-    result.GetGPUDataPtr(),  // result pointer, in cublas will be result<sup>T</sup>
+    AT_GRAD_GPU_DATA(result),  // result pointer, in cublas will be result<sup>T</sup>
     n  // leading dimension of result<sup>T</sup>
   ));
   return result;
 }
 
 template <>
-Tensor<> transpose_matmul_transpose(const Tensor<>& lhs, const Tensor<>& rhs) {
+Tensor<> transpose_matmul_transpose(const Tensor<>& lhs, const Tensor<>& rhs, bool at_grad) {
   const auto& left_shape = lhs.GetShape();
   const auto& right_shape = rhs.GetShape();
   if (left_shape.size() != 2 || right_shape.size() != 2 || left_shape[0] != right_shape[1]) {
@@ -190,12 +190,12 @@ Tensor<> transpose_matmul_transpose(const Tensor<>& lhs, const Tensor<>& rhs) {
     m,  // col number of lhs and col number of result<sup>T</sup>
     k,  // col number of rhs and row number of lhs<sup>T</sup>
     &alpha,  // alpha
-    rhs.GetGPUDataPtr(),  // rhs pointer, in cublas will be rhs<sup>T</sup>
+    AT_GRAD_GPU_DATA(rhs),  // rhs pointer, in cublas will be rhs<sup>T</sup>
     k,  // leading dimension of rhs<sup>T</sup>
-    lhs.GetGPUDataPtr(),  // lhs pointer, in cublas will be lhs<sup>T</sup>
+    AT_GRAD_GPU_DATA(lhs),  // lhs pointer, in cublas will be lhs<sup>T</sup>
     m,  // leading dimension of lhs<sup>T</sup>
     &beta,  // beta
-    result.GetGPUDataPtr(),  // result pointer, in cublas will be result<sup>T</sup>
+    AT_GRAD_GPU_DATA(result),  // result pointer, in cublas will be result<sup>T</sup>
     n  // leading dimension of result<sup>T</sup>
   ));
   return result;

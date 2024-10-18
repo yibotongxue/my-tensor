@@ -49,9 +49,19 @@ void Linear<T>::ForwardCPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) {
 }
 
 template <typename T>
+void Linear<T>::BackwardCPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) {
+
+}
+
+template <typename T>
 void Linear<T>::ForwardGPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) {
-  *top = matmul(*Layer<T>::params_[0], *bottom);
-  add_vector(*top, *Layer<T>::params_[1]);
+  CheckShape();
+  *top = add_vector(matmul(*Layer<T>::params_[0], *bottom), *Layer<T>::params_[1]);
+}
+
+template <typename T>
+void Linear<T>::BackwardGPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) {
+  *bottom = transpose_matmul(*Layer<T>::params_[0], *top, true);
 }
 
 template <typename T>
