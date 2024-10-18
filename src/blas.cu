@@ -3,6 +3,12 @@
 #include <handle.cuh>
 #include <utils.cuh>
 
+#include <thrust/reduce.h>
+#include <thrust/transform.h>
+#include <thrust/fill.h>
+
+#include <stdio.h>
+
 namespace my_tensor {
 extern HandlePtr handle;
 
@@ -200,4 +206,24 @@ Tensor<> transpose_matmul_transpose(const Tensor<>& lhs, const Tensor<>& rhs, bo
   ));
   return result;
 }
+
+template <>
+float tensor_sum(const Tensor<>& tensor, bool at_grad) {
+  auto&& data = at_grad ? tensor.GetGPUDiff() : tensor.GetGPUData();
+  return thrust::reduce(data.begin(), data.end(), 0.0f, thrust::plus<float>());
+}
+
+template <>
+Tensor<> row_sum(const Tensor<>& tensor, bool at_grad) {
+  if (tensor.GetShape().size() != 2) {
+    throw BlasError("Tensor shape not match in row sum.");
+  }
+  int row = tensor.GetShape()[0], col = tensor.GetShape()[1];
+  Tensor<> ones({col, 1});
+  auto& data = at_grad ? ones.GetGPUDiff() : ones.GetGPUData();
+  thrust::fill(data.begin(), data.end(), 1.0f);
+  return matmul(tensor, ones, at_grad);
+}
+
+// template Tensor<> row_sum(const Tensor<>& tensor, bool at_grad);
 }  // namespace my_tensor

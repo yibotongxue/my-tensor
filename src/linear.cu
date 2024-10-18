@@ -64,6 +64,7 @@ void Linear<T>::BackwardGPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) {
   CheckShape(bottom, top);
   *bottom = transpose_matmul(*Layer<T>::params_[0], *top, true);
   *Layer<T>::params_[0] = matmul_transpose(*top, *bottom, true);
+  *Layer<T>::params_[1] = row_sum(*top, true);
 }
 
 template <typename T>

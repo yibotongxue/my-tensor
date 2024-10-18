@@ -64,6 +64,22 @@ Tensor<T> transpose_matmul_transpose(const Tensor<T>& lhs, const Tensor<T>& rhs,
 
 template <>
 Tensor<> transpose_matmul_transpose(const Tensor<>& lhs, const Tensor<>& rhs, bool at_grad);
+
+template <typename T>
+T tensor_sum(const Tensor<T>& tensor, bool at_grad = false) {
+  BLAS_UNIMPLEMENTION
+}
+
+template <>
+float tensor_sum(const Tensor<>& tensor, bool at_grad);
+
+template <typename T>
+Tensor<T> row_sum(const Tensor<T>& tensor, bool at_grad = false) {
+  BLAS_UNIMPLEMENTION
+}
+
+template <typename T>
+Tensor<> row_sum(const Tensor<>& tensor, bool at_grad);
 }
 
 #endif  // INCLUDE_BLAS_CUH_

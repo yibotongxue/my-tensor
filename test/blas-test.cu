@@ -6,11 +6,11 @@
 #include <ranges>
 
 // TEST(TrivialTest, always_succeed) {
-//   EXPECT_TRUE(true);
+//   ASSERT_TRUE(true);
 // }
 
 // TEST(TrivialTest, always_fail) {
-//   EXPECT_TRUE(false);
+//   ASSERT_TRUE(false);
 // }
 
 class BlasTest : public ::testing::Test
@@ -49,7 +49,7 @@ TEST_F(BlasTest, Blas_AddTest)
   std::ranges::transform(lhs_data, rhs_data, result_expect.begin(), std::plus<float>());
   for (int i = 0; i < 5000; i++)
   {
-    EXPECT_NEAR(result_expect[i], result_actual[i], 0.01);
+    ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);
   }
 }
 
@@ -190,7 +190,7 @@ BLAS_T_MATMUL_TEST(Diff, true)
     lhs->SetGPU##data_diff(lhs_data);                                                                         \
     rhs->SetGPU##data_diff(rhs_data);                                                                         \
     rhs->Reshape({64, 128});                                                                                  \
-    auto result = std::make_shared<my_tensor::Tensor<>>(matmul_transpose(*lhs, *rhs, at_grad));                        \
+    auto result = std::make_shared<my_tensor::Tensor<>>(matmul_transpose(*lhs, *rhs, at_grad));               \
     ASSERT_EQ(result->GetShape(), result_shape);                                                              \
     std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end()); \
     for (int i = 0; i < 32000; i++)                                                                           \
@@ -211,30 +211,30 @@ BLAS_T_MATMUL_TEST(Diff, true)
 BLAS_MATMUL_T_TEST(Data, false)
 BLAS_MATMUL_T_TEST(Diff, true)
 
-#define BLAS_T_MATMUL_T_TEST(data_diff, at_grad)\
-TEST_F(BlasMatmulTest, Blas_TransposeMatmulTranspose##data_diff##Test)\
-{\
+#define BLAS_T_MATMUL_T_TEST(data_diff, at_grad)                                                              \
+  TEST_F(BlasMatmulTest, Blas_TransposeMatmulTranspose##data_diff##Test)                                      \
+  {                                                                                                           \
     lhs->SetGPU##data_diff(lhs_data);                                                                         \
     rhs->SetGPU##data_diff(rhs_data);                                                                         \
-  lhs->Reshape({128, 500});\
-  rhs->Reshape({64, 128});\
-  auto result = std::make_shared<my_tensor::Tensor<>>(transpose_matmul_transpose(*lhs, *rhs, at_grad));\
-  ASSERT_EQ(result->GetShape(), result_shape);\
-  std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end());\
-  for (int i = 0; i < 32000; i++)\
-  {\
-    int row = i / 64;\
-    int col = i % 64;\
-    for (int k = 0; k < 128; k++)\
-    {\
-      result_expect[i] += lhs_data[k * 500 + row] * rhs_data[col * 128 + k];\
-    }\
-  }\
-  for (int i = 0; i < 32000; i++)\
-  {\
-    ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);\
-  }\
-}
+    lhs->Reshape({128, 500});                                                                                 \
+    rhs->Reshape({64, 128});                                                                                  \
+    auto result = std::make_shared<my_tensor::Tensor<>>(transpose_matmul_transpose(*lhs, *rhs, at_grad));     \
+    ASSERT_EQ(result->GetShape(), result_shape);                                                              \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end()); \
+    for (int i = 0; i < 32000; i++)                                                                           \
+    {                                                                                                         \
+      int row = i / 64;                                                                                       \
+      int col = i % 64;                                                                                       \
+      for (int k = 0; k < 128; k++)                                                                           \
+      {                                                                                                       \
+        result_expect[i] += lhs_data[k * 500 + row] * rhs_data[col * 128 + k];                                \
+      }                                                                                                       \
+    }                                                                                                         \
+    for (int i = 0; i < 32000; i++)                                                                           \
+    {                                                                                                         \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                  \
+    }                                                                                                         \
+  }
 
 BLAS_T_MATMUL_T_TEST(Data, false)
 BLAS_T_MATMUL_T_TEST(Diff, true)
@@ -276,6 +276,62 @@ TEST_F(BlasTransposeTest, Blas_TransposeTest)
     }
   }
 }
+
+class BlasSumTest : public ::testing::Test
+{
+protected:
+  void SetUp() override
+  {
+    data.resize(20000);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dis(-10.0f, 10.0f);
+    auto random_func = [&gen, &dis]() -> float
+    { return dis(gen); };
+    std::ranges::generate(data, random_func);
+    tensor = std::make_shared<my_tensor::Tensor<>>(shape);
+  }
+  const std::vector<int> shape{100, 200};
+  std::vector<float> data;
+  my_tensor::TensorPtr<> tensor;
+};
+
+#define BLAS_SUM_TENSOR_SUM_TEST(data_diff, at_grad)                                       \
+  TEST_F(BlasSumTest, Blas_SumTensorSum##data_diff##Test)                                  \
+  {                                                                                        \
+    tensor->SetGPU##data_diff(data);                                                       \
+    float sum_actual = thrust::reduce(data.begin(), data.end(), 0, thrust::plus<float>()); \
+    float sum_expect = std::accumulate(data.begin(), data.end(), 0, std::plus<float>());   \
+    ASSERT_NEAR(sum_actual, sum_expect, 0.01);                                             \
+  }
+
+BLAS_SUM_TENSOR_SUM_TEST(Data, false)
+BLAS_SUM_TENSOR_SUM_TEST(Diff, true)
+
+#define BLAS_SUM_ROW_SUM_TEST(data_diff, at_grad)                                                             \
+  TEST_F(BlasSumTest, Blas_SumRowSum##data_diff##Test)                                                        \
+  {                                                                                                           \
+    tensor->SetGPU##data_diff(data);                                                                          \
+    auto result = std::make_shared<my_tensor::Tensor<>>(row_sum(*tensor, at_grad));                           \
+    const std::vector<int> shape_expect{100, 1};                                                              \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end()); \
+    ASSERT_EQ(result->GetShape(), shape_expect);                                                              \
+    std::vector<float> result_expect(100, 0.0f);                                                              \
+    for (int i = 0; i < 100; i++)                                                                             \
+    {                                                                                                         \
+      for (int j = 0; j < 200; j++)                                                                           \
+      {                                                                                                       \
+        result_expect[i] += data[i * 200 + j];                                                                \
+      }                                                                                                       \
+    }                                                                                                         \
+    for (int i = 0; i < 100; i++)                                                                             \
+    {                                                                                                         \
+      ASSERT_NEAR(result_actual[i], result_expect[i], 0.01);                                                  \
+    }                                                                                                         \
+  }
+
+BLAS_SUM_ROW_SUM_TEST(Data, false);
+BLAS_SUM_ROW_SUM_TEST(Diff, true);
 
 int main(int argc, char **argv)
 {

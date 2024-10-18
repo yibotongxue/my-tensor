@@ -75,14 +75,16 @@ inline thrust::device_vector<T>& SyncedVector<T>::GetMutableGPUData() {
 
 template <typename T>
 inline void SyncedVector<T>::SetCPUData(const std::vector<T>& data) {
-  cpu_data_.assign(data.begin(), data.end());
+  cpu_data_.resize(data.size());
+  thrust::copy(data.begin(), data.end(), cpu_data_.begin());
   size_ = data.size();
   state_ = kHeadAtCPU;
 }
 
 template <typename T>
 inline void SyncedVector<T>::SetGPUData(const std::vector<T>& data) {
-  gpu_data_.assign(data.begin(), data.end());
+  gpu_data_.resize(data.size());
+  thrust::copy(data.begin(), data.end(), gpu_data_.begin());
   size_ = data.size();
   state_ = kHeadAtGPU;
 }
