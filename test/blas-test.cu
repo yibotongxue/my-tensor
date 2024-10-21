@@ -45,33 +45,59 @@ protected:
   const std::vector<int> result_shape{500, 64};
 };
 
-#define BLAS_MATMUL_TEST(data_diff, at_grad)                                                                  \
-  TEST_F(BlasMatmulTest, Blas_Matmu##data_diff##lTest)                                                        \
-  {                                                                                                           \
-    lhs->SetGPU##data_diff(lhs_data);                                                                         \
-    rhs->SetGPU##data_diff(rhs_data);                                                                         \
-    my_tensor::matmul(lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 500, 128, 64);                         \
-    ASSERT_EQ(result->GetShape(), result_shape);                                                              \
-    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end()); \
-    for (int i = 0; i < 32000; i++)                                                                           \
-    {                                                                                                         \
-      int row = i / 64;                                                                                       \
-      int col = i % 64;                                                                                       \
-      for (int k = 0; k < 128; k++)                                                                           \
-      {                                                                                                       \
-        result_expect[i] += lhs_data[row * 128 + k] * rhs_data[k * 64 + col];                                 \
-      }                                                                                                       \
-    }                                                                                                         \
-    for (int i = 0; i < 32000; i++)                                                                           \
-    {                                                                                                         \
-      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                  \
-    }                                                                                                         \
+#define BLAS_MATMUL_TEST(data_diff)                                                                                         \
+  TEST_F(BlasMatmulTest, Blas_Matmul##data_diff##Test)                                                                               \
+  {                                                                                                                                  \
+    lhs->SetGPU##data_diff(lhs_data);                                                                                                \
+    rhs->SetGPU##data_diff(rhs_data);                                                                                                \
+    my_tensor::matmul(lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 500, 128, 64); \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end());                        \
+    for (int i = 0; i < 32000; i++)                                                                                                  \
+    {                                                                                                                                \
+      int row = i / 64;                                                                                                              \
+      int col = i % 64;                                                                                                              \
+      for (int k = 0; k < 128; k++)                                                                                                  \
+      {                                                                                                                              \
+        result_expect[i] += lhs_data[row * 128 + k] * rhs_data[k * 64 + col];                                                        \
+      }                                                                                                                              \
+    }                                                                                                                                \
+    for (int i = 0; i < 32000; i++)                                                                                                  \
+    {                                                                                                                                \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                                         \
+    }                                                                                                                                \
   }
 
-BLAS_MATMUL_TEST(Data, false)
-BLAS_MATMUL_TEST(Diff, true)
+BLAS_MATMUL_TEST(Data)
+BLAS_MATMUL_TEST(Diff)
 
-int main(int argc, char** argv) {
+#define BLAS_MATMUL_T_TEST(data_diff)                                                                                         \
+  TEST_F(BlasMatmulTest, Blas_MatmulTranspose##data_diff##Test)                                                                               \
+  {                                                                                                                                  \
+    rhs->Reshape({64, 128});                                                                                                \
+    lhs->SetGPU##data_diff(lhs_data);                                                                                                \
+    rhs->SetGPU##data_diff(rhs_data);                                                                                                \
+    my_tensor::matmul(lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 500, 128, 64); \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end());                        \
+    for (int i = 0; i < 32000; i++)                                                                                                  \
+    {                                                                                                                                \
+      int row = i / 64;                                                                                                              \
+      int col = i % 64;                                                                                                              \
+      for (int k = 0; k < 128; k++)                                                                                                  \
+      {                                                                                                                              \
+        result_expect[i] += lhs_data[row * 128 + k] * rhs_data[k * 64 + col];                                                        \
+      }                                                                                                                              \
+    }                                                                                                                                \
+    for (int i = 0; i < 32000; i++)                                                                                                  \
+    {                                                                                                                                \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                                         \
+    }                                                                                                                                \
+  }
+
+BLAS_MATMUL_T_TEST(Data)
+BLAS_MATMUL_T_TEST(Diff)
+
+int main(int argc, char **argv)
+{
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

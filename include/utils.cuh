@@ -39,6 +39,8 @@ inline int CudaGetBlocks(const int N)
     if (status != CUBLAS_STATUS_SUCCESS)                                        \
     {                                                                           \
       std::cerr << "CuBLAS error:\r\nstatus = " << status                       \
+                << ", name = " << cublasGetStatusName(status)                   \
+                << ", description = " << cublasGetStatusString(status)          \
                 << "\r\nfile = " << __FILE__ << ", line" << __LINE__ << "\r\n"; \
     }                                                                           \
   } while (0);
