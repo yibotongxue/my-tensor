@@ -50,21 +50,24 @@ void Linear<T>::ForwardCPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) {
 
 template <typename T>
 void Linear<T>::BackwardCPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) {
-
+  CheckShape(bottom, top);
+  const auto& weight = Layer<T>::params_[0]->GetCPUData();
+  const auto& bias = Layer<T>::params_[1]->GetCPUData();
+  const auto& top_diff = top->GetCPUDiff();
 }
 
 template <typename T>
 void Linear<T>::ForwardGPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) {
   CheckShape(bottom, top);
-  *top = add_vector(matmul(*Layer<T>::params_[0], *bottom), *Layer<T>::params_[1]);
+  // *top = add_vector(matmul(*Layer<T>::params_[0], *bottom), *Layer<T>::params_[1]);
 }
 
 template <typename T>
 void Linear<T>::BackwardGPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) {
   CheckShape(bottom, top);
-  *bottom = transpose_matmul(*Layer<T>::params_[0], *top, true);
-  *Layer<T>::params_[0] = matmul_transpose(*top, *bottom, true);
-  *Layer<T>::params_[1] = row_sum(*top, true);
+  // *bottom = transpose_matmul(*Layer<T>::params_[0], *top, true);
+  // *Layer<T>::params_[0] = matmul_transpose(*top, *bottom, true);
+  // *Layer<T>::params_[1] = row_sum(*top, true);
 }
 
 template <typename T>
