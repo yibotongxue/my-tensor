@@ -228,6 +228,31 @@ protected:
 BLAS_SUM_TENSOR_SUM_TEST(Data)
 BLAS_SUM_TENSOR_SUM_TEST(Diff)
 
+#define BLAS_SUM_ROW_SUM_TEST(data_diff)                                                                      \
+  TEST_F(BlasSumTest, Blas_SumRowSum##data_diff##Test)                                                        \
+  {                                                                                                           \
+    tensor->SetGPU##data_diff(data);                                                                          \
+    const std::vector<int> result_shape {100, 1};                                            \
+    auto result = std::make_shared<my_tensor::Tensor<>>(result_shape);                                            \
+    my_tensor::row_sum(tensor->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 100, 200);         \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end()); \
+    std::vector<float> result_expect(100, 0.0f);                                                              \
+    for (int i = 0; i < 100; i++)                                                                             \
+    {                                                                                                         \
+      for (int j = 0; j < 200; j++)                                                                           \
+      {                                                                                                       \
+        result_expect[i] += data[i * 200 + j];                                                                \
+      }                                                                                                       \
+    }                                                                                                         \
+    for (int i = 0; i < 100; i++)                                                                             \
+    {                                                                                                         \
+      ASSERT_NEAR(result_actual[i], result_expect[i], 0.01);                                                  \
+    }                                                                                                         \
+  }
+
+BLAS_SUM_ROW_SUM_TEST(Data);
+BLAS_SUM_ROW_SUM_TEST(Diff);
+
 int main(int argc, char **argv)
 {
   ::testing::InitGoogleTest(&argc, argv);

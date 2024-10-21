@@ -132,10 +132,19 @@ void add_vector(float *mat, const float *vec, const int m, const int n) {
 }
 
 template <>
-float tensor_sum(const float *tensor, int cnt) {
+float tensor_sum(const float *tensor, const int cnt) {
   return thrust::reduce(thrust::device_pointer_cast(tensor),
                         thrust::device_pointer_cast(tensor + cnt),
                         0.0f, thrust::plus<float>());
+}
+
+template <>
+void row_sum(const float *mat, float *result, const int m, const int n) {
+  float *ones = nullptr;
+  cudaMalloc(&ones, n * sizeof(float));
+  SetAllOnes<<<CudaGetBlocks(n), kCudaThreadNum>>>(ones, n);
+  matmul(mat, ones, result, m, n, 1);
+  cudaFree(ones);
 }
 
 }  // namespace my_tensor
