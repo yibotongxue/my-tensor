@@ -15,6 +15,14 @@ template <>
 void matmul(const float *A, const float *B, float *C, const int m, const int k, const int n);
 
 template <typename T>
+void transpose_matmul(const T *A, const T *B, T *C, const int m, const int k, const int n) {
+  BLAS_UNIMPLEMENTION
+}
+
+template <>
+void transpose_matmul(const float *A, const float *B, float *C, const int m, const int k, const int n);
+
+template <typename T>
 void matmul_transpose(const T *A, const T *B, T *C, const int m, const int k, const int n) {
   BLAS_UNIMPLEMENTION
 }

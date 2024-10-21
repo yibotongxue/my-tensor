@@ -45,7 +45,7 @@ protected:
   const std::vector<int> result_shape{500, 64};
 };
 
-#define BLAS_MATMUL_TEST(data_diff)                                                                                         \
+#define BLAS_MATMUL_TEST(data_diff)                                                                                                  \
   TEST_F(BlasMatmulTest, Blas_Matmul##data_diff##Test)                                                                               \
   {                                                                                                                                  \
     lhs->SetGPU##data_diff(lhs_data);                                                                                                \
@@ -70,31 +70,54 @@ protected:
 BLAS_MATMUL_TEST(Data)
 BLAS_MATMUL_TEST(Diff)
 
-#define BLAS_MATMUL_T_TEST(data_diff)                                                                                         \
-  TEST_F(BlasMatmulTest, Blas_MatmulTranspose##data_diff##Test)                                                                               \
-  {                                                                                                                                  \
-    rhs->Reshape({64, 128});                                                                                                \
-    lhs->SetGPU##data_diff(lhs_data);                                                                                                \
-    rhs->SetGPU##data_diff(rhs_data);                                                                                                \
-    my_tensor::matmul(lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 500, 128, 64); \
-    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end());                        \
-    for (int i = 0; i < 32000; i++)                                                                                                  \
-    {                                                                                                                                \
-      int row = i / 64;                                                                                                              \
-      int col = i % 64;                                                                                                              \
-      for (int k = 0; k < 128; k++)                                                                                                  \
-      {                                                                                                                              \
-        result_expect[i] += lhs_data[row * 128 + k] * rhs_data[k * 64 + col];                                                        \
-      }                                                                                                                              \
-    }                                                                                                                                \
-    for (int i = 0; i < 32000; i++)                                                                                                  \
-    {                                                                                                                                \
-      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                                         \
-    }                                                                                                                                \
+#define BLAS_MATMUL_T_TEST(data_diff)                                                                                                          \
+  TEST_F(BlasMatmulTest, Blas_MatmulTranspose##data_diff##Test)                                                                                \
+  {                                                                                                                                            \
+    rhs->Reshape({64, 128});                                                                                                                   \
+    lhs->SetGPU##data_diff(lhs_data);                                                                                                          \
+    rhs->SetGPU##data_diff(rhs_data);                                                                                                          \
+    my_tensor::matmul_transpose(lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 500, 128, 64); \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end());                                  \
+    for (int i = 0; i < 32000; i++)                                                                                                            \
+    {                                                                                                                                          \
+      int row = i / 64;                                                                                                                        \
+      int col = i % 64;                                                                                                                        \
+      for (int k = 0; k < 128; k++)                                                                                                            \
+      {                                                                                                                                        \
+        result_expect[i] += lhs_data[row * 128 + k] * rhs_data[col * 128 + k];                                                                 \
+      }                                                                                                                                        \
+    }                                                                                                                                          \
+    for (int i = 0; i < 32000; i++)                                                                                                            \
+    {                                                                                                                                          \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                                                   \
+    }                                                                                                                                          \
   }
 
 BLAS_MATMUL_T_TEST(Data)
 BLAS_MATMUL_T_TEST(Diff)
+
+#define BLAS_T_MATMUL_TEST(data_diff)                                                                                                          \
+  TEST_F(BlasMatmulTest, Blas_TransposeMatmul##data_diff##Test)                                                                                \
+  {                                                                                                                                            \
+    lhs->Reshape({128, 500});                                                                                                                  \
+    lhs->SetGPU##data_diff(lhs_data);                                                                                                          \
+    rhs->SetGPU##data_diff(rhs_data);                                                                                                          \
+    my_tensor::transpose_matmul(lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 500, 128, 64); \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end());                                  \
+    for (int i = 0; i < 32000; i++)                                                                                                            \
+    {                                                                                                                                          \
+      int row = i / 64;                                                                                                                        \
+      int col = i % 64;                                                                                                                        \
+      for (int k = 0; k < 128; k++)                                                                                                            \
+      {                                                                                                                                        \
+        result_expect[i] += lhs_data[k * 500 + row] * rhs_data[k * 64 + col];                                                                  \
+      }                                                                                                                                        \
+    }                                                                                                                                          \
+    for (int i = 0; i < 32000; i++)                                                                                                            \
+    {                                                                                                                                          \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                                                   \
+    }                                                                                                                                          \
+  }
 
 int main(int argc, char **argv)
 {
