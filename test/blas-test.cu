@@ -119,6 +119,36 @@ BLAS_MATMUL_T_TEST(Diff)
     }                                                                                                                                          \
   }
 
+BLAS_T_MATMUL_TEST(Data)
+BLAS_T_MATMUL_TEST(Diff)
+
+#define BLAS_T_MATMUL_T_TEST(data_diff)                                                                                                                  \
+  TEST_F(BlasMatmulTest, Blas_TransposeMatmulTranspose##data_diff##Test)                                                                                 \
+  {                                                                                                                                                      \
+    lhs->Reshape({128, 500});                                                                                                                            \
+    rhs->Reshape({64, 128});                                                                                                                             \
+    lhs->SetGPU##data_diff(lhs_data);                                                                                                                    \
+    rhs->SetGPU##data_diff(rhs_data);                                                                                                                    \
+    my_tensor::transpose_matmul_transpose(lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 500, 128, 64); \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end());                                            \
+    for (int i = 0; i < 32000; i++)                                                                                                                      \
+    {                                                                                                                                                    \
+      int row = i / 64;                                                                                                                                  \
+      int col = i % 64;                                                                                                                                  \
+      for (int k = 0; k < 128; k++)                                                                                                                      \
+      {                                                                                                                                                  \
+        result_expect[i] += lhs_data[k * 500 + row] * rhs_data[col * 128 + k];                                                                           \
+      }                                                                                                                                                  \
+    }                                                                                                                                                    \
+    for (int i = 0; i < 32000; i++)                                                                                                                      \
+    {                                                                                                                                                    \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                                                             \
+    }                                                                                                                                                    \
+  }
+
+BLAS_T_MATMUL_T_TEST(Data)
+BLAS_T_MATMUL_T_TEST(Diff)
+
 int main(int argc, char **argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
