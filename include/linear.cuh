@@ -6,7 +6,7 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <typename T = float>
 class Linear final : public Layer<T> {
  public:
   Linear(const std::vector<TensorPtr<T>>& params);
@@ -15,14 +15,21 @@ class Linear final : public Layer<T> {
 
   virtual ~Linear() = default;
 
+  const TensorPtr<T> GetWeight() const { return this->params_[0]; }
+  TensorPtr<T> GetWeight() { return this->params_[0]; }
+  const TensorPtr<T> GetBias() const { return this->params_[1]; }
+  TensorPtr<T> GetBias() { return this->params_[1]; }
+
   void ForwardCPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) override;
   void BackwardCPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) override;
   void ForwardGPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) override;
   void BackwardGPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) override;
 
 private:
-  void CheckShape(const TensorPtr<T>& top, const TensorPtr<T>& bottom) const;
+  void CheckShape(const TensorPtr<T>& bottom, const TensorPtr<T>& top) const;
 };  // class Linear
+
+extern template class Linear<>;
 
 }  // namespace my_tensor
 

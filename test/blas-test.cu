@@ -232,8 +232,8 @@ BLAS_SUM_TENSOR_SUM_TEST(Diff)
   TEST_F(BlasSumTest, Blas_SumRowSum##data_diff##Test)                                                        \
   {                                                                                                           \
     tensor->SetGPU##data_diff(data);                                                                          \
-    const std::vector<int> result_shape {100, 1};                                            \
-    auto result = std::make_shared<my_tensor::Tensor<>>(result_shape);                                            \
+    const std::vector<int> result_shape{100, 1};                                                              \
+    auto result = std::make_shared<my_tensor::Tensor<>>(result_shape);                                        \
     my_tensor::row_sum(tensor->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 100, 200);         \
     std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end()); \
     std::vector<float> result_expect(100, 0.0f);                                                              \

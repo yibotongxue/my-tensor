@@ -24,7 +24,7 @@ class LayerFactory {
 };
 
 template <typename T>
-using LayerFactoryPtr = std::unique_ptr<LayerFactory<T>>;
+using LayerFactoryPtr = std::shared_ptr<LayerFactory<T>>;
 
 template <typename T = float>
 class ReluFactory final : public LayerFactory<T> {

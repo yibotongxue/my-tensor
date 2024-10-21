@@ -39,7 +39,7 @@
       relu.reset();                                           \
       bottom.reset();                                         \
       top.reset();                                            \
-      relu = std::make_unique<my_tensor::Relu<>>();           \
+      relu = std::make_shared<my_tensor::Relu<>>();           \
       bottom = std::make_shared<my_tensor::Tensor<>>(shape);  \
       top = std::make_shared<my_tensor::Tensor<>>(shape);     \
       bottom->Set##device##Data(data);                        \

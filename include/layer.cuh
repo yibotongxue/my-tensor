@@ -12,7 +12,12 @@ template <typename T=float>
 class Layer {
  public:
   // Default constructor.
-  Layer(const std::vector<TensorPtr<T>>& params) : params_(params) {}
+  Layer(const std::vector<TensorPtr<T>>& params) {
+    params_.resize(params.size());
+    for (int i = 0; i < params_.size(); i++) {
+      params_[i] = std::make_shared<Tensor<T>>(*params[i]);
+    }
+  }
 
   // The layer can not be copied or moved.
   DISABLE_LAYER_COPY(Layer)
@@ -33,7 +38,7 @@ class Layer {
 
 // Layer pointer.
 template <typename T = float>
-using LayerPtr = std::unique_ptr<my_tensor::Layer<T>>;
+using LayerPtr = std::shared_ptr<my_tensor::Layer<T>>;
 
 extern template class my_tensor::Layer<>;
 }  // namespace my_tensor

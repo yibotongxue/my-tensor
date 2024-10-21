@@ -8,11 +8,11 @@ namespace my_tensor {
 
 template <typename T>
 Linear<T>::Linear(const std::vector<TensorPtr<T>>& params) : Layer<T>(params) {
-  if (Layer<T>::params_.size() != 2) {
+  if (this->params_.size() != 2) {
     throw LinearError("Params size not equals to 2 in linear layer.");
   }
-  const std::vector<int>& weight_shape = Layer<T>::params_[0]->GetShape();
-  const std::vector<int>& bias_shape = Layer<T>::params_[1]->GetShape();
+  const std::vector<int>& weight_shape = this->params_[0]->GetShape();
+  const std::vector<int>& bias_shape = this->params_[1]->GetShape();
   if (weight_shape.size() != 2) {
     throw LinearError("Weight shape not be two dimension.");
   }
@@ -27,21 +27,18 @@ Linear<T>::Linear(const std::vector<TensorPtr<T>>& params) : Layer<T>(params) {
 template <typename T>
 void Linear<T>::ForwardCPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) {
   CheckShape(bottom, top);
-  const auto& weight = Layer<T>::params_[0]->GetCPUData();
-  const auto& bias = Layer<T>::params_[1]->GetCPUData();
+  const auto& weight_data = this->params_[0]->GetCPUData();
+  const auto& bias_data = this->params_[1]->GetCPUData();
   const auto& bottom_data = bottom->GetCPUData();
   auto& top_data = top->GetCPUData();
-  const std::vector<int>& weight_shape = Layer<T>::params_[0]->GetShape();
-  const std::vector<int>& bottom_shape = bottom->GetShape();
-  const std::vector<int>& top_shape = top->GetShape();
-  int m = weight_shape[0];
-  int k = bottom_shape[0];
-  int n = bottom_shape[1];
+  int m = this->params_[0]->GetShape()[0];
+  int k = this->params_[0]->GetShape()[1];
+  int n = bottom->GetShape()[1];
   for (int i = 0; i < m; i++) {
     for (int j = 0; j < n; j++) {
-      float temp = bias[i];
+      float temp = bias_data[i];
       for (int l = 0; l < k; l++) {
-        temp += weight[i * k + l] * bottom_data[l * n + j];
+        temp += weight_data[i * k + l] * bottom_data[l * n + j];
       }
       top_data[i * n + j] = temp;
     }
@@ -51,28 +48,82 @@ void Linear<T>::ForwardCPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) {
 template <typename T>
 void Linear<T>::BackwardCPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) {
   CheckShape(bottom, top);
-  const auto& weight = Layer<T>::params_[0]->GetCPUData();
-  const auto& bias = Layer<T>::params_[1]->GetCPUData();
+  int m = this->params_[0]->GetShape()[0];
+  int k = this->params_[0]->GetShape()[1];
+  int n = bottom->GetShape()[1];
+  const auto& weight = this->params_[0]->GetCPUData();
+  const auto& bias = this->params_[1]->GetCPUData();
   const auto& top_diff = top->GetCPUDiff();
+  const auto& bottom_data = bottom->GetCPUData();
+  auto& weight_diff = this->params_[0]->GetCPUDiff();
+  auto& bias_diff = this->params_[1]->GetCPUDiff();
+  auto& bottom_diff = bottom->GetCPUDiff();
+  // partial x
+  for (int i = 0; i < k; i++) {
+    for (int j = 0; j < n; j++) {
+      T temp {0};
+      for (int l = 0; l < m; l++) {
+        temp += weight[l * k + i] * top_diff[l * n + j];
+      }
+      bottom_diff[i * n + k] = temp;
+    }
+  }
+  // partial weight
+  for (int i = 0; i < m; i++) {
+    for (int j = 0; j < k; j++) {
+      T temp {0};
+      for (int l = 0; l < n; l++) {
+        temp += top_diff[i * n + l] * bottom_data[i * k + j];
+      }
+      weight_diff[i * k + j] = temp;
+    }
+  }
+  // partial bias
+  for (int i = 0; i < m; i++) {
+    T temp {0};
+    for (int j = 0; j < n; j++) {
+      temp += top_diff[i * n + j];
+    }
+    bias_diff[i] = temp;
+  }
 }
 
 template <typename T>
 void Linear<T>::ForwardGPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) {
   CheckShape(bottom, top);
-  // *top = add_vector(matmul(*Layer<T>::params_[0], *bottom), *Layer<T>::params_[1]);
+  int m = this->params_[0]->GetShape()[0];
+  int k = this->params_[0]->GetShape()[1];
+  int n = bottom->GetShape()[1];
+  matmul(this->params_[0]->GetGPUDataPtr(),
+         bottom->GetGPUDataPtr(),
+         top->GetGPUDataPtr(),
+         m, k, n);
+  add_vector(top->GetGPUDataPtr(), this->params_[1]->GetGPUDataPtr(), m, n);
 }
 
 template <typename T>
 void Linear<T>::BackwardGPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) {
   CheckShape(bottom, top);
-  // *bottom = transpose_matmul(*Layer<T>::params_[0], *top, true);
-  // *Layer<T>::params_[0] = matmul_transpose(*top, *bottom, true);
-  // *Layer<T>::params_[1] = row_sum(*top, true);
+  int m = this->params_[0]->GetShape()[0];
+  int k = this->params_[0]->GetShape()[1];
+  int n = bottom->GetShape()[1];
+  transpose_matmul(this->params_[0]->GetGPUDiffPtr(),
+                   top->GetGPUDiffPtr(),
+                   bottom->GetGPUDiffPtr(),
+                   m, k, n);
+  matmul_transpose(top->GetGPUDiffPtr(),
+                   bottom->GetGPUDataPtr(),
+                   this->params_[0]->GetGPUDiffPtr(),
+                   m, n, k);
+  row_sum(top->GetGPUDiffPtr(), this->params_[1]->GetGPUDiffPtr(), m, n);
+  // *bottom = transpose_matmul(*this->params_[0], *top, true);
+  // *this->params_[0] = matmul_transpose(*top, *bottom, true);
+  // *this->params_[1] = row_sum(*top, true);
 }
 
 template <typename T>
 void Linear<T>::CheckShape(const TensorPtr<T>& bottom, const TensorPtr<T>& top) const {
-  const std::vector<int>& weight_shape = Layer<T>::params_[0]->GetShape();
+  const std::vector<int>& weight_shape = this->params_[0]->GetShape();
   const std::vector<int>& bottom_shape = bottom->GetShape();
   const std::vector<int>& top_shape = top->GetShape();
   if (weight_shape[1] != bottom_shape[0]) {
@@ -85,5 +136,7 @@ void Linear<T>::CheckShape(const TensorPtr<T>& bottom, const TensorPtr<T>& top) 
     throw LinearError("Matmul bottom and top shapes not match.");
   }
 }
+
+template class Linear<>;
 
 }  // namespace my_tensor

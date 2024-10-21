@@ -29,7 +29,7 @@
       sigmoid.reset();                                        \
       bottom.reset();                                         \
       top.reset();                                            \
-      sigmoid = std::make_unique<my_tensor::Sigmoid<>>();     \
+      sigmoid = std::make_shared<my_tensor::Sigmoid<>>();     \
       bottom = std::make_shared<my_tensor::Tensor<>>(shape);  \
       top = std::make_shared<my_tensor::Tensor<>>(shape);     \
       bottom->Set##device##Data(data);                        \
