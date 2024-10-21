@@ -38,6 +38,13 @@ void transpose_matmul_transpose(const T *A, const T *B, T *C, const int m, const
 template <>
 void transpose_matmul_transpose(const float *A, const float *B, float *C, const int m, const int k, const int n);
 
+template <typename T>
+void add_vector(T *mat, const T *vec, const int m, const int n) {
+  BLAS_UNIMPLEMENTION
+}
+
+template <>
+void add_vector(float *mat, const float *vec, const int m, const int n);
 }  // namespace my_tensor
 
 #endif  // INCLUDE_BLAS_CUH_

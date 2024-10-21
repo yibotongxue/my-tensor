@@ -149,6 +149,54 @@ BLAS_T_MATMUL_TEST(Diff)
 BLAS_T_MATMUL_T_TEST(Data)
 BLAS_T_MATMUL_T_TEST(Diff)
 
+class BlasAddVecTest : public ::testing::Test
+{
+protected:
+  void SetUp() override
+  {
+    tensor_data.resize(200000);
+    vec_data.resize(1000);
+    result_expect.resize(200000);
+    tensor = std::make_shared<my_tensor::Tensor<>>(tensor_shape);
+    vec = std::make_shared<my_tensor::Tensor<>>(vec_shape);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dis(-10.0f, 10.0f);
+    auto random_func = [&gen, &dis]() -> float
+    { return dis(gen); };
+    std::ranges::generate(tensor_data, random_func);
+    std::ranges::generate(vec_data, random_func);
+  }
+
+  std::vector<float> tensor_data;
+  std::vector<float> vec_data;
+  std::vector<float> result_expect;
+  my_tensor::TensorPtr<> tensor;
+  my_tensor::TensorPtr<> vec;
+  const std::vector<int> tensor_shape{1000, 200};
+  const std::vector<int> vec_shape{1000, 1};
+};
+
+#define BLAS_ADD_VEC_TEST(data_diff)                                                                          \
+  TEST_F(BlasAddVecTest, Blas_AddVec##data_diff##Test)                                                        \
+  {                                                                                                           \
+    for (int i = 0; i < 200000; i++)                                                                          \
+    {                                                                                                         \
+      result_expect[i] = tensor_data[i] + vec_data[i / 200];                                                  \
+    }                                                                                                         \
+    tensor->SetGPU##data_diff(tensor_data);                                                                   \
+    vec->SetGPU##data_diff(vec_data);                                                                         \
+    my_tensor::add_vector(tensor->GetGPU##data_diff##Ptr(), vec->GetGPU##data_diff##Ptr(), 1000, 200);       \
+    std::vector<float> result_actual(tensor->GetGPU##data_diff().begin(), tensor->GetGPU##data_diff().end()); \
+    for (int i = 0; i < 200000; i++)                                                                          \
+    {                                                                                                         \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                  \
+    }                                                                                                         \
+  }
+
+BLAS_ADD_VEC_TEST(Data)
+BLAS_ADD_VEC_TEST(Diff)
+
 int main(int argc, char **argv)
 {
   ::testing::InitGoogleTest(&argc, argv);

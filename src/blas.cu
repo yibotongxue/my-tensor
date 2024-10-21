@@ -97,4 +97,36 @@ void transpose_matmul_transpose(const float *A, const float *B, float *C, const 
   ));
 }
 
+namespace {
+__global__ void SetAllOnes(float *ones, int n) {
+  CUDA_KERNEL_LOOP(i, n) {
+    ones[i] = 1.0f;
+  }
+}
+}  // namespace
+
+template <>
+void add_vector(float *mat, const float *vec, const int m, const int n) {
+  float alpha = 1.0f;
+  float beta = 1.0f;
+  float *ones = nullptr;
+  cudaMalloc(&ones, n * sizeof(float));
+  SetAllOnes<<<CudaGetBlocks(n), kCudaThreadNum>>>(ones, n);
+  CUBLAS_ERROR_CHECK(cublasSgemm(handle->GetHandle(),
+    CUBLAS_OP_N,
+    CUBLAS_OP_N,
+    n,
+    m,
+    1,
+    &alpha,
+    ones,
+    n,
+    vec,
+    1,
+    &beta,
+    mat,
+    n));
+  cudaFree(ones);
+}
+
 }  // namespace my_tensor
