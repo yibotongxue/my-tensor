@@ -186,7 +186,7 @@ protected:
     }                                                                                                         \
     tensor->SetGPU##data_diff(tensor_data);                                                                   \
     vec->SetGPU##data_diff(vec_data);                                                                         \
-    my_tensor::add_vector(tensor->GetGPU##data_diff##Ptr(), vec->GetGPU##data_diff##Ptr(), 1000, 200);       \
+    my_tensor::add_vector(tensor->GetGPU##data_diff##Ptr(), vec->GetGPU##data_diff##Ptr(), 1000, 200);        \
     std::vector<float> result_actual(tensor->GetGPU##data_diff().begin(), tensor->GetGPU##data_diff().end()); \
     for (int i = 0; i < 200000; i++)                                                                          \
     {                                                                                                         \
@@ -196,6 +196,37 @@ protected:
 
 BLAS_ADD_VEC_TEST(Data)
 BLAS_ADD_VEC_TEST(Diff)
+
+class BlasSumTest : public ::testing::Test
+{
+protected:
+  void SetUp() override
+  {
+    data.resize(20000);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dis(-10.0f, 10.0f);
+    auto random_func = [&gen, &dis]() -> float
+    { return dis(gen); };
+    std::ranges::generate(data, random_func);
+    tensor = std::make_shared<my_tensor::Tensor<>>(shape);
+  }
+  const std::vector<int> shape{100, 200};
+  std::vector<float> data;
+  my_tensor::TensorPtr<> tensor;
+};
+
+#define BLAS_SUM_TENSOR_SUM_TEST(data_diff)                                                 \
+  TEST_F(BlasSumTest, Blas_SumTensorSum##data_diff##Test)                                   \
+  {                                                                                         \
+    tensor->SetGPU##data_diff(data);                                                        \
+    float sum_actual = my_tensor::tensor_sum(tensor->GetGPU##data_diff##Ptr(), 20000);      \
+    float sum_expect = std::accumulate(data.begin(), data.end(), 0.0f, std::plus<float>()); \
+    ASSERT_NEAR(sum_actual, sum_expect, 0.01);                                              \
+  }
+
+BLAS_SUM_TENSOR_SUM_TEST(Data)
+BLAS_SUM_TENSOR_SUM_TEST(Diff)
 
 int main(int argc, char **argv)
 {

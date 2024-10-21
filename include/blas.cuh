@@ -45,6 +45,14 @@ void add_vector(T *mat, const T *vec, const int m, const int n) {
 
 template <>
 void add_vector(float *mat, const float *vec, const int m, const int n);
+
+template <typename T>
+T tensor_sum(const T *tensor, int cnt) {
+  BLAS_UNIMPLEMENTION
+}
+
+template <>
+float tensor_sum(const float *tensor, int cnt);
 }  // namespace my_tensor
 
 #endif  // INCLUDE_BLAS_CUH_

@@ -3,6 +3,8 @@
 
 #include <cublas_v2.h>
 #include <iostream>
+#include <thrust/device_vector.h>
+#include <thrust/reduce.h>
 
 namespace my_tensor {
 template <>
@@ -127,6 +129,13 @@ void add_vector(float *mat, const float *vec, const int m, const int n) {
     mat,
     n));
   cudaFree(ones);
+}
+
+template <>
+float tensor_sum(const float *tensor, int cnt) {
+  return thrust::reduce(thrust::device_pointer_cast(tensor),
+                        thrust::device_pointer_cast(tensor + cnt),
+                        0.0f, thrust::plus<float>());
 }
 
 }  // namespace my_tensor
