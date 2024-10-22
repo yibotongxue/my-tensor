@@ -75,6 +75,9 @@
         "__locale": "cpp",
         "locale": "cpp",
         "queue": "cpp",
-        "text_encoding": "cpp"
+        "text_encoding": "cpp",
+        "codecvt": "cpp",
+        "forward_list": "cpp",
+        "valarray": "cpp"
     }
 }

@@ -77,6 +77,14 @@ inline int CudaGetBlocks(const int N)
 
 #define BLAS_UNIMPLEMENTION throw BlasError("Unimplemention error.");
 
+#define IM2COL_UNIMPLEMENTION throw Im2colError("Unimplemention error.");
+
+#define CHECK_KERNEL_SHAPE                          \
+  if ((kernel_h % 2 == 0) || (kernel_w % 2 == 0))   \
+  {                                                 \
+    throw Im2colError("Kernel shape not be even."); \
+  }
+
 #define AT_GRAD_GPU_DATA(tensor) at_grad ? tensor.GetGPUDiffPtr() : tensor.GetGPUDataPtr()
 
 #endif // INCLUDE_UTILS_CUH_

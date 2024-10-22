@@ -23,6 +23,11 @@ class LinearError : public std::runtime_error {
  public:
   using runtime_error::runtime_error;
 };  // class LinearError
+
+class Im2colError : public std::runtime_error {
+ public:
+  using runtime_error::runtime_error;
+};  // class Im2colError
 }  // namespace my_tensor
 
 #endif  // INCLUDE_ERROR_H_

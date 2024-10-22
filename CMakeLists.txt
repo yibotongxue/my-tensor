@@ -61,6 +61,7 @@ set(LAYER_SRC src/layer.cu)
 set(RELU_SRC src/relu.cu)
 set(SIGMOID_SRC src/sigmoid.cu)
 set(LINEAR_SRC src/linear.cu)
+set(IM2COL_SrC src/im2col.cu)
 
 # Add libraries
 add_library(tensor_lib ${TENSOR_SRC})
@@ -80,11 +81,14 @@ target_link_libraries(sigmoid_lib PUBLIC layer_lib)
 
 add_library(blas_lib src/handle.cu src/blas.cu)
 set_cuda_properties(blas_lib)
-target_link_libraries(blas_lib PUBLIC tensor_lib cublas)
+target_link_libraries(blas_lib PUBLIC cublas)
 
 add_library(linear_lib ${LINEAR_SRC})
 set_cuda_properties(linear_lib)
 target_link_libraries(linear_lib PUBLIC layer_lib blas_lib)
+
+add_library(im2col_lib ${IM2COL_SrC})
+set_cuda_properties(im2col_lib)
 
 # Add executables and tests
 add_executable(tensor_test test/tensor-test.cu)
@@ -104,13 +108,18 @@ add_test(NAME sigmoid_test COMMAND sigmoid_test)
 
 add_executable(blas_test test/blas-test.cu)
 set_cuda_properties(blas_test)
-link_googletest(blas_test blas_lib)
+link_googletest(blas_test blas_lib tensor_lib)
 add_test(NAME blas_test COMMAND blas_test)
 
 add_executable(linear_test test/linear-test.cu)
 set_cuda_properties(linear_test)
 link_googletest(linear_test linear_lib)
 add_test(NAMD linear_test COMMAND linear_test)
+
+add_executable(im2col_test test/im2col-test.cu)
+set_cuda_properties(im2col_test)
+link_googletest(im2col_test im2col_lib tensor_lib)
+add_test(NAMD im2col_test COMMAND im2col_test)
 
 # Add the main target
 add_executable(my_tensor main.cpp)
