@@ -7,7 +7,7 @@
 namespace my_tensor {
 
 template <typename T>
-void im2col_cpu(
+void Im2col_CPU(
     const T *data_im, const int channels, const int height,
     const int width, const int kernel_h, const int kernel_w,
     T *data_col) {
@@ -15,13 +15,13 @@ void im2col_cpu(
 }
 
 template <>
-void im2col_cpu(
+void Im2col_CPU(
     const float *data_im, const int channels, const int height,
     const int width, const int kernel_h, const int kernel_w,
     float *data_col);
 
 template <typename T>
-void col2im_cpu(
+void Col2im_CPU(
     const T *data_col, const int channels, const int height,
     const int width, const int kernel_h, const int kernel_w,
     T *data_im) {
@@ -29,13 +29,13 @@ void col2im_cpu(
 }
 
 template <>
-void col2im_cpu(
+void Col2im_CPU(
     const float *data_col, const int channels, const int height,
     const int width, const int kernel_h, const int kernel_w,
     float *data_im);
 
 template <typename T>
-void im2col_gpu(
+void Im2col_GPU(
     const T *data_im, const int channels, const int height,
     const int width, const int kernel_h, const int kernel_w,
     T *data_col) {
@@ -43,13 +43,13 @@ void im2col_gpu(
 }
 
 template <>
-void im2col_gpu(
+void Im2col_GPU(
     const float *data_im, const int channels, const int height,
     const int width, const int kernel_h, const int kernel_w,
     float *data_col);
 
 template <typename T>
-void col2im_gpu(
+void Col2im_GPU(
     const T *data_col, const int channels, const int height,
     const int width, const int kernel_h, const int kernel_w,
     T *data_im) {
@@ -57,7 +57,7 @@ void col2im_gpu(
 }
 
 template<>
-void col2im_gpu(
+void Col2im_GPU(
     const float *data_col, const int channels, const int height,
     const int width, const int kernel_h, const int kernel_w,
     float *data_im);
