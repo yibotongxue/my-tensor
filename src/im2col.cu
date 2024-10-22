@@ -3,11 +3,10 @@
 
 namespace my_tensor {
 
-template <>
-void Im2col_CPU(
-    const float *data_im, const int channels, const int height,
-    const int width, const int kernel_h, const int kernel_w,
-    float *data_col) {
+template <typename T>
+void Im2col_CPU(const T *data_im, const int channels,
+    const int height, const int width, const int kernel_h,
+    const int kernel_w, T *data_col) {
   CHECK_KERNEL_SHAPE
   const int channels_col = channels;
   const int height_col = height * width;
@@ -19,44 +18,62 @@ void Im2col_CPU(
       for (int k = 0; k < width_col; k++) {
         int output_x = j / width;
         int output_y = j % width;
-        int offset_x = k / kernel_w - 1;
-        int offset_y = k % kernel_w - 1;
-        int input_x = std::abs(output_x + offset_x);
-        int input_y = std::abs(output_y + offset_y);
-        if (input_x >= height) {
-          input_x -= 2 * (input_x - height + 1);
-        }
-        if (input_y >= width) {
-          input_y -= 2 * (input_y - width + 1);
-        }
-        data_col[i * col_size + j * width_col + k] = data_im[i * im_size + input_x * width + input_y];
+        int offset_x = k / kernel_w - kernel_h / 2;
+        int offset_y = k % kernel_w - kernel_w / 2;
+        int input_x = output_x + offset_x;
+        int input_y = output_y + offset_y;
+        data_col[i * col_size + j * width_col + k] = 
+          (input_x >= 0 && input_x < height && input_y >= 0 && input_y < width) ?
+          data_im[i * im_size + input_x * width + input_y] : 0;
       }
     }
   }
 }
 
-template <>
-void Col2im_CPU(
-    const float *data_col, const int channels, const int height,
-    const int width, const int kernel_h, const int kernel_w,
-    float *data_im) {
+template <typename T>
+void Col2im_CPU(const T *data_col, const int channels,
+    const int height, const int width, const int kernel_h,
+    const int kernel_w, T *data_im) {
   CHECK_KERNEL_SHAPE
 }
 
-template <>
-void Im2col_GPU(
-    const float *data_im, const int channels, const int height,
-    const int width, const int kernel_h, const int kernel_w,
-    float *data_col) {
+// namespace {
+// template <typename T>
+// __global__ void Im2col_kernel(const T *data_im,
+//     const int height, const int width, const int kernel_h,
+//     const int kernel_w, T *data_col, const int height_col,
+//     const int width_col, const int im_size, const int col_size) {
+//   int c = blockIdx.x;
+//   int gidx = blockDim.x * blockIdx.x + threadIdx.x;
+//   int tidx = threadIdx.x;
+// }
+// }  // namespace
+
+template <typename T>
+void Im2col_GPU(const T *data_im, const int channels,
+    const int height, const int width, const int kernel_h,
+    const int kernel_w, T *data_col) {
   CHECK_KERNEL_SHAPE
 }
 
-template <>
-void Col2im_GPU(
-    const float *data_col, const int channels, const int height,
-    const int width, const int kernel_h, const int kernel_w,
-    float *data_im) {
+template <typename T>
+void Col2im_GPU(const T *data_col, const int channels,
+    const int height, const int width, const int kernel_h,
+    const int kernel_w, T *data_im) {
   CHECK_KERNEL_SHAPE
 }
+
+template void Im2col_CPU<float>(const float *data_im,
+    const int channels, const int height, int width,
+    const int kernel_h, const int kernel_w, float *data_col);
+template void Col2im_CPU<float>(const float *data_col,
+    const int channels, const int height, const int width,
+    const int kernel_h, const int kernel_w, float *data_im);
+template void Im2col_GPU<float>(const float *data_im,
+    const int channels, const int height, int width,
+    const int kernel_h, const int kernel_w, float *data_col);
+template void Col2im_GPU<float>(const float *data_col,
+    const int channels, const int height, const int width,
+    const int kernel_h, const int kernel_w, float *data_im);
 
 }  // namespace my_tensor
