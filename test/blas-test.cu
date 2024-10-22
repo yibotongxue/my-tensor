@@ -177,8 +177,8 @@ protected:
   const std::vector<int> vec_shape{1000, 1};
 };
 
-#define BLAS_ADD_VEC_TEST(data_diff)                                                                          \
-  TEST_F(BlasAddVecTest, Blas_AddVec##data_diff##Test)                                                        \
+#define BLAS_ADD_ROW_VEC_TEST(data_diff)                                                                      \
+  TEST_F(BlasAddVecTest, Blas_AddRowVec##data_diff##Test)                                                     \
   {                                                                                                           \
     for (int i = 0; i < 200000; i++)                                                                          \
     {                                                                                                         \
@@ -186,7 +186,7 @@ protected:
     }                                                                                                         \
     tensor->SetGPU##data_diff(tensor_data);                                                                   \
     vec->SetGPU##data_diff(vec_data);                                                                         \
-    my_tensor::add_vector(tensor->GetGPU##data_diff##Ptr(), vec->GetGPU##data_diff##Ptr(), 1000, 200);        \
+    my_tensor::add_row_vector(tensor->GetGPU##data_diff##Ptr(), vec->GetGPU##data_diff##Ptr(), 1000, 200);    \
     std::vector<float> result_actual(tensor->GetGPU##data_diff().begin(), tensor->GetGPU##data_diff().end()); \
     for (int i = 0; i < 200000; i++)                                                                          \
     {                                                                                                         \
@@ -194,8 +194,29 @@ protected:
     }                                                                                                         \
   }
 
-BLAS_ADD_VEC_TEST(Data)
-BLAS_ADD_VEC_TEST(Diff)
+BLAS_ADD_ROW_VEC_TEST(Data)
+BLAS_ADD_ROW_VEC_TEST(Diff)
+
+#define BLAS_ADD_COL_VEC_TEST(data_diff)                                                                      \
+  TEST_F(BlasAddVecTest, Blas_AddColVec##data_diff##Test)                                                     \
+  {                                                                                                           \
+    tensor->Reshape({200, 1000});                                                                             \
+    for (int i = 0; i < 200000; i++)                                                                          \
+    {                                                                                                         \
+      result_expect[i] = tensor_data[i] + vec_data[i % 1000];                                                 \
+    }                                                                                                         \
+    tensor->SetGPU##data_diff(tensor_data);                                                                   \
+    vec->SetGPU##data_diff(vec_data);                                                                         \
+    my_tensor::add_col_vector(tensor->GetGPU##data_diff##Ptr(), vec->GetGPU##data_diff##Ptr(), 200, 1000);    \
+    std::vector<float> result_actual(tensor->GetGPU##data_diff().begin(), tensor->GetGPU##data_diff().end()); \
+    for (int i = 0; i < 200000; i++)                                                                          \
+    {                                                                                                         \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                  \
+    }                                                                                                         \
+  }
+
+BLAS_ADD_COL_VEC_TEST(Data)
+BLAS_ADD_COL_VEC_TEST(Diff)
 
 class BlasSumTest : public ::testing::Test
 {
@@ -252,6 +273,32 @@ BLAS_SUM_TENSOR_SUM_TEST(Diff)
 
 BLAS_SUM_ROW_SUM_TEST(Data);
 BLAS_SUM_ROW_SUM_TEST(Diff);
+
+#define BLAS_SUM_COL_SUM_TEST(data_diff)                                                                      \
+  TEST_F(BlasSumTest, Blas_SumColSum##data_diff##Test)                                                        \
+  {                                                                                                           \
+    tensor->Reshape({200, 100});                                                                              \
+    tensor->SetGPU##data_diff(data);                                                                          \
+    const std::vector<int> result_shape{100, 1};                                                              \
+    auto result = std::make_shared<my_tensor::Tensor<>>(result_shape);                                        \
+    my_tensor::col_sum(tensor->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 200, 100);         \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end()); \
+    std::vector<float> result_expect(100, 0.0f);                                                              \
+    for (int i = 0; i < 100; i++)                                                                             \
+    {                                                                                                         \
+      for (int j = 0; j < 200; j++)                                                                           \
+      {                                                                                                       \
+        result_expect[i] += data[j * 100 + i];                                                                \
+      }                                                                                                       \
+    }                                                                                                         \
+    for (int i = 0; i < 100; i++)                                                                             \
+    {                                                                                                         \
+      ASSERT_NEAR(result_actual[i], result_expect[i], 0.01);                                                  \
+    }                                                                                                         \
+  }
+
+BLAS_SUM_COL_SUM_TEST(Data)
+BLAS_SUM_COL_SUM_TEST(Diff)
 
 int main(int argc, char **argv)
 {

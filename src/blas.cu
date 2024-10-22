@@ -108,7 +108,7 @@ __global__ void SetAllOnes(float *ones, int n) {
 }  // namespace
 
 template <>
-void add_vector(float *mat, const float *vec, const int m, const int n) {
+void add_row_vector(float *mat, const float *vec, const int m, const int n) {
   float alpha = 1.0f;
   float beta = 1.0f;
   float *ones = nullptr;
@@ -132,6 +132,30 @@ void add_vector(float *mat, const float *vec, const int m, const int n) {
 }
 
 template <>
+void add_col_vector(float *mat, const float *vec, const int m, const int n) {
+  float alpha = 1.0f;
+  float beta = 1.0f;
+  float *ones = nullptr;
+  cudaMalloc(&ones, m * sizeof(float));
+  SetAllOnes<<<CudaGetBlocks(m), kCudaThreadNum>>>(ones, m);
+  CUBLAS_ERROR_CHECK(cublasSgemm(handle->GetHandle(),
+    CUBLAS_OP_N,
+    CUBLAS_OP_N,
+    n,
+    m,
+    1,
+    &alpha,
+    vec,
+    n,
+    ones,
+    1,
+    &beta,
+    mat,
+    n));
+  cudaFree(ones);
+}
+
+template <>
 float tensor_sum(const float *tensor, const int cnt) {
   return thrust::reduce(thrust::device_pointer_cast(tensor),
                         thrust::device_pointer_cast(tensor + cnt),
@@ -144,6 +168,15 @@ void row_sum(const float *mat, float *result, const int m, const int n) {
   cudaMalloc(&ones, n * sizeof(float));
   SetAllOnes<<<CudaGetBlocks(n), kCudaThreadNum>>>(ones, n);
   matmul(mat, ones, result, m, n, 1);
+  cudaFree(ones);
+}
+
+template <>
+void col_sum(const float *mat, float *result, const int m, const int n) {
+  float *ones = nullptr;
+  cudaMalloc(&ones, m * sizeof(float));
+  SetAllOnes<<<CudaGetBlocks(m), kCudaThreadNum>>>(ones, m);
+  transpose_matmul(mat, ones, result, n, m, 1);
   cudaFree(ones);
 }
 

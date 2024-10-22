@@ -39,12 +39,20 @@ template <>
 void transpose_matmul_transpose(const float *A, const float *B, float *C, const int m, const int k, const int n);
 
 template <typename T>
-void add_vector(T *mat, const T *vec, const int m, const int n) {
+void add_row_vector(T *mat, const T *vec, const int m, const int n) {
   BLAS_UNIMPLEMENTION
 }
 
 template <>
-void add_vector(float *mat, const float *vec, const int m, const int n);
+void add_row_vector(float *mat, const float *vec, const int m, const int n);
+
+template <typename T>
+void add_col_vector(T *mat, const T *vec, const int m, const int n) {
+  BLAS_UNIMPLEMENTION
+}
+
+template <>
+void add_col_vector(float *mat, const float *vec, const int m, const int n);
 
 template <typename T>
 T tensor_sum(const T *tensor, const int cnt) {
@@ -61,6 +69,14 @@ void row_sum(const T *mat, T *result, const int m, const int n) {
 
 template <>
 void row_sum(const float *mat, float *result, const int m, const int n);
+
+template <typename T>
+void col_sum(const T *mat, T *result, const int m, const int n) {
+  BLAS_UNIMPLEMENTION
+}
+
+template <>
+void col_sum(const float *mat, float *result, const int m, const int n);
 }  // namespace my_tensor
 
 #endif  // INCLUDE_BLAS_CUH_

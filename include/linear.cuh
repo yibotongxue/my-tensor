@@ -15,10 +15,10 @@ class Linear final : public Layer<T> {
 
   virtual ~Linear() = default;
 
-  const TensorPtr<T> GetWeight() const { return this->params_[0]; }
-  TensorPtr<T> GetWeight() { return this->params_[0]; }
-  const TensorPtr<T> GetBias() const { return this->params_[1]; }
-  TensorPtr<T> GetBias() { return this->params_[1]; }
+  inline const TensorPtr<T> GetWeight() const { return this->params_[0]; }
+  inline TensorPtr<T> GetWeight() { return this->params_[0]; }
+  inline const TensorPtr<T> GetBias() const { return this->params_[1]; }
+  inline TensorPtr<T> GetBias() { return this->params_[1]; }
 
   void ForwardCPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) override;
   void BackwardCPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) override;

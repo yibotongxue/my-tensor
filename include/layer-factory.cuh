@@ -5,6 +5,7 @@
 #include <relu.cuh>
 #include <sigmoid.cuh>
 #include <tensor.cuh>
+#include <error.h>
 
 #include <memory>
 
@@ -39,6 +40,14 @@ class SigmoidFactory final : public LayerFactory<T> {
  public:
   LayerPtr<T> CreateLayer() override {
     return std::make_shared<Sigmoid<T>>();
+  }
+};
+
+template <typename T = float>
+class LinearFactory final : public LayerFactory<T> {
+ public:
+  LayerPtr<T> CreateLayer() override {
+    throw std::runtime_error("Unimplemention error.");
   }
 };
 
