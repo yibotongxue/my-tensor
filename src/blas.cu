@@ -7,6 +7,8 @@
 #include <thrust/reduce.h>
 
 namespace my_tensor {
+extern HandlePtr handle;
+
 template <>
 void matmul(const float *A, const float *B, float *C, const int m, const int k, const int n) {
   float alpha = 1.0f;

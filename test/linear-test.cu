@@ -143,7 +143,7 @@ LINEAR_BACKWARD_WEIGHT_TEST(GPU)
       {                                                                                            \
         expect += y_diff[j * 400 + i];                                                             \
       }                                                                                            \
-      ASSERT_NEAR(actual[i], expect, 0.01);                                                      \
+      ASSERT_NEAR(actual[i], expect, 0.01);                                                        \
     }                                                                                              \
   }
 
