@@ -112,6 +112,26 @@ LINEAR_FORWARD_TEST(GPU)
 LINEAR_BACKWARD_BOTTOM_TEST(CPU)
 LINEAR_BACKWARD_BOTTOM_TEST(GPU)
 
+#define LINEAR_BACKWARD_WEIGHT_TEST(device)                                                            \
+  TEST_F(Linear##device##Test, Linear_BackwardWeight##device##Test)                                    \
+  {                                                                                                    \
+    std::vector<float> actual(weight->Get##device##Diff().begin(), weight->Get##device##Diff().end()); \
+    for (int i = 0; i < 60000; i++)                                                                    \
+    {                                                                                                  \
+      int row = i / 200;                                                                               \
+      int col = i % 200;                                                                               \
+      float expect{0.0f};                                                                              \
+      for (int j = 0; j < 400; j++)                                                                    \
+      {                                                                                                \
+        expect += y_diff[row * 400 + j] * x_data[col * 400 + j];                                       \
+      }                                                                                                \
+      ASSERT_NEAR(actual[i], expect, 0.01);                                                            \
+    }                                                                                                  \
+  }
+
+LINEAR_BACKWARD_WEIGHT_TEST(CPU)
+LINEAR_BACKWARD_WEIGHT_TEST(GPU)
+
 int main(int argc, char **argv)
 {
   ::testing::InitGoogleTest(&argc, argv);

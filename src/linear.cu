@@ -74,7 +74,7 @@ void Linear<T>::BackwardCPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) {
     for (int j = 0; j < k; j++) {
       T temp {0};
       for (int l = 0; l < n; l++) {
-        temp += top_diff[i * n + l] * bottom_data[i * k + j];
+        temp += top_diff[i * n + l] * bottom_data[j * n + l];
       }
       weight_diff[i * k + j] = temp;
     }
