@@ -3,6 +3,7 @@
 #include <error.h>
 
 #include <thrust/fill.h>
+#include <iostream>
 
 namespace my_tensor {
 
@@ -65,7 +66,7 @@ void Linear<T>::BackwardCPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) {
       for (int l = 0; l < m; l++) {
         temp += weight[l * k + i] * top_diff[l * n + j];
       }
-      bottom_diff[i * n + k] = temp;
+      bottom_diff[i * n + j] = temp;
     }
   }
   // partial weight
@@ -107,10 +108,10 @@ void Linear<T>::BackwardGPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) {
   int m = this->params_[0]->GetShape()[0];
   int k = this->params_[0]->GetShape()[1];
   int n = bottom->GetShape()[1];
-  transpose_matmul(this->params_[0]->GetGPUDiffPtr(),
+  transpose_matmul(this->params_[0]->GetGPUDataPtr(),
                    top->GetGPUDiffPtr(),
                    bottom->GetGPUDiffPtr(),
-                   m, k, n);
+                   k, m, n);
   matmul_transpose(top->GetGPUDiffPtr(),
                    bottom->GetGPUDataPtr(),
                    this->params_[0]->GetGPUDiffPtr(),
