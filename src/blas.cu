@@ -36,29 +36,6 @@ extern HandlePtr handle;
                     });
 
 template <>
-void transpose_matmul_transpose(const float *A, const float *B, float *C, const int m, const int k, const int n) {
-  float alpha = 1.0f;
-  float beta = 0.0f;
-  // C<sup>T</sup> = (B)(A)
-  // also C = (A<sup>T</sup>)(B<sup>T</sup>)
-  CUBLAS_ERROR_CHECK(cublasSgemm(handle->GetHandle(),  // handle
-    CUBLAS_OP_T,  // no transpose of A<sup>T</sup>
-    CUBLAS_OP_T,  // no transpose of B<sup>T</sup>
-    n,  // row number of B and row number of C<sup>T</sup>
-    m,  // col number of A and col number of C<sup>T</sup>
-    k,  // col number of B and row number of A
-    &alpha,  // alpha
-    B,  // B pointer, in cublas will be B<sup>T</sup>
-    k,  // leading dimension of B<sup>T</sup>
-    A,  // A pointer, in cublas will be A<sup>T</sup>
-    m,  // leading dimension of A<sup>T</sup>
-    &beta,  // beta
-    C,  // C pointer, in cublas will be C<sup>T</sup>
-    n  // leading dimension of C<sup>T</sup>
-  ));
-}
-
-template <>
 void matmul(const float *A, const float *B, float *C,
     const int m, const int k, const int n,
     const int batch_count, const int broadcast) {
@@ -139,6 +116,34 @@ void matmul_transpose(const float *A, const float *B,
   ));
 }
 
+template <>
+void transpose_matmul_transpose(const float *A,
+    const float *B, float *C, const int m, const int k,
+    const int n, const int batch_count,
+    const int broadcast) {
+  DEFINE_ABC_VEC(broadcast)
+  float alpha = 1.0f;
+  float beta = 0.0f;
+  // C<sup>T</sup> = (B)(A)
+  // also C = (A<sup>T</sup>)(B<sup>T</sup>)
+  CUBLAS_ERROR_CHECK(cublasSgemmBatched(handle->GetHandle(),  // handle
+    CUBLAS_OP_T,  // no transpose of A<sup>T</sup>
+    CUBLAS_OP_T,  // no transpose of B<sup>T</sup>
+    n,  // row number of B and row number of C<sup>T</sup>
+    m,  // col number of A and col number of C<sup>T</sup>
+    k,  // col number of B and row number of A
+    &alpha,  // alpha
+    RAW_PTR(B_vec),  // B pointer, in cublas will be B<sup>T</sup>
+    k,  // leading dimension of B<sup>T</sup>
+    RAW_PTR(A_vec),  // A pointer, in cublas will be A<sup>T</sup>
+    m,  // leading dimension of A<sup>T</sup>
+    &beta,  // beta
+    RAW_PTR(C_vec),  // C pointer, in cublas will be C<sup>T</sup>
+    n,  // leading dimension of C<sup>T</sup>
+    batch_count
+  ));
+}
+
 namespace {
 __global__ void SetAllOnes(float *ones, int n) {
   CUDA_KERNEL_LOOP(i, n) {
@@ -194,19 +199,46 @@ float tensor_sum(const float *tensor, const int cnt) {
 
 template <>
 void row_sum(const float *mat, float *result, const int m, const int n) {
+  float alpha = 1.0f;
+  float beta = 0.0f;
   float *ones = nullptr;
   cudaMalloc(&ones, n * sizeof(float));
   SetAllOnes<<<CudaGetBlocks(n), kCudaThreadNum>>>(ones, n);
-  matmul(mat, ones, result, m, n, 1);
-  cudaFree(ones);
+  CUBLAS_ERROR_CHECK(cublasSgemv(handle->GetHandle(),
+    CUBLAS_OP_T,
+    n,
+    m,
+    &alpha,
+    mat,
+    n,
+    ones,
+    1,
+    &beta,
+    result,
+    1
+  ));
 }
 
 template <>
 void col_sum(const float *mat, float *result, const int m, const int n) {
+  float alpha = 1.0f;
+  float beta = 0.0f;
   float *ones = nullptr;
   cudaMalloc(&ones, m * sizeof(float));
   SetAllOnes<<<CudaGetBlocks(m), kCudaThreadNum>>>(ones, m);
-  transpose_matmul(mat, ones, result, n, m, 1);
+  CUBLAS_ERROR_CHECK(cublasSgemv(handle->GetHandle(),
+    CUBLAS_OP_N,
+    n,
+    m,
+    &alpha,
+    mat,
+    n,
+    ones,
+    1,
+    &beta,
+    result,
+    1
+  ));
   cudaFree(ones);
 }
 
