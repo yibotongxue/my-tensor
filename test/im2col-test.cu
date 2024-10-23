@@ -26,7 +26,7 @@ TEST(Im2col##device##Test, test_one_channel) {\
 \
   const std::vector<int> col_shape = {1, 48, 9};\
   auto col_tensor = std::make_shared<my_tensor::Tensor<>>(col_shape);\
-  ASSERT_NO_THROW(my_tensor::Im2col_##device(im_tensor->Get##device##DataPtr(), 1, 6, 8, 3, 3, col_tensor->Get##device##DataPtr()));\
+  ASSERT_NO_THROW(my_tensor::Im2col_##device(1, im_tensor->Get##device##DataPtr(), 1, 6, 8, 3, 3, col_tensor->Get##device##DataPtr()));\
   const std::vector<float> expect {\
     0, 0, 0, 0, 1, 2, 0, 9, 10,\
     0, 0, 0, 1, 2, 3, 9, 10, 11,\

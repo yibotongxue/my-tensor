@@ -8,12 +8,12 @@ static inline bool is_a_ge_zero_and_a_lt_b(int a, int b) {
 }
 
 template <typename T>
-void Im2col_CPU(const T *data_im, const int channels,
+void Im2col_CPU(const int n, const T *data_im, const int channels,
     const int height, const int width, const int kernel_h,
     const int kernel_w, T *data_col) {
   CHECK_KERNEL_SHAPE
   const int im_size = height * width;
-  for (int channel = channels; channel--; data_im += im_size) {
+  for (int channel = n * channels; channel--; data_im += im_size) {
     for (int kernel_row = 0; kernel_row < kernel_h; kernel_row++) {
       for (int kernel_col = 0; kernel_col < kernel_w; kernel_col++) {
         int input_row = kernel_row - (kernel_h - 1) / 2;
@@ -41,7 +41,7 @@ void Im2col_CPU(const T *data_im, const int channels,
 }
 
 template <typename T>
-void Col2im_CPU(const T *data_col, const int channels,
+void Col2im_CPU(const int n, const T *data_col, const int channels,
     const int height, const int width, const int kernel_h,
     const int kernel_w, T *data_im) {
   CHECK_KERNEL_SHAPE
@@ -60,29 +60,29 @@ void Col2im_CPU(const T *data_col, const int channels,
 // }  // namespace
 
 template <typename T>
-void Im2col_GPU(const T *data_im, const int channels,
+void Im2col_GPU(const int n, const T *data_im, const int channels,
     const int height, const int width, const int kernel_h,
     const int kernel_w, T *data_col) {
   CHECK_KERNEL_SHAPE
 }
 
 template <typename T>
-void Col2im_GPU(const T *data_col, const int channels,
+void Col2im_GPU(const int n, const T *data_col, const int channels,
     const int height, const int width, const int kernel_h,
     const int kernel_w, T *data_im) {
   CHECK_KERNEL_SHAPE
 }
 
-template void Im2col_CPU<float>(const float *data_im,
+template void Im2col_CPU<float>(const int n, const float *data_im,
     const int channels, const int height, int width,
     const int kernel_h, const int kernel_w, float *data_col);
-template void Col2im_CPU<float>(const float *data_col,
+template void Col2im_CPU<float>(const int n, const float *data_col,
     const int channels, const int height, const int width,
     const int kernel_h, const int kernel_w, float *data_im);
-template void Im2col_GPU<float>(const float *data_im,
+template void Im2col_GPU<float>(const int n, const float *data_im,
     const int channels, const int height, int width,
     const int kernel_h, const int kernel_w, float *data_col);
-template void Col2im_GPU<float>(const float *data_col,
+template void Col2im_GPU<float>(const int n, const float *data_col,
     const int channels, const int height, const int width,
     const int kernel_h, const int kernel_w, float *data_im);
 
