@@ -22,7 +22,7 @@ find_package(CUDAToolkit REQUIRED)
 include_directories(${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
 
 # Set NVCC compile flags
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -g -G")
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -g -G --extended-lambda")
 
 # Define a function to find gtest/gmock libraries
 function(find_gtest)
