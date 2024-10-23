@@ -84,7 +84,7 @@ TEST(Im2col##device##Test, test_one_channel) {\
   };\
   const std::vector<float> actual(col_tensor->Get##device##Data().begin(), col_tensor->Get##device##Data().end());\
   for (int i = 0; i < 48 * 9; i++) {\
-    ASSERT_NEAR(expect[i], actual[i], 0.01f);\
+    ASSERT_NEAR(expect[((i % 48) * 9 + (i / 48))], actual[i], 0.01f);\
   }\
 }
 
