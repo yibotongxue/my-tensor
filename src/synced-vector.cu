@@ -92,27 +92,27 @@ inline void SyncedVector<T>::SetGPUData(const std::vector<T>& data) {
 template <typename T>
 inline const T* SyncedVector<T>::GetCPUPtr(){
   ToCPU();
-  return thrust::raw_pointer_cast(cpu_data_.data());
+  return RAW_PTR(cpu_data_);
 }
 
 template <typename T>
 inline T* SyncedVector<T>::GetMutableCPUPtr() {
   ToCPU();
   state_ = kHeadAtCPU;
-  return thrust::raw_pointer_cast(cpu_data_.data());
+  return RAW_PTR(cpu_data_);
 }
 
 template <typename T>
 inline const T* SyncedVector<T>::GetGPUPtr(){
   ToGPU();
-  return thrust::raw_pointer_cast(gpu_data_.data());
+  return RAW_PTR(gpu_data_);
 }
 
 template <typename T>
 inline T* SyncedVector<T>::GetMutableGPUPtr() {
   ToGPU();
   state_ = kHeadAtGPU;
-  return thrust::raw_pointer_cast(gpu_data_.data());
+  return RAW_PTR(gpu_data_);
 }
 
 template <typename T>
