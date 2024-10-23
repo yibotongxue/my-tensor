@@ -45,6 +45,30 @@ void Col2im_CPU(const int n, const T *data_col, const int channels,
     const int height, const int width, const int kernel_h,
     const int kernel_w, T *data_im) {
   CHECK_KERNEL_SHAPE
+  int im_size = height * width;
+  memset(data_im, 0, channels * im_size * sizeof(T));
+  for (int channel = n * channels; channel--; data_im += im_size) {
+    for (int kernel_row = 0; kernel_row < kernel_h; kernel_row++) {
+      for (int kernel_col = 0; kernel_col < kernel_w; kernel_col++) {
+        int input_row = kernel_row - (kernel_h - 1) / 2;
+        for (int output_row = height; output_row; output_row--) {
+          if (!is_a_ge_zero_and_a_lt_b(input_row, height)) {
+            data_col += width;
+          } else {
+            int input_col = kernel_col - (kernel_w - 1) / 2;
+            for (int output_col = width; output_col; output_col--) {
+              if (is_a_ge_zero_and_a_lt_b(input_col, width)) {
+                data_im[input_row * width + input_col] += *data_col;
+              }
+              data_col++;
+              input_col += 1;
+            }
+          }
+          input_row += 1;
+        }
+      }
+    }
+  }
 }
 
 namespace {
@@ -61,14 +85,14 @@ __global__ void Im2col_kernel(const T *data_im, const int kernel_nums,
     const int kernel_w, T *data_col, const int im_size,
     const int col_size) {
   CUDA_KERNEL_LOOP(index, kernel_nums) {
-    int channel_index = index / im_size;  // when index is 9, channel_index will be 0
-    int w_index = index % im_size;  // w_index will be 9
-    int h_output = w_index / width;  // h_output will be 1
+    int channel_index = index / im_size;
+    int w_index = index % im_size;
+    int h_output = w_index / width;
     int w_output = w_index % width;  // w_output will be 1
-    T *data_col_write = data_col + channel_index * col_size + w_index;  // data_col_write will be (data_col + 81)
-    const T *data_im_read = data_im + channel_index * im_size;  // data_im_read will be (data_im)
-    int h_offset = h_output -(kernel_h - 1) / 2;  // h_offset will be 0
-    int w_offset = w_output % width -(kernel_w - 1) / 2;  // w_offset will be 0
+    T *data_col_write = data_col + channel_index * col_size + w_index;
+    const T *data_im_read = data_im + channel_index * im_size;
+    int h_offset = h_output -(kernel_h - 1) / 2;
+    int w_offset = w_output % width -(kernel_w - 1) / 2;
     for (int i = 0; i < kernel_h; i++) {
       for (int j = 0; j < kernel_w; j++) {
         int h_read = h_offset + i;

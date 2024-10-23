@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 #include <ranges>
+#include <random>
 
 // TEST(TrivialTest, always_succeed) {
 //   EXPECT_TRUE(true);
@@ -88,8 +89,92 @@ TEST(Im2col##device##Test, test_one_channel) {\
   }\
 }
 
-TEST_IM2COL(CPU)
-TEST_IM2COL(GPU)
+#define IM2COL_TEST_CLASS(device)\
+class Im2col##device##Test : public ::testing::Test {\
+ protected:\
+  void SetUp() override {\
+    im_data.resize(61440);\
+    col_diff.resize(552960);\
+    im_tensor.reset();\
+    im_tensor = std::make_shared<my_tensor::Tensor<>>(im_shape);\
+    col_tensor.reset();\
+    col_tensor = std::make_shared<my_tensor::Tensor<>>(col_shape);\
+    std::random_device rd;\
+    std::mt19937 gen(rd());\
+    std::uniform_real_distribution<float> dis(-10.0f, 10.0f);\
+    auto random_func = [&gen, &dis]() -> float\
+    { return dis(gen); };\
+    std::ranges::generate(im_data, random_func);\
+    std::ranges::generate(col_diff, random_func);\
+    im_tensor->Set##device##Data(im_data);\
+    col_tensor->Set##device##Diff(col_diff);\
+  }\
+  const std::vector<int> im_shape {10, 3, 32, 64};\
+  const std::vector<int> col_shape {10, 27, 2048};\
+  my_tensor::TensorPtr<> im_tensor;\
+  my_tensor::TensorPtr<> col_tensor;\
+  std::vector<float> im_data;\
+  std::vector<float> col_diff;\
+};
+
+IM2COL_TEST_CLASS(CPU)
+IM2COL_TEST_CLASS(GPU)
+
+#define IM2COL_TEST(device)\
+TEST_F(Im2col##device##Test, im2col) {\
+  my_tensor::Im2col_##device(10, im_tensor->Get##device##DataPtr(), 3, 32, 64, 3, 3, col_tensor->Get##device##DataPtr());\
+  std::vector<float> actual(col_tensor->Get##device##Data().begin(), col_tensor->Get##device##Data().end());\
+  std::vector<float> expect(552960);\
+  for (int i = 0; i < 30; i++) {\
+    for (int j = 0; j < 9; j++) {\
+      int k_row = j / 3;\
+      int k_col = j % 3;\
+      for (int k = 0; k < 2048; k++) {\
+        int row = k / 64;\
+        int col = k % 64;\
+        int input_row = row + k_row - 1;\
+        int input_col = col + k_col - 1;\
+        expect[i * 2048 * 9 + j * 2048 + k] = \
+          (input_row >= 0 && input_row < 32 && input_col >= 0 && input_col <64) ?\
+          im_data[i * 2048 + input_row * 64 + input_col] : 0;\
+      }\
+    }\
+  }\
+  for (int i = 0; i < 552960; i++) {\
+    ASSERT_NEAR(expect[i], actual[i], 0.01);\
+  }\
+}
+
+IM2COL_TEST(CPU)
+IM2COL_TEST(GPU)
+
+#define COL2IM_TEST(device)\
+TEST_F(Im2col##device##Test, col2im) {\
+  my_tensor::Col2im_##device(10, col_tensor->Get##device##DiffPtr(), 3, 32, 64, 3, 3, im_tensor->Get##device##DiffPtr());\
+  std::vector<float> actual(im_tensor->Get##device##Diff().begin(), im_tensor->Get##device##Diff().end());\
+  std::vector<float> expect(61440, 0.0f);\
+  for (int i = 0; i < 30; i++) {\
+    for (int j = 0; j < 9; j++) {\
+      int k_row = j / 3;\
+      int k_col = j % 3;\
+      for (int k = 0; k < 2048; k++) {\
+        int row = k / 64;\
+        int col = k % 64;\
+        int input_row = row + k_row - 1;\
+        int input_col = col + k_col - 1;\
+        if (input_row >= 0 && input_row < 32 && input_col >= 0 && input_col < 64) {\
+          expect[i * 2048 + input_row * 64 + input_col] += col_diff[i * 2048 * 9 + j * 2048 + k];\
+        }\
+      }\
+    }\
+  }\
+  for (int i = 0; i < 61440; i++) {\
+    ASSERT_NEAR(expect[i], actual[i], 0.01);\
+  }\
+}
+
+COL2IM_TEST(CPU)
+COL2IM_TEST(GPU)
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
