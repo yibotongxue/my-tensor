@@ -39,12 +39,12 @@ template <>
 void transpose_matmul_transpose(const float *A, const float *B, float *C, const int m, const int k, const int n);
 
 template <typename T>
-void matmul(const T *A, const T *B, T *C, const int m, const int k, const int n, const int batch_count = 1) {
+void matmul(const T *A, const T *B, T *C, const int m, const int k, const int n, const int batch_count = 1, const int broadcast = 0) {
   BLAS_UNIMPLEMENTION
 }
 
 template <>
-void matmul(const float *A, const float *B, float *C, const int m, const int k, const int n, const int batch_count);
+void matmul(const float *A, const float *B, float *C, const int m, const int k, const int n, const int batch_count, const int broadcast);
 
 template <typename T>
 void add_row_vector(T *mat, const T *vec, const int m, const int n) {

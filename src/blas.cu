@@ -10,20 +10,22 @@
 namespace my_tensor {
 extern HandlePtr handle;
 
-#define DEFINE_ABC_VEC\
+#define DEFINE_ABC_VEC(broadcast)\
+  int stride_A = (broadcast == 1) ? 0 : (m * k);\
   thrust::device_vector<const float *> A_vec(batch_count);\
   thrust::transform(thrust::counting_iterator<int>(0),\
                     thrust::counting_iterator<int>(batch_count),\
                     A_vec.begin(),\
-                    [A, m, k] __device__ (int i) -> const float* {\
-                        return A + i * m * k;\
+                    [A, stride_A] __device__ (int i) -> const float* {\
+                        return A + i * stride_A;\
                     });\
+  int stride_B = (broadcast == 2) ? 0 : (k * n);\
   thrust::device_vector<const float *> B_vec(batch_count);\
   thrust::transform(thrust::counting_iterator<int>(0),\
                     thrust::counting_iterator<int>(batch_count),\
                     B_vec.begin(),\
-                    [B, k, n] __device__ (int i) -> const float* {\
-                        return B + i * k * n;\
+                    [B, stride_B] __device__ (int i) -> const float* {\
+                        return B + i * stride_B;\
                     });\
   thrust::device_vector<float *> C_vec(batch_count);\
   thrust::transform(thrust::counting_iterator<int>(0),\
@@ -126,10 +128,10 @@ void transpose_matmul_transpose(const float *A, const float *B, float *C, const 
 }
 
 template <>
-void matmul(const float *A, const float *B, float *C, const int m, const int k, const int n, const int batch_count) {
+void matmul(const float *A, const float *B, float *C, const int m, const int k, const int n, const int batch_count, const int broadcast) {
   float alpha = 1.0f;
   float beta = 0.0f;
-  DEFINE_ABC_VEC
+  DEFINE_ABC_VEC(broadcast)
   // C<sup>T</sup> = (B<sup>T</sup>)(A<sup>T</sup>)
   // also C = AB
   CUBLAS_ERROR_CHECK(cublasSgemmBatched(handle->GetHandle(),  // handle
