@@ -61,7 +61,8 @@ set(LAYER_SRC src/layer.cu)
 set(RELU_SRC src/relu.cu)
 set(SIGMOID_SRC src/sigmoid.cu)
 set(LINEAR_SRC src/linear.cu)
-set(IM2COL_SrC src/im2col.cu)
+set(IM2COL_SRC src/im2col.cu)
+set(CONV_SRC src/conv.cu)
 
 # Add libraries
 add_library(tensor_lib ${TENSOR_SRC})
@@ -87,8 +88,12 @@ add_library(linear_lib ${LINEAR_SRC})
 set_cuda_properties(linear_lib)
 target_link_libraries(linear_lib PUBLIC layer_lib blas_lib)
 
-add_library(im2col_lib ${IM2COL_SrC})
+add_library(im2col_lib ${IM2COL_SRC})
 set_cuda_properties(im2col_lib)
+
+add_library(conv_lib ${CONV_SRC})
+set_cuda_properties(conv_lib)
+target_link_libraries(conv_lib PUBLIC layer_lib blas_lib im2col_lib)
 
 # Add executables and tests
 add_executable(tensor_test test/tensor-test.cu)
@@ -120,6 +125,11 @@ add_executable(im2col_test test/im2col-test.cu)
 set_cuda_properties(im2col_test)
 link_googletest(im2col_test im2col_lib tensor_lib)
 add_test(NAMD im2col_test COMMAND im2col_test)
+
+add_executable(conv_test test/conv-test.cu)
+set_cuda_properties(conv_test)
+link_googletest(conv_test conv_lib)
+add_test(NAMD conv_test COMMAND conv_test)
 
 # Add the main target
 add_executable(my_tensor main.cpp)
