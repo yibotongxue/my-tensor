@@ -18,6 +18,9 @@ class Convolution final : public Layer<T> {
   void BackwardCPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) override;
   void ForwardGPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) override;
   void BackwardGPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) override;
+
+ private:
+  void CheckShape(const TensorPtr<T>& bottom, const TensorPtr<T>& top) const;
 };  // class Convolution
 
 extern template class Convolution<>;

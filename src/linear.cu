@@ -155,6 +155,8 @@ void Linear<T>::CheckShape(const TensorPtr<T>& bottom, const TensorPtr<T>& top) 
   }
 }
 
+#undef DEFINE_MKN
+
 template class Linear<>;
 
 }  // namespace my_tensor
