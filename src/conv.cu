@@ -89,17 +89,16 @@ void Convolution<T>::BackwardCPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) 
   Col2im_CPU(n, temp_tensor->GetCPUDiffPtr(), c_in, height, width,
       kernel_height, kernel_width, bottom->GetCPUDiffPtr());
   // partial kernel
-  thrust::fill(kernel_diff.begin(), kernel_diff.end(), T(0));
-  for (int t = 0; t < n; t++) {
-    for (int i = 0; i < c_out; i++) {
-      for (int j = 0; j < c_in * kernel_size; j++) {
-        T val = 0;
+  for (int i = 0; i < c_out; i++) {
+    for (int j = 0; j < c_in * kernel_size; j++) {
+      T val = 0;
+      for (int t = 0; t < n; t++) {
         for (int k = 0; k < im_size; k++) {
           val += top_diff[t * c_out * im_size + i * im_size + k] *
               temp_data[t * c_in * kernel_size * im_size + j * im_size + k];
         }
-        kernel_diff[i * c_in * kernel_size + j] = val;
       }
+      kernel_diff[i * c_in * kernel_size + j] = val;
     }
   }
 }
