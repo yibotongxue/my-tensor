@@ -81,6 +81,34 @@ TEST_F(Convolution##device##Test, ForwardTest) {\
 CONVOLUTION_FORWARD_TEST(CPU)
 CONVOLUTION_FORWARD_TEST(GPU)
 
+#define CONVOLUTION_BACKWARD_BOTTOM(device)\
+TEST_F(Convolution##device##Test, BackwardBottomTest) {\
+  conv->Backward##device(output, input);\
+  std::vector<float> actual(input->Get##device##Diff().begin(), input->Get##device##Diff().end());\
+  for (int i = 0; i < 102400; i++) {\
+    int n = i / 10240;\
+    int c = (i % 10240) / 2048;\
+    int row = (i % 2048) / 64;\
+    int col = i % 64;\
+    float expect = 0.0f;\
+    for (int j = 0; j < 9; j++) {\
+      for (int x = 0; x < 3; x++) {\
+        for (int y = 0; y < 3; y++) {\
+          int output_row = row - x + 1;\
+          int output_col = col - y + 1;\
+          if (output_row >= 0 && output_row < 32 && output_col >= 0 && output_col < 64) {\
+            expect += kernels_data[j * 5 * 9 + c * 9 + x * 3 + y] * output_diff[n * 18432 + j * 2048 + output_row * 64 + output_col];\
+          }\
+        }\
+      }\
+    }\
+    ASSERT_NEAR(actual[i], expect, 0.01);\
+  }\
+}
+
+CONVOLUTION_BACKWARD_BOTTOM(CPU)
+CONVOLUTION_BACKWARD_BOTTOM(GPU)
+
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
