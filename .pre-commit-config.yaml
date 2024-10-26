@@ -3,8 +3,6 @@ repos:
   rev: v1.3.5
   hooks:
     - id: clang-format
-      args: [--style=Google]
       files: \.(cpp|h|cuh|cu|hpp)$
     - id: cpplint
-      args: [--filter=-whitespace,+whitespace/indent]
       files: \.(cpp|h|cuh|cu|hpp)$
