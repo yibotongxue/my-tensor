@@ -4,3 +4,5 @@ repos:
   hooks:
     - id: clang-format
       files: \.(cpp|h|cuh|cu|hpp)$
+    - id: cpplint
+      files: \.(cpp|h|cuh|cu|hpp)$
