@@ -8,8 +8,6 @@
 
 namespace my_tensor {
 
-// Copyright 2024 林毅波
-//
 // 本代码片段修改自 Moonshot AI 提供的示例代码
 //
 // 原始代码版权归 Moonshot AI 所有
