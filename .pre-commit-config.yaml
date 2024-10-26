@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/cpplint/cpplint
-    rev: master  # 或者指定你想要的版本
+    rev: 2.0.0
     hooks:
       - id: cpplint
         args: ["--filter=-whitespace/indent,-build/include_subdir"]
