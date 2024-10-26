@@ -5,4 +5,5 @@ repos:
     - id: clang-format
       files: \.(cpp|h|cuh|cu|hpp)$
     - id: cpplint
+      args: [--filter=-build/include_subdir]
       files: \.(cpp|h|cuh|cu|hpp)$
