@@ -1,4 +1,4 @@
-// Copyright 2024 yibotongxue of
+// Copyright 2024 yibotongxue
 
 #ifndef INCLUDE_BLAS_CUH_
 #define INCLUDE_BLAS_CUH_
