@@ -1,10 +1,16 @@
-#include <gtest/gtest.h>
-#include <blas.cuh>
+// Copyright 2024 yibotongxue
 
-#include <random>
-#include <algorithm>
-#include <ranges>
+
+#include <blas.cuh>
 #include <tensor.cuh>
+
+#include <gtest/gtest.h>
+#include <algorithm>
+#include <functional>
+#include <memory>
+#include <random>
+#include <ranges>
+#include <vector>
 
 // TEST(TrivialTest, always_succeed) {
 //   EXPECT_TRUE(true);
@@ -14,18 +20,15 @@
 //   EXPECT_TRUE(false);
 // }
 
-class BlasMatmulTest : public ::testing::Test
-{
-protected:
-  void SetUp() override
-  {
+class BlasMatmulTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
     lhs_data.resize(64000);
     rhs_data.resize(8192);
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dis(-10.0f, 10.0f);
-    auto random_func = [&gen, &dis]() -> float
-    { return dis(gen); };
+    auto random_func = [&gen, &dis]() -> float { return dis(gen); };
     std::ranges::generate(lhs_data, random_func);
     std::ranges::generate(rhs_data, random_func);
     lhs = std::make_shared<my_tensor::Tensor<>>(left_shape);
@@ -45,122 +48,115 @@ protected:
   const std::vector<int> result_shape{500, 64};
 };
 
-#define BLAS_MATMUL_TEST(data_diff)                                                                                                  \
-  TEST_F(BlasMatmulTest, Blas_Matmul##data_diff##Test)                                                                               \
-  {                                                                                                                                  \
-    lhs->SetGPU##data_diff(lhs_data);                                                                                                \
-    rhs->SetGPU##data_diff(rhs_data);                                                                                                \
-    my_tensor::matmul(lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 500, 128, 64); \
-    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end());                        \
-    for (int i = 0; i < 32000; i++)                                                                                                  \
-    {                                                                                                                                \
-      int row = i / 64;                                                                                                              \
-      int col = i % 64;                                                                                                              \
-      for (int k = 0; k < 128; k++)                                                                                                  \
-      {                                                                                                                              \
-        result_expect[i] += lhs_data[row * 128 + k] * rhs_data[k * 64 + col];                                                        \
-      }                                                                                                                              \
-    }                                                                                                                                \
-    for (int i = 0; i < 32000; i++)                                                                                                  \
-    {                                                                                                                                \
-      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                                         \
-    }                                                                                                                                \
+#define BLAS_MATMUL_TEST(data_diff)                                           \
+  TEST_F(BlasMatmulTest, Blas_Matmul##data_diff##Test) {                      \
+    lhs->SetGPU##data_diff(lhs_data);                                         \
+    rhs->SetGPU##data_diff(rhs_data);                                         \
+    my_tensor::matmul(lhs->GetGPU##data_diff##Ptr(),                          \
+                      rhs->GetGPU##data_diff##Ptr(),                          \
+                      result->GetGPU##data_diff##Ptr(), 500, 128, 64);        \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(),     \
+                                     result->GetGPU##data_diff().end());      \
+    for (int i = 0; i < 32000; i++) {                                         \
+      int row = i / 64;                                                       \
+      int col = i % 64;                                                       \
+      for (int k = 0; k < 128; k++) {                                         \
+        result_expect[i] += lhs_data[row * 128 + k] * rhs_data[k * 64 + col]; \
+      }                                                                       \
+    }                                                                         \
+    for (int i = 0; i < 32000; i++) {                                         \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                  \
+    }                                                                         \
   }
 
 BLAS_MATMUL_TEST(Data)
 BLAS_MATMUL_TEST(Diff)
 
-#define BLAS_MATMUL_T_TEST(data_diff)                                                                                                          \
-  TEST_F(BlasMatmulTest, Blas_MatmulTranspose##data_diff##Test)                                                                                \
-  {                                                                                                                                            \
-    rhs->Reshape({64, 128});                                                                                                                   \
-    lhs->SetGPU##data_diff(lhs_data);                                                                                                          \
-    rhs->SetGPU##data_diff(rhs_data);                                                                                                          \
-    my_tensor::matmul_transpose(lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 500, 128, 64); \
-    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end());                                  \
-    for (int i = 0; i < 32000; i++)                                                                                                            \
-    {                                                                                                                                          \
-      int row = i / 64;                                                                                                                        \
-      int col = i % 64;                                                                                                                        \
-      for (int k = 0; k < 128; k++)                                                                                                            \
-      {                                                                                                                                        \
-        result_expect[i] += lhs_data[row * 128 + k] * rhs_data[col * 128 + k];                                                                 \
-      }                                                                                                                                        \
-    }                                                                                                                                          \
-    for (int i = 0; i < 32000; i++)                                                                                                            \
-    {                                                                                                                                          \
-      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                                                   \
-    }                                                                                                                                          \
+#define BLAS_MATMUL_T_TEST(data_diff)                                          \
+  TEST_F(BlasMatmulTest, Blas_MatmulTranspose##data_diff##Test) {              \
+    rhs->Reshape({64, 128});                                                   \
+    lhs->SetGPU##data_diff(lhs_data);                                          \
+    rhs->SetGPU##data_diff(rhs_data);                                          \
+    my_tensor::matmul_transpose(                                               \
+        lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(),          \
+        result->GetGPU##data_diff##Ptr(), 500, 128, 64);                       \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(),      \
+                                     result->GetGPU##data_diff().end());       \
+    for (int i = 0; i < 32000; i++) {                                          \
+      int row = i / 64;                                                        \
+      int col = i % 64;                                                        \
+      for (int k = 0; k < 128; k++) {                                          \
+        result_expect[i] += lhs_data[row * 128 + k] * rhs_data[col * 128 + k]; \
+      }                                                                        \
+    }                                                                          \
+    for (int i = 0; i < 32000; i++) {                                          \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                   \
+    }                                                                          \
   }
 
 BLAS_MATMUL_T_TEST(Data)
 BLAS_MATMUL_T_TEST(Diff)
 
-#define BLAS_T_MATMUL_TEST(data_diff)                                                                                                          \
-  TEST_F(BlasMatmulTest, Blas_TransposeMatmul##data_diff##Test)                                                                                \
-  {                                                                                                                                            \
-    lhs->Reshape({128, 500});                                                                                                                  \
-    lhs->SetGPU##data_diff(lhs_data);                                                                                                          \
-    rhs->SetGPU##data_diff(rhs_data);                                                                                                          \
-    my_tensor::transpose_matmul(lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 500, 128, 64); \
-    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end());                                  \
-    for (int i = 0; i < 32000; i++)                                                                                                            \
-    {                                                                                                                                          \
-      int row = i / 64;                                                                                                                        \
-      int col = i % 64;                                                                                                                        \
-      for (int k = 0; k < 128; k++)                                                                                                            \
-      {                                                                                                                                        \
-        result_expect[i] += lhs_data[k * 500 + row] * rhs_data[k * 64 + col];                                                                  \
-      }                                                                                                                                        \
-    }                                                                                                                                          \
-    for (int i = 0; i < 32000; i++)                                                                                                            \
-    {                                                                                                                                          \
-      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                                                   \
-    }                                                                                                                                          \
+#define BLAS_T_MATMUL_TEST(data_diff)                                         \
+  TEST_F(BlasMatmulTest, Blas_TransposeMatmul##data_diff##Test) {             \
+    lhs->Reshape({128, 500});                                                 \
+    lhs->SetGPU##data_diff(lhs_data);                                         \
+    rhs->SetGPU##data_diff(rhs_data);                                         \
+    my_tensor::transpose_matmul(                                              \
+        lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(),         \
+        result->GetGPU##data_diff##Ptr(), 500, 128, 64);                      \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(),     \
+                                     result->GetGPU##data_diff().end());      \
+    for (int i = 0; i < 32000; i++) {                                         \
+      int row = i / 64;                                                       \
+      int col = i % 64;                                                       \
+      for (int k = 0; k < 128; k++) {                                         \
+        result_expect[i] += lhs_data[k * 500 + row] * rhs_data[k * 64 + col]; \
+      }                                                                       \
+    }                                                                         \
+    for (int i = 0; i < 32000; i++) {                                         \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                  \
+    }                                                                         \
   }
 
 BLAS_T_MATMUL_TEST(Data)
 BLAS_T_MATMUL_TEST(Diff)
 
-#define BLAS_T_MATMUL_T_TEST(data_diff)                                                                                                                  \
-  TEST_F(BlasMatmulTest, Blas_TransposeMatmulTranspose##data_diff##Test)                                                                                 \
-  {                                                                                                                                                      \
-    lhs->Reshape({128, 500});                                                                                                                            \
-    rhs->Reshape({64, 128});                                                                                                                             \
-    lhs->SetGPU##data_diff(lhs_data);                                                                                                                    \
-    rhs->SetGPU##data_diff(rhs_data);                                                                                                                    \
-    my_tensor::transpose_matmul_transpose(lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 500, 128, 64); \
-    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end());                                            \
-    for (int i = 0; i < 32000; i++)                                                                                                                      \
-    {                                                                                                                                                    \
-      int row = i / 64;                                                                                                                                  \
-      int col = i % 64;                                                                                                                                  \
-      for (int k = 0; k < 128; k++)                                                                                                                      \
-      {                                                                                                                                                  \
-        result_expect[i] += lhs_data[k * 500 + row] * rhs_data[col * 128 + k];                                                                           \
-      }                                                                                                                                                  \
-    }                                                                                                                                                    \
-    for (int i = 0; i < 32000; i++)                                                                                                                      \
-    {                                                                                                                                                    \
-      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                                                             \
-    }                                                                                                                                                    \
+#define BLAS_T_MATMUL_T_TEST(data_diff)                                        \
+  TEST_F(BlasMatmulTest, Blas_TransposeMatmulTranspose##data_diff##Test) {     \
+    lhs->Reshape({128, 500});                                                  \
+    rhs->Reshape({64, 128});                                                   \
+    lhs->SetGPU##data_diff(lhs_data);                                          \
+    rhs->SetGPU##data_diff(rhs_data);                                          \
+    my_tensor::transpose_matmul_transpose(                                     \
+        lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(),          \
+        result->GetGPU##data_diff##Ptr(), 500, 128, 64);                       \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(),      \
+                                     result->GetGPU##data_diff().end());       \
+    for (int i = 0; i < 32000; i++) {                                          \
+      int row = i / 64;                                                        \
+      int col = i % 64;                                                        \
+      for (int k = 0; k < 128; k++) {                                          \
+        result_expect[i] += lhs_data[k * 500 + row] * rhs_data[col * 128 + k]; \
+      }                                                                        \
+    }                                                                          \
+    for (int i = 0; i < 32000; i++) {                                          \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                   \
+    }                                                                          \
   }
 
 BLAS_T_MATMUL_T_TEST(Data)
 BLAS_T_MATMUL_T_TEST(Diff)
 
-class BlasMatmulBatchTest : public ::testing::Test
-{
-protected:
-  void SetUp() override
-  {
+class BlasMatmulBatchTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
     lhs_data.resize(640000);
     rhs_data.resize(81920);
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dis(-10.0f, 10.0f);
-    auto random_func = [&gen, &dis]() -> float
-    { return dis(gen); };
+    auto random_func = [&gen, &dis]() -> float { return dis(gen); };
     std::ranges::generate(lhs_data, random_func);
     std::ranges::generate(rhs_data, random_func);
     lhs = std::make_shared<my_tensor::Tensor<>>(left_shape);
@@ -180,134 +176,132 @@ protected:
   const std::vector<int> result_shape{10, 500, 64};
 };
 
-#define BLAS_MATMUL_BATCH_TEST(data_diff)                                                                                                \
-  TEST_F(BlasMatmulBatchTest, Blas_MatmulBatch##data_diff##Test)                                                                         \
-  {                                                                                                                                      \
-    lhs->SetGPU##data_diff(lhs_data);                                                                                                    \
-    rhs->SetGPU##data_diff(rhs_data);                                                                                                    \
-    my_tensor::matmul(lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10); \
-    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end());                            \
-    for (int t = 0; t < 10; t++)                                                                                                         \
-    {                                                                                                                                    \
-      for (int i = 0; i < 32000; i++)                                                                                                    \
-      {                                                                                                                                  \
-        int row = i / 64;                                                                                                                \
-        int col = i % 64;                                                                                                                \
-        for (int k = 0; k < 128; k++)                                                                                                    \
-        {                                                                                                                                \
-          result_expect[t * 32000 + i] += lhs_data[t * 64000 + row * 128 + k] * rhs_data[t * 8192 + k * 64 + col];                       \
-        }                                                                                                                                \
-      }                                                                                                                                  \
-    }                                                                                                                                    \
-    for (int i = 0; i < 320000; i++)                                                                                                     \
-    {                                                                                                                                    \
-      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                                             \
-    }                                                                                                                                    \
+#define BLAS_MATMUL_BATCH_TEST(data_diff)                                  \
+  TEST_F(BlasMatmulBatchTest, Blas_MatmulBatch##data_diff##Test) {         \
+    lhs->SetGPU##data_diff(lhs_data);                                      \
+    rhs->SetGPU##data_diff(rhs_data);                                      \
+    my_tensor::matmul(lhs->GetGPU##data_diff##Ptr(),                       \
+                      rhs->GetGPU##data_diff##Ptr(),                       \
+                      result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10); \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(),  \
+                                     result->GetGPU##data_diff().end());   \
+    for (int t = 0; t < 10; t++) {                                         \
+      for (int i = 0; i < 32000; i++) {                                    \
+        int row = i / 64;                                                  \
+        int col = i % 64;                                                  \
+        for (int k = 0; k < 128; k++) {                                    \
+          result_expect[t * 32000 + i] +=                                  \
+              lhs_data[t * 64000 + row * 128 + k] *                        \
+              rhs_data[t * 8192 + k * 64 + col];                           \
+        }                                                                  \
+      }                                                                    \
+    }                                                                      \
+    for (int i = 0; i < 320000; i++) {                                     \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);               \
+    }                                                                      \
   }
 
 BLAS_MATMUL_BATCH_TEST(Data)
 BLAS_MATMUL_BATCH_TEST(Diff)
 
-#define BLAS_MATMUL_T_BATCH_TEST(data_diff)                                                                                                        \
-  TEST_F(BlasMatmulBatchTest, Blas_MatmulTransposeBatch##data_diff##Test)                                                                          \
-  {                                                                                                                                                \
-    rhs->Reshape({10, 64, 128});                                                                                                                   \
-    lhs->SetGPU##data_diff(lhs_data);                                                                                                              \
-    rhs->SetGPU##data_diff(rhs_data);                                                                                                              \
-    my_tensor::matmul_transpose(lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10); \
-    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end());                                      \
-    for (int t = 0; t < 10; t++)                                                                                                                   \
-    {                                                                                                                                              \
-      for (int i = 0; i < 32000; i++)                                                                                                              \
-      {                                                                                                                                            \
-        int row = i / 64;                                                                                                                          \
-        int col = i % 64;                                                                                                                          \
-        for (int k = 0; k < 128; k++)                                                                                                              \
-        {                                                                                                                                          \
-          result_expect[t * 32000 + i] += lhs_data[t * 64000 + row * 128 + k] * rhs_data[t * 8192 + col * 128 + k];                                \
-        }                                                                                                                                          \
-      }                                                                                                                                            \
-    }                                                                                                                                              \
-    for (int i = 0; i < 320000; i++)                                                                                                               \
-    {                                                                                                                                              \
-      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                                                       \
-    }                                                                                                                                              \
+#define BLAS_MATMUL_T_BATCH_TEST(data_diff)                                 \
+  TEST_F(BlasMatmulBatchTest, Blas_MatmulTransposeBatch##data_diff##Test) { \
+    rhs->Reshape({10, 64, 128});                                            \
+    lhs->SetGPU##data_diff(lhs_data);                                       \
+    rhs->SetGPU##data_diff(rhs_data);                                       \
+    my_tensor::matmul_transpose(                                            \
+        lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(),       \
+        result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10);                \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(),   \
+                                     result->GetGPU##data_diff().end());    \
+    for (int t = 0; t < 10; t++) {                                          \
+      for (int i = 0; i < 32000; i++) {                                     \
+        int row = i / 64;                                                   \
+        int col = i % 64;                                                   \
+        for (int k = 0; k < 128; k++) {                                     \
+          result_expect[t * 32000 + i] +=                                   \
+              lhs_data[t * 64000 + row * 128 + k] *                         \
+              rhs_data[t * 8192 + col * 128 + k];                           \
+        }                                                                   \
+      }                                                                     \
+    }                                                                       \
+    for (int i = 0; i < 320000; i++) {                                      \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                \
+    }                                                                       \
   }
 
 BLAS_MATMUL_T_BATCH_TEST(Data)
 BLAS_MATMUL_T_BATCH_TEST(Diff)
 
-#define BLAS_T_MATMUL_BATCH_TEST(data_diff)                                                                                                        \
-  TEST_F(BlasMatmulBatchTest, Blas_TransposeMatmul##data_diff##Test)                                                                               \
-  {                                                                                                                                                \
-    lhs->Reshape({10, 128, 500});                                                                                                                  \
-    lhs->SetGPU##data_diff(lhs_data);                                                                                                              \
-    rhs->SetGPU##data_diff(rhs_data);                                                                                                              \
-    my_tensor::transpose_matmul(lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10); \
-    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end());                                      \
-    for (int t = 0; t < 10; t++)                                                                                                                   \
-    {                                                                                                                                              \
-      for (int i = 0; i < 32000; i++)                                                                                                              \
-      {                                                                                                                                            \
-        int row = i / 64;                                                                                                                          \
-        int col = i % 64;                                                                                                                          \
-        for (int k = 0; k < 128; k++)                                                                                                              \
-        {                                                                                                                                          \
-          result_expect[t * 32000 + i] += lhs_data[t * 64000 + k * 500 + row] * rhs_data[t * 8192 + k * 64 + col];                                 \
-        }                                                                                                                                          \
-      }                                                                                                                                            \
-    }                                                                                                                                              \
-    for (int i = 0; i < 320000; i++)                                                                                                               \
-    {                                                                                                                                              \
-      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                                                       \
-    }                                                                                                                                              \
+#define BLAS_T_MATMUL_BATCH_TEST(data_diff)                               \
+  TEST_F(BlasMatmulBatchTest, Blas_TransposeMatmul##data_diff##Test) {    \
+    lhs->Reshape({10, 128, 500});                                         \
+    lhs->SetGPU##data_diff(lhs_data);                                     \
+    rhs->SetGPU##data_diff(rhs_data);                                     \
+    my_tensor::transpose_matmul(                                          \
+        lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(),     \
+        result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10);              \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), \
+                                     result->GetGPU##data_diff().end());  \
+    for (int t = 0; t < 10; t++) {                                        \
+      for (int i = 0; i < 32000; i++) {                                   \
+        int row = i / 64;                                                 \
+        int col = i % 64;                                                 \
+        for (int k = 0; k < 128; k++) {                                   \
+          result_expect[t * 32000 + i] +=                                 \
+              lhs_data[t * 64000 + k * 500 + row] *                       \
+              rhs_data[t * 8192 + k * 64 + col];                          \
+        }                                                                 \
+      }                                                                   \
+    }                                                                     \
+    for (int i = 0; i < 320000; i++) {                                    \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);              \
+    }                                                                     \
   }
 
 BLAS_T_MATMUL_BATCH_TEST(Data)
 BLAS_T_MATMUL_BATCH_TEST(Diff)
 
-#define BLAS_T_MATMUL_T_BATCH_TEST(data_diff)                                                                                                                \
-  TEST_F(BlasMatmulBatchTest, Blas_TransposeMatmulTranspose##data_diff##Test)                                                                                \
-  {                                                                                                                                                          \
-    lhs->Reshape({10, 128, 500});                                                                                                                            \
-    rhs->Reshape({10, 64, 128});                                                                                                                             \
-    lhs->SetGPU##data_diff(lhs_data);                                                                                                                        \
-    rhs->SetGPU##data_diff(rhs_data);                                                                                                                        \
-    my_tensor::transpose_matmul_transpose(lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10); \
-    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end());                                                \
-    for (int t = 0; t < 10; t++)                                                                                                                             \
-    {                                                                                                                                                        \
-      for (int i = 0; i < 32000; i++)                                                                                                                        \
-      {                                                                                                                                                      \
-        int row = i / 64;                                                                                                                                    \
-        int col = i % 64;                                                                                                                                    \
-        for (int k = 0; k < 128; k++)                                                                                                                        \
-        {                                                                                                                                                    \
-          result_expect[t * 32000 + i] += lhs_data[t * 64000 + k * 500 + row] * rhs_data[t * 8192 + col * 128 + k];                                          \
-        }                                                                                                                                                    \
-      }                                                                                                                                                      \
-    }                                                                                                                                                        \
-    for (int i = 0; i < 320000; i++)                                                                                                                         \
-    {                                                                                                                                                        \
-      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                                                                 \
-    }                                                                                                                                                        \
+#define BLAS_T_MATMUL_T_BATCH_TEST(data_diff)                             \
+  TEST_F(BlasMatmulBatchTest,                                             \
+         Blas_TransposeMatmulTranspose##data_diff##Test) {                \
+    lhs->Reshape({10, 128, 500});                                         \
+    rhs->Reshape({10, 64, 128});                                          \
+    lhs->SetGPU##data_diff(lhs_data);                                     \
+    rhs->SetGPU##data_diff(rhs_data);                                     \
+    my_tensor::transpose_matmul_transpose(                                \
+        lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(),     \
+        result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10);              \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), \
+                                     result->GetGPU##data_diff().end());  \
+    for (int t = 0; t < 10; t++) {                                        \
+      for (int i = 0; i < 32000; i++) {                                   \
+        int row = i / 64;                                                 \
+        int col = i % 64;                                                 \
+        for (int k = 0; k < 128; k++) {                                   \
+          result_expect[t * 32000 + i] +=                                 \
+              lhs_data[t * 64000 + k * 500 + row] *                       \
+              rhs_data[t * 8192 + col * 128 + k];                         \
+        }                                                                 \
+      }                                                                   \
+    }                                                                     \
+    for (int i = 0; i < 320000; i++) {                                    \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);              \
+    }                                                                     \
   }
 
 BLAS_T_MATMUL_T_BATCH_TEST(Data)
 BLAS_T_MATMUL_T_BATCH_TEST(Diff)
 
-class BlasMatmulBatchOneBroadcastTest : public ::testing::Test
-{
-protected:
-  void SetUp() override
-  {
+class BlasMatmulBatchOneBroadcastTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
     lhs_data.resize(64000);
     rhs_data.resize(81920);
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dis(-10.0f, 10.0f);
-    auto random_func = [&gen, &dis]() -> float
-    { return dis(gen); };
+    auto random_func = [&gen, &dis]() -> float { return dis(gen); };
     std::ranges::generate(lhs_data, random_func);
     std::ranges::generate(rhs_data, random_func);
     lhs = std::make_shared<my_tensor::Tensor<>>(left_shape);
@@ -327,134 +321,130 @@ protected:
   const std::vector<int> result_shape{10, 500, 64};
 };
 
-#define BLAS_MATMUL_BATCH_ONE_BROADCAST_TEST(data_diff)                                                                                     \
-  TEST_F(BlasMatmulBatchOneBroadcastTest, Blas_Matmul##data_diff##Test)                                                                     \
-  {                                                                                                                                         \
-    lhs->SetGPU##data_diff(lhs_data);                                                                                                       \
-    rhs->SetGPU##data_diff(rhs_data);                                                                                                       \
-    my_tensor::matmul(lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10, 1); \
-    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end());                               \
-    for (int t = 0; t < 10; t++)                                                                                                            \
-    {                                                                                                                                       \
-      for (int i = 0; i < 32000; i++)                                                                                                       \
-      {                                                                                                                                     \
-        int row = i / 64;                                                                                                                   \
-        int col = i % 64;                                                                                                                   \
-        for (int k = 0; k < 128; k++)                                                                                                       \
-        {                                                                                                                                   \
-          result_expect[t * 32000 + i] += lhs_data[row * 128 + k] * rhs_data[t * 8192 + k * 64 + col];                                      \
-        }                                                                                                                                   \
-      }                                                                                                                                     \
-    }                                                                                                                                       \
-    for (int i = 0; i < 320000; i++)                                                                                                        \
-    {                                                                                                                                       \
-      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                                                \
-    }                                                                                                                                       \
+#define BLAS_MATMUL_BATCH_ONE_BROADCAST_TEST(data_diff)                       \
+  TEST_F(BlasMatmulBatchOneBroadcastTest, Blas_Matmul##data_diff##Test) {     \
+    lhs->SetGPU##data_diff(lhs_data);                                         \
+    rhs->SetGPU##data_diff(rhs_data);                                         \
+    my_tensor::matmul(lhs->GetGPU##data_diff##Ptr(),                          \
+                      rhs->GetGPU##data_diff##Ptr(),                          \
+                      result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10, 1); \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(),     \
+                                     result->GetGPU##data_diff().end());      \
+    for (int t = 0; t < 10; t++) {                                            \
+      for (int i = 0; i < 32000; i++) {                                       \
+        int row = i / 64;                                                     \
+        int col = i % 64;                                                     \
+        for (int k = 0; k < 128; k++) {                                       \
+          result_expect[t * 32000 + i] +=                                     \
+              lhs_data[row * 128 + k] * rhs_data[t * 8192 + k * 64 + col];    \
+        }                                                                     \
+      }                                                                       \
+    }                                                                         \
+    for (int i = 0; i < 320000; i++) {                                        \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                  \
+    }                                                                         \
   }
 
 BLAS_MATMUL_BATCH_ONE_BROADCAST_TEST(Data)
 BLAS_MATMUL_BATCH_ONE_BROADCAST_TEST(Diff)
 
-#define BLAS_MATMUL_T_BATCH_ONE_BROADCAST_TEST(data_diff)                                                                                             \
-  TEST_F(BlasMatmulBatchOneBroadcastTest, Blas_MatmulTranspose##data_diff##Test)                                                                      \
-  {                                                                                                                                                   \
-    rhs->Reshape({10, 64, 128});                                                                                                                      \
-    lhs->SetGPU##data_diff(lhs_data);                                                                                                                 \
-    rhs->SetGPU##data_diff(rhs_data);                                                                                                                 \
-    my_tensor::matmul_transpose(lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10, 1); \
-    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end());                                         \
-    for (int t = 0; t < 10; t++)                                                                                                                      \
-    {                                                                                                                                                 \
-      for (int i = 0; i < 32000; i++)                                                                                                                 \
-      {                                                                                                                                               \
-        int row = i / 64;                                                                                                                             \
-        int col = i % 64;                                                                                                                             \
-        for (int k = 0; k < 128; k++)                                                                                                                 \
-        {                                                                                                                                             \
-          result_expect[t * 32000 + i] += lhs_data[row * 128 + k] * rhs_data[t * 8192 + col * 128 + k];                                               \
-        }                                                                                                                                             \
-      }                                                                                                                                               \
-    }                                                                                                                                                 \
-    for (int i = 0; i < 320000; i++)                                                                                                                  \
-    {                                                                                                                                                 \
-      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                                                          \
-    }                                                                                                                                                 \
+#define BLAS_MATMUL_T_BATCH_ONE_BROADCAST_TEST(data_diff)                   \
+  TEST_F(BlasMatmulBatchOneBroadcastTest,                                   \
+         Blas_MatmulTranspose##data_diff##Test) {                           \
+    rhs->Reshape({10, 64, 128});                                            \
+    lhs->SetGPU##data_diff(lhs_data);                                       \
+    rhs->SetGPU##data_diff(rhs_data);                                       \
+    my_tensor::matmul_transpose(                                            \
+        lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(),       \
+        result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10, 1);             \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(),   \
+                                     result->GetGPU##data_diff().end());    \
+    for (int t = 0; t < 10; t++) {                                          \
+      for (int i = 0; i < 32000; i++) {                                     \
+        int row = i / 64;                                                   \
+        int col = i % 64;                                                   \
+        for (int k = 0; k < 128; k++) {                                     \
+          result_expect[t * 32000 + i] +=                                   \
+              lhs_data[row * 128 + k] * rhs_data[t * 8192 + col * 128 + k]; \
+        }                                                                   \
+      }                                                                     \
+    }                                                                       \
+    for (int i = 0; i < 320000; i++) {                                      \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                \
+    }                                                                       \
   }
 
 BLAS_MATMUL_T_BATCH_ONE_BROADCAST_TEST(Data)
 BLAS_MATMUL_T_BATCH_ONE_BROADCAST_TEST(Diff)
 
-#define BLAS_T_MATMUL_BATCH_ONE_BROADCAST_TEST(data_diff)                                                                                             \
-  TEST_F(BlasMatmulBatchOneBroadcastTest, Blas_TransposeMatmul##data_diff##Test)                                                                      \
-  {                                                                                                                                                   \
-    lhs->Reshape({128, 500});                                                                                                                         \
-    lhs->SetGPU##data_diff(lhs_data);                                                                                                                 \
-    rhs->SetGPU##data_diff(rhs_data);                                                                                                                 \
-    my_tensor::transpose_matmul(lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10, 1); \
-    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end());                                         \
-    for (int t = 0; t < 10; t++)                                                                                                                      \
-    {                                                                                                                                                 \
-      for (int i = 0; i < 32000; i++)                                                                                                                 \
-      {                                                                                                                                               \
-        int row = i / 64;                                                                                                                             \
-        int col = i % 64;                                                                                                                             \
-        for (int k = 0; k < 128; k++)                                                                                                                 \
-        {                                                                                                                                             \
-          result_expect[t * 32000 + i] += lhs_data[k * 500 + row] * rhs_data[t * 8192 + k * 64 + col];                                                \
-        }                                                                                                                                             \
-      }                                                                                                                                               \
-    }                                                                                                                                                 \
-    for (int i = 0; i < 320000; i++)                                                                                                                  \
-    {                                                                                                                                                 \
-      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                                                          \
-    }                                                                                                                                                 \
+#define BLAS_T_MATMUL_BATCH_ONE_BROADCAST_TEST(data_diff)                  \
+  TEST_F(BlasMatmulBatchOneBroadcastTest,                                  \
+         Blas_TransposeMatmul##data_diff##Test) {                          \
+    lhs->Reshape({128, 500});                                              \
+    lhs->SetGPU##data_diff(lhs_data);                                      \
+    rhs->SetGPU##data_diff(rhs_data);                                      \
+    my_tensor::transpose_matmul(                                           \
+        lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(),      \
+        result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10, 1);            \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(),  \
+                                     result->GetGPU##data_diff().end());   \
+    for (int t = 0; t < 10; t++) {                                         \
+      for (int i = 0; i < 32000; i++) {                                    \
+        int row = i / 64;                                                  \
+        int col = i % 64;                                                  \
+        for (int k = 0; k < 128; k++) {                                    \
+          result_expect[t * 32000 + i] +=                                  \
+              lhs_data[k * 500 + row] * rhs_data[t * 8192 + k * 64 + col]; \
+        }                                                                  \
+      }                                                                    \
+    }                                                                      \
+    for (int i = 0; i < 320000; i++) {                                     \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);               \
+    }                                                                      \
   }
 
 BLAS_T_MATMUL_BATCH_ONE_BROADCAST_TEST(Data)
 BLAS_T_MATMUL_BATCH_ONE_BROADCAST_TEST(Diff)
 
-#define BLAS_T_MATMUL_T_BATCH_ONE_BROADCAST_TEST(data_diff)                                                                                                     \
-  TEST_F(BlasMatmulBatchOneBroadcastTest, Blas_TransposeMatmulTranspose##data_diff##Test)                                                                       \
-  {                                                                                                                                                             \
-    lhs->Reshape({128, 500});                                                                                                                                   \
-    rhs->Reshape({10, 64, 128});                                                                                                                                \
-    lhs->SetGPU##data_diff(lhs_data);                                                                                                                           \
-    rhs->SetGPU##data_diff(rhs_data);                                                                                                                           \
-    my_tensor::transpose_matmul_transpose(lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10, 1); \
-    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end());                                                   \
-    for (int t = 0; t < 10; t++)                                                                                                                                \
-    {                                                                                                                                                           \
-      for (int i = 0; i < 32000; i++)                                                                                                                           \
-      {                                                                                                                                                         \
-        int row = i / 64;                                                                                                                                       \
-        int col = i % 64;                                                                                                                                       \
-        for (int k = 0; k < 128; k++)                                                                                                                           \
-        {                                                                                                                                                       \
-          result_expect[t * 32000 + i] += lhs_data[k * 500 + row] * rhs_data[t * 8192 + col * 128 + k];                                                         \
-        }                                                                                                                                                       \
-      }                                                                                                                                                         \
-    }                                                                                                                                                           \
-    for (int i = 0; i < 320000; i++)                                                                                                                            \
-    {                                                                                                                                                           \
-      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                                                                    \
-    }                                                                                                                                                           \
+#define BLAS_T_MATMUL_T_BATCH_ONE_BROADCAST_TEST(data_diff)                 \
+  TEST_F(BlasMatmulBatchOneBroadcastTest,                                   \
+         Blas_TransposeMatmulTranspose##data_diff##Test) {                  \
+    lhs->Reshape({128, 500});                                               \
+    rhs->Reshape({10, 64, 128});                                            \
+    lhs->SetGPU##data_diff(lhs_data);                                       \
+    rhs->SetGPU##data_diff(rhs_data);                                       \
+    my_tensor::transpose_matmul_transpose(                                  \
+        lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(),       \
+        result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10, 1);             \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(),   \
+                                     result->GetGPU##data_diff().end());    \
+    for (int t = 0; t < 10; t++) {                                          \
+      for (int i = 0; i < 32000; i++) {                                     \
+        int row = i / 64;                                                   \
+        int col = i % 64;                                                   \
+        for (int k = 0; k < 128; k++) {                                     \
+          result_expect[t * 32000 + i] +=                                   \
+              lhs_data[k * 500 + row] * rhs_data[t * 8192 + col * 128 + k]; \
+        }                                                                   \
+      }                                                                     \
+    }                                                                       \
+    for (int i = 0; i < 320000; i++) {                                      \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                \
+    }                                                                       \
   }
 
 BLAS_T_MATMUL_T_BATCH_ONE_BROADCAST_TEST(Data)
 BLAS_T_MATMUL_T_BATCH_ONE_BROADCAST_TEST(Diff)
 
-class BlasMatmulBatchTwoBroadcastTest : public ::testing::Test
-{
-protected:
-  void SetUp() override
-  {
+class BlasMatmulBatchTwoBroadcastTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
     lhs_data.resize(640000);
     rhs_data.resize(8192);
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dis(-10.0f, 10.0f);
-    auto random_func = [&gen, &dis]() -> float
-    { return dis(gen); };
+    auto random_func = [&gen, &dis]() -> float { return dis(gen); };
     std::ranges::generate(lhs_data, random_func);
     std::ranges::generate(rhs_data, random_func);
     lhs = std::make_shared<my_tensor::Tensor<>>(left_shape);
@@ -474,127 +464,124 @@ protected:
   const std::vector<int> result_shape{10, 500, 64};
 };
 
-#define BLAS_MATMUL_BATCH_TWO_BROADCAST_TEST(data_diff)                                                                                     \
-  TEST_F(BlasMatmulBatchTwoBroadcastTest, Blas_Matmul##data_diff##Test)                                                                     \
-  {                                                                                                                                         \
-    lhs->SetGPU##data_diff(lhs_data);                                                                                                       \
-    rhs->SetGPU##data_diff(rhs_data);                                                                                                       \
-    my_tensor::matmul(lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10, 2); \
-    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end());                               \
-    for (int t = 0; t < 10; t++)                                                                                                            \
-    {                                                                                                                                       \
-      for (int i = 0; i < 32000; i++)                                                                                                       \
-      {                                                                                                                                     \
-        int row = i / 64;                                                                                                                   \
-        int col = i % 64;                                                                                                                   \
-        for (int k = 0; k < 128; k++)                                                                                                       \
-        {                                                                                                                                   \
-          result_expect[t * 32000 + i] += lhs_data[t * 64000 + row * 128 + k] * rhs_data[k * 64 + col];                                     \
-        }                                                                                                                                   \
-      }                                                                                                                                     \
-    }                                                                                                                                       \
-    for (int i = 0; i < 320000; i++)                                                                                                        \
-    {                                                                                                                                       \
-      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                                                \
-    }                                                                                                                                       \
+#define BLAS_MATMUL_BATCH_TWO_BROADCAST_TEST(data_diff)                       \
+  TEST_F(BlasMatmulBatchTwoBroadcastTest, Blas_Matmul##data_diff##Test) {     \
+    lhs->SetGPU##data_diff(lhs_data);                                         \
+    rhs->SetGPU##data_diff(rhs_data);                                         \
+    my_tensor::matmul(lhs->GetGPU##data_diff##Ptr(),                          \
+                      rhs->GetGPU##data_diff##Ptr(),                          \
+                      result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10, 2); \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(),     \
+                                     result->GetGPU##data_diff().end());      \
+    for (int t = 0; t < 10; t++) {                                            \
+      for (int i = 0; i < 32000; i++) {                                       \
+        int row = i / 64;                                                     \
+        int col = i % 64;                                                     \
+        for (int k = 0; k < 128; k++) {                                       \
+          result_expect[t * 32000 + i] +=                                     \
+              lhs_data[t * 64000 + row * 128 + k] * rhs_data[k * 64 + col];   \
+        }                                                                     \
+      }                                                                       \
+    }                                                                         \
+    for (int i = 0; i < 320000; i++) {                                        \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                  \
+    }                                                                         \
   }
 
 BLAS_MATMUL_BATCH_TWO_BROADCAST_TEST(Data)
 BLAS_MATMUL_BATCH_TWO_BROADCAST_TEST(Diff)
 
-#define BLAS_MATMUL_T_BATCH_TWO_BROADCAST_TEST(data_diff)                                                                                             \
-  TEST_F(BlasMatmulBatchTwoBroadcastTest, Blas_MatmulTranspose##data_diff##Test)                                                                      \
-  {                                                                                                                                                   \
-    rhs->Reshape({64, 128});                                                                                                                          \
-    lhs->SetGPU##data_diff(lhs_data);                                                                                                                 \
-    rhs->SetGPU##data_diff(rhs_data);                                                                                                                 \
-    my_tensor::matmul_transpose(lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10, 2); \
-    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end());                                         \
-    for (int t = 0; t < 10; t++)                                                                                                                      \
-    {                                                                                                                                                 \
-      for (int i = 0; i < 32000; i++)                                                                                                                 \
-      {                                                                                                                                               \
-        int row = i / 64;                                                                                                                             \
-        int col = i % 64;                                                                                                                             \
-        for (int k = 0; k < 128; k++)                                                                                                                 \
-        {                                                                                                                                             \
-          result_expect[t * 32000 + i] += lhs_data[t * 64000 + row * 128 + k] * rhs_data[col * 128 + k];                                              \
-        }                                                                                                                                             \
-      }                                                                                                                                               \
-    }                                                                                                                                                 \
-    for (int i = 0; i < 320000; i++)                                                                                                                  \
-    {                                                                                                                                                 \
-      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                                                          \
-    }                                                                                                                                                 \
+#define BLAS_MATMUL_T_BATCH_TWO_BROADCAST_TEST(data_diff)                    \
+  TEST_F(BlasMatmulBatchTwoBroadcastTest,                                    \
+         Blas_MatmulTranspose##data_diff##Test) {                            \
+    rhs->Reshape({64, 128});                                                 \
+    lhs->SetGPU##data_diff(lhs_data);                                        \
+    rhs->SetGPU##data_diff(rhs_data);                                        \
+    my_tensor::matmul_transpose(                                             \
+        lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(),        \
+        result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10, 2);              \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(),    \
+                                     result->GetGPU##data_diff().end());     \
+    for (int t = 0; t < 10; t++) {                                           \
+      for (int i = 0; i < 32000; i++) {                                      \
+        int row = i / 64;                                                    \
+        int col = i % 64;                                                    \
+        for (int k = 0; k < 128; k++) {                                      \
+          result_expect[t * 32000 + i] +=                                    \
+              lhs_data[t * 64000 + row * 128 + k] * rhs_data[col * 128 + k]; \
+        }                                                                    \
+      }                                                                      \
+    }                                                                        \
+    for (int i = 0; i < 320000; i++) {                                       \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                 \
+    }                                                                        \
   }
 
 BLAS_MATMUL_T_BATCH_TWO_BROADCAST_TEST(Data)
 BLAS_MATMUL_T_BATCH_TWO_BROADCAST_TEST(Diff)
 
-#define BLAS_T_MATMUL_BATCH_TWO_BROADCAST_TEST(data_diff)                                                                                             \
-  TEST_F(BlasMatmulBatchTwoBroadcastTest, Blas_TransposeMatmul##data_diff##Test)                                                                      \
-  {                                                                                                                                                   \
-    lhs->Reshape({10, 128, 500});                                                                                                                     \
-    lhs->SetGPU##data_diff(lhs_data);                                                                                                                 \
-    rhs->SetGPU##data_diff(rhs_data);                                                                                                                 \
-    my_tensor::transpose_matmul(lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10, 2); \
-    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end());                                         \
-    for (int t = 0; t < 10; t++)                                                                                                                      \
-    {                                                                                                                                                 \
-      for (int i = 0; i < 32000; i++)                                                                                                                 \
-      {                                                                                                                                               \
-        int row = i / 64;                                                                                                                             \
-        int col = i % 64;                                                                                                                             \
-        for (int k = 0; k < 128; k++)                                                                                                                 \
-        {                                                                                                                                             \
-          result_expect[t * 32000 + i] += lhs_data[t * 64000 + k * 500 + row] * rhs_data[k * 64 + col];                                               \
-        }                                                                                                                                             \
-      }                                                                                                                                               \
-    }                                                                                                                                                 \
-    for (int i = 0; i < 320000; i++)                                                                                                                  \
-    {                                                                                                                                                 \
-      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                                                          \
-    }                                                                                                                                                 \
+#define BLAS_T_MATMUL_BATCH_TWO_BROADCAST_TEST(data_diff)                   \
+  TEST_F(BlasMatmulBatchTwoBroadcastTest,                                   \
+         Blas_TransposeMatmul##data_diff##Test) {                           \
+    lhs->Reshape({10, 128, 500});                                           \
+    lhs->SetGPU##data_diff(lhs_data);                                       \
+    rhs->SetGPU##data_diff(rhs_data);                                       \
+    my_tensor::transpose_matmul(                                            \
+        lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(),       \
+        result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10, 2);             \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(),   \
+                                     result->GetGPU##data_diff().end());    \
+    for (int t = 0; t < 10; t++) {                                          \
+      for (int i = 0; i < 32000; i++) {                                     \
+        int row = i / 64;                                                   \
+        int col = i % 64;                                                   \
+        for (int k = 0; k < 128; k++) {                                     \
+          result_expect[t * 32000 + i] +=                                   \
+              lhs_data[t * 64000 + k * 500 + row] * rhs_data[k * 64 + col]; \
+        }                                                                   \
+      }                                                                     \
+    }                                                                       \
+    for (int i = 0; i < 320000; i++) {                                      \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                \
+    }                                                                       \
   }
 
 BLAS_T_MATMUL_BATCH_TWO_BROADCAST_TEST(Data)
 BLAS_T_MATMUL_BATCH_TWO_BROADCAST_TEST(Diff)
 
-#define BLAS_T_MATMUL_T_BATCH_TWO_BROADCAST_TEST(data_diff)                                                                                                     \
-  TEST_F(BlasMatmulBatchTwoBroadcastTest, Blas_TransposeMatmulTranspose##data_diff##Test)                                                                       \
-  {                                                                                                                                                             \
-    lhs->Reshape({10, 128, 500});                                                                                                                               \
-    rhs->Reshape({64, 128});                                                                                                                                    \
-    lhs->SetGPU##data_diff(lhs_data);                                                                                                                           \
-    rhs->SetGPU##data_diff(rhs_data);                                                                                                                           \
-    my_tensor::transpose_matmul_transpose(lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10, 2); \
-    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end());                                                   \
-    for (int t = 0; t < 10; t++)                                                                                                                                \
-    {                                                                                                                                                           \
-      for (int i = 0; i < 32000; i++)                                                                                                                           \
-      {                                                                                                                                                         \
-        int row = i / 64;                                                                                                                                       \
-        int col = i % 64;                                                                                                                                       \
-        for (int k = 0; k < 128; k++)                                                                                                                           \
-        {                                                                                                                                                       \
-          result_expect[t * 32000 + i] += lhs_data[t * 64000 + k * 500 + row] * rhs_data[col * 128 + k];                                                        \
-        }                                                                                                                                                       \
-      }                                                                                                                                                         \
-    }                                                                                                                                                           \
-    for (int i = 0; i < 320000; i++)                                                                                                                            \
-    {                                                                                                                                                           \
-      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                                                                    \
-    }                                                                                                                                                           \
+#define BLAS_T_MATMUL_T_BATCH_TWO_BROADCAST_TEST(data_diff)                  \
+  TEST_F(BlasMatmulBatchTwoBroadcastTest,                                    \
+         Blas_TransposeMatmulTranspose##data_diff##Test) {                   \
+    lhs->Reshape({10, 128, 500});                                            \
+    rhs->Reshape({64, 128});                                                 \
+    lhs->SetGPU##data_diff(lhs_data);                                        \
+    rhs->SetGPU##data_diff(rhs_data);                                        \
+    my_tensor::transpose_matmul_transpose(                                   \
+        lhs->GetGPU##data_diff##Ptr(), rhs->GetGPU##data_diff##Ptr(),        \
+        result->GetGPU##data_diff##Ptr(), 500, 128, 64, 10, 2);              \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(),    \
+                                     result->GetGPU##data_diff().end());     \
+    for (int t = 0; t < 10; t++) {                                           \
+      for (int i = 0; i < 32000; i++) {                                      \
+        int row = i / 64;                                                    \
+        int col = i % 64;                                                    \
+        for (int k = 0; k < 128; k++) {                                      \
+          result_expect[t * 32000 + i] +=                                    \
+              lhs_data[t * 64000 + k * 500 + row] * rhs_data[col * 128 + k]; \
+        }                                                                    \
+      }                                                                      \
+    }                                                                        \
+    for (int i = 0; i < 320000; i++) {                                       \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                 \
+    }                                                                        \
   }
 
 BLAS_T_MATMUL_T_BATCH_TWO_BROADCAST_TEST(Data)
 BLAS_T_MATMUL_T_BATCH_TWO_BROADCAST_TEST(Diff)
 
-class BlasAddVecTest : public ::testing::Test
-{
-protected:
-  void SetUp() override
-  {
+class BlasAddVecTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
     tensor_data.resize(200000);
     vec_data.resize(1000);
     result_expect.resize(200000);
@@ -603,8 +590,7 @@ protected:
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dis(-10.0f, 10.0f);
-    auto random_func = [&gen, &dis]() -> float
-    { return dis(gen); };
+    auto random_func = [&gen, &dis]() -> float { return dis(gen); };
     std::ranges::generate(tensor_data, random_func);
     std::ranges::generate(vec_data, random_func);
   }
@@ -618,58 +604,53 @@ protected:
   const std::vector<int> vec_shape{1000, 1};
 };
 
-#define BLAS_ADD_ROW_VEC_TEST(data_diff)                                                                      \
-  TEST_F(BlasAddVecTest, Blas_AddRowVec##data_diff##Test)                                                     \
-  {                                                                                                           \
-    for (int i = 0; i < 200000; i++)                                                                          \
-    {                                                                                                         \
-      result_expect[i] = tensor_data[i] + vec_data[i / 200];                                                  \
-    }                                                                                                         \
-    tensor->SetGPU##data_diff(tensor_data);                                                                   \
-    vec->SetGPU##data_diff(vec_data);                                                                         \
-    my_tensor::add_row_vector(tensor->GetGPU##data_diff##Ptr(), vec->GetGPU##data_diff##Ptr(), 1000, 200);    \
-    std::vector<float> result_actual(tensor->GetGPU##data_diff().begin(), tensor->GetGPU##data_diff().end()); \
-    for (int i = 0; i < 200000; i++)                                                                          \
-    {                                                                                                         \
-      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                  \
-    }                                                                                                         \
+#define BLAS_ADD_ROW_VEC_TEST(data_diff)                                  \
+  TEST_F(BlasAddVecTest, Blas_AddRowVec##data_diff##Test) {               \
+    for (int i = 0; i < 200000; i++) {                                    \
+      result_expect[i] = tensor_data[i] + vec_data[i / 200];              \
+    }                                                                     \
+    tensor->SetGPU##data_diff(tensor_data);                               \
+    vec->SetGPU##data_diff(vec_data);                                     \
+    my_tensor::add_row_vector(tensor->GetGPU##data_diff##Ptr(),           \
+                              vec->GetGPU##data_diff##Ptr(), 1000, 200);  \
+    std::vector<float> result_actual(tensor->GetGPU##data_diff().begin(), \
+                                     tensor->GetGPU##data_diff().end());  \
+    for (int i = 0; i < 200000; i++) {                                    \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);              \
+    }                                                                     \
   }
 
 BLAS_ADD_ROW_VEC_TEST(Data)
 BLAS_ADD_ROW_VEC_TEST(Diff)
 
-#define BLAS_ADD_COL_VEC_TEST(data_diff)                                                                      \
-  TEST_F(BlasAddVecTest, Blas_AddColVec##data_diff##Test)                                                     \
-  {                                                                                                           \
-    tensor->Reshape({200, 1000});                                                                             \
-    for (int i = 0; i < 200000; i++)                                                                          \
-    {                                                                                                         \
-      result_expect[i] = tensor_data[i] + vec_data[i % 1000];                                                 \
-    }                                                                                                         \
-    tensor->SetGPU##data_diff(tensor_data);                                                                   \
-    vec->SetGPU##data_diff(vec_data);                                                                         \
-    my_tensor::add_col_vector(tensor->GetGPU##data_diff##Ptr(), vec->GetGPU##data_diff##Ptr(), 200, 1000);    \
-    std::vector<float> result_actual(tensor->GetGPU##data_diff().begin(), tensor->GetGPU##data_diff().end()); \
-    for (int i = 0; i < 200000; i++)                                                                          \
-    {                                                                                                         \
-      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);                                                  \
-    }                                                                                                         \
+#define BLAS_ADD_COL_VEC_TEST(data_diff)                                  \
+  TEST_F(BlasAddVecTest, Blas_AddColVec##data_diff##Test) {               \
+    tensor->Reshape({200, 1000});                                         \
+    for (int i = 0; i < 200000; i++) {                                    \
+      result_expect[i] = tensor_data[i] + vec_data[i % 1000];             \
+    }                                                                     \
+    tensor->SetGPU##data_diff(tensor_data);                               \
+    vec->SetGPU##data_diff(vec_data);                                     \
+    my_tensor::add_col_vector(tensor->GetGPU##data_diff##Ptr(),           \
+                              vec->GetGPU##data_diff##Ptr(), 200, 1000);  \
+    std::vector<float> result_actual(tensor->GetGPU##data_diff().begin(), \
+                                     tensor->GetGPU##data_diff().end());  \
+    for (int i = 0; i < 200000; i++) {                                    \
+      ASSERT_NEAR(result_expect[i], result_actual[i], 0.01);              \
+    }                                                                     \
   }
 
 BLAS_ADD_COL_VEC_TEST(Data)
 BLAS_ADD_COL_VEC_TEST(Diff)
 
-class BlasSumTest : public ::testing::Test
-{
-protected:
-  void SetUp() override
-  {
+class BlasSumTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
     data.resize(20000);
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dis(-10.0f, 10.0f);
-    auto random_func = [&gen, &dis]() -> float
-    { return dis(gen); };
+    auto random_func = [&gen, &dis]() -> float { return dis(gen); };
     std::ranges::generate(data, random_func);
     tensor = std::make_shared<my_tensor::Tensor<>>(shape);
   }
@@ -678,71 +659,67 @@ protected:
   my_tensor::TensorPtr<> tensor;
 };
 
-#define BLAS_SUM_TENSOR_SUM_TEST(data_diff)                                                 \
-  TEST_F(BlasSumTest, Blas_SumTensorSum##data_diff##Test)                                   \
-  {                                                                                         \
-    tensor->SetGPU##data_diff(data);                                                        \
-    float sum_actual = my_tensor::tensor_sum(tensor->GetGPU##data_diff##Ptr(), 20000);      \
-    float sum_expect = std::accumulate(data.begin(), data.end(), 0.0f, std::plus<float>()); \
-    ASSERT_NEAR(sum_actual, sum_expect, 0.01);                                              \
+#define BLAS_SUM_TENSOR_SUM_TEST(data_diff)                                  \
+  TEST_F(BlasSumTest, Blas_SumTensorSum##data_diff##Test) {                  \
+    tensor->SetGPU##data_diff(data);                                         \
+    float sum_actual =                                                       \
+        my_tensor::tensor_sum(tensor->GetGPU##data_diff##Ptr(), 20000);      \
+    float sum_expect =                                                       \
+        std::accumulate(data.begin(), data.end(), 0.0f, std::plus<float>()); \
+    ASSERT_NEAR(sum_actual, sum_expect, 0.01);                               \
   }
 
 BLAS_SUM_TENSOR_SUM_TEST(Data)
 BLAS_SUM_TENSOR_SUM_TEST(Diff)
 
-#define BLAS_SUM_ROW_SUM_TEST(data_diff)                                                                      \
-  TEST_F(BlasSumTest, Blas_SumRowSum##data_diff##Test)                                                        \
-  {                                                                                                           \
-    tensor->SetGPU##data_diff(data);                                                                          \
-    const std::vector<int> result_shape{100, 1};                                                              \
-    auto result = std::make_shared<my_tensor::Tensor<>>(result_shape);                                        \
-    my_tensor::row_sum(tensor->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 100, 200);         \
-    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end()); \
-    std::vector<float> result_expect(100, 0.0f);                                                              \
-    for (int i = 0; i < 100; i++)                                                                             \
-    {                                                                                                         \
-      for (int j = 0; j < 200; j++)                                                                           \
-      {                                                                                                       \
-        result_expect[i] += data[i * 200 + j];                                                                \
-      }                                                                                                       \
-    }                                                                                                         \
-    for (int i = 0; i < 100; i++)                                                                             \
-    {                                                                                                         \
-      ASSERT_NEAR(result_actual[i], result_expect[i], 0.01);                                                  \
-    }                                                                                                         \
+#define BLAS_SUM_ROW_SUM_TEST(data_diff)                                  \
+  TEST_F(BlasSumTest, Blas_SumRowSum##data_diff##Test) {                  \
+    tensor->SetGPU##data_diff(data);                                      \
+    const std::vector<int> result_shape{100, 1};                          \
+    auto result = std::make_shared<my_tensor::Tensor<>>(result_shape);    \
+    my_tensor::row_sum(tensor->GetGPU##data_diff##Ptr(),                  \
+                       result->GetGPU##data_diff##Ptr(), 100, 200);       \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), \
+                                     result->GetGPU##data_diff().end());  \
+    std::vector<float> result_expect(100, 0.0f);                          \
+    for (int i = 0; i < 100; i++) {                                       \
+      for (int j = 0; j < 200; j++) {                                     \
+        result_expect[i] += data[i * 200 + j];                            \
+      }                                                                   \
+    }                                                                     \
+    for (int i = 0; i < 100; i++) {                                       \
+      ASSERT_NEAR(result_actual[i], result_expect[i], 0.01);              \
+    }                                                                     \
   }
 
 BLAS_SUM_ROW_SUM_TEST(Data);
 BLAS_SUM_ROW_SUM_TEST(Diff);
 
-#define BLAS_SUM_COL_SUM_TEST(data_diff)                                                                      \
-  TEST_F(BlasSumTest, Blas_SumColSum##data_diff##Test)                                                        \
-  {                                                                                                           \
-    tensor->Reshape({200, 100});                                                                              \
-    tensor->SetGPU##data_diff(data);                                                                          \
-    const std::vector<int> result_shape{100, 1};                                                              \
-    auto result = std::make_shared<my_tensor::Tensor<>>(result_shape);                                        \
-    my_tensor::col_sum(tensor->GetGPU##data_diff##Ptr(), result->GetGPU##data_diff##Ptr(), 200, 100);         \
-    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), result->GetGPU##data_diff().end()); \
-    std::vector<float> result_expect(100, 0.0f);                                                              \
-    for (int i = 0; i < 100; i++)                                                                             \
-    {                                                                                                         \
-      for (int j = 0; j < 200; j++)                                                                           \
-      {                                                                                                       \
-        result_expect[i] += data[j * 100 + i];                                                                \
-      }                                                                                                       \
-    }                                                                                                         \
-    for (int i = 0; i < 100; i++)                                                                             \
-    {                                                                                                         \
-      ASSERT_NEAR(result_actual[i], result_expect[i], 0.01);                                                  \
-    }                                                                                                         \
+#define BLAS_SUM_COL_SUM_TEST(data_diff)                                  \
+  TEST_F(BlasSumTest, Blas_SumColSum##data_diff##Test) {                  \
+    tensor->Reshape({200, 100});                                          \
+    tensor->SetGPU##data_diff(data);                                      \
+    const std::vector<int> result_shape{100, 1};                          \
+    auto result = std::make_shared<my_tensor::Tensor<>>(result_shape);    \
+    my_tensor::col_sum(tensor->GetGPU##data_diff##Ptr(),                  \
+                       result->GetGPU##data_diff##Ptr(), 200, 100);       \
+    std::vector<float> result_actual(result->GetGPU##data_diff().begin(), \
+                                     result->GetGPU##data_diff().end());  \
+    std::vector<float> result_expect(100, 0.0f);                          \
+    for (int i = 0; i < 100; i++) {                                       \
+      for (int j = 0; j < 200; j++) {                                     \
+        result_expect[i] += data[j * 100 + i];                            \
+      }                                                                   \
+    }                                                                     \
+    for (int i = 0; i < 100; i++) {                                       \
+      ASSERT_NEAR(result_actual[i], result_expect[i], 0.01);              \
+    }                                                                     \
   }
 
 BLAS_SUM_COL_SUM_TEST(Data)
 BLAS_SUM_COL_SUM_TEST(Diff)
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
