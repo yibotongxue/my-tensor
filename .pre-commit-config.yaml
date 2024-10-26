@@ -1,9 +1,7 @@
 repos:
-- repo: https://github.com/pocc/pre-commit-hooks
-  rev: v1.3.5
-  hooks:
-    - id: clang-format
-      files: \.(cpp|h|cuh|cu|hpp)$
-    - id: cpplint
-      args: [--filter=-build/include_subdir,-whitespace/indent]
-      files: \.(cpp|h|cuh|cu|hpp)$
+  - repo: https://github.com/cpplint/cpplint
+    rev: master  # 或者指定你想要的版本
+    hooks:
+      - id: cpplint
+        args: ["--filter=-whitespace/indent,-build/include_subdir"]
+        files: \.(cpp|h|cuh|cu|hpp)$
