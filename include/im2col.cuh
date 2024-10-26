@@ -1,3 +1,5 @@
+// Copyright 2024 yibotongxue
+
 #ifndef INCLUDE_IM2COL_CUH_
 #define INCLUDE_IM2COL_CUH_
 

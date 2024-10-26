@@ -1,8 +1,12 @@
+// Copyright 2024 yibotongxue
+
 #include <error.h>
 #include <synced-vector.cuh>
 #include <utils.cuh>
 
 #include <thrust/copy.h>
+#include <utility>
+#include <vector>
 
 namespace my_tensor {
 
@@ -10,11 +14,13 @@ template <typename T>
 SyncedVector<T>::SyncedVector() : state_(kUninitialized), size_(0) {}
 
 template <typename T>
-SyncedVector<T>::SyncedVector(size_t size) : state_(kUninitialized), size_(size) {}
+SyncedVector<T>::SyncedVector(size_t size)
+: state_(kUninitialized), size_(size) {}
 
 template <typename T>
 SyncedVector<T>::SyncedVector(const SyncedVector<T>& vec)
- : state_(vec.state_), size_(vec.size_), cpu_data_(vec.cpu_data_), gpu_data_(vec.gpu_data_) {}
+: state_(vec.state_), size_(vec.size_), cpu_data_(vec.cpu_data_),
+gpu_data_(vec.gpu_data_) {}
 
 template <typename T>
 SyncedVector<T>& SyncedVector<T>::operator=(const SyncedVector<T>& vec) {
@@ -48,7 +54,7 @@ SyncedVector<T>& SyncedVector<T>::operator=(SyncedVector<T>&& vec) {
 }
 
 template <typename T>
-inline const thrust::host_vector<T>& SyncedVector<T>::GetCPUData(){
+inline const thrust::host_vector<T>& SyncedVector<T>::GetCPUData() {
   ToCPU();
   return cpu_data_;
 }
@@ -61,7 +67,7 @@ inline thrust::host_vector<T>& SyncedVector<T>::GetMutableCPUData() {
 }
 
 template <typename T>
-inline const thrust::device_vector<T>& SyncedVector<T>::GetGPUData(){
+inline const thrust::device_vector<T>& SyncedVector<T>::GetGPUData() {
   ToGPU();
   return gpu_data_;
 }
@@ -90,7 +96,7 @@ inline void SyncedVector<T>::SetGPUData(const std::vector<T>& data) {
 }
 
 template <typename T>
-inline const T* SyncedVector<T>::GetCPUPtr(){
+inline const T* SyncedVector<T>::GetCPUPtr() {
   ToCPU();
   return RAW_PTR(cpu_data_);
 }
@@ -103,7 +109,7 @@ inline T* SyncedVector<T>::GetMutableCPUPtr() {
 }
 
 template <typename T>
-inline const T* SyncedVector<T>::GetGPUPtr(){
+inline const T* SyncedVector<T>::GetGPUPtr() {
   ToGPU();
   return RAW_PTR(gpu_data_);
 }

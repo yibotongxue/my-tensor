@@ -1,3 +1,5 @@
+// Copyright 2024 yibotongxue
+
 #ifndef INCLUDE_SYNCED_VECTOR_CUH_
 #define INCLUDE_SYNCED_VECTOR_CUH_
 
@@ -6,6 +8,7 @@
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
 #include <memory>
+#include <vector>
 
 namespace my_tensor {
 
@@ -13,7 +16,7 @@ template <typename T = float>
 class SyncedVector {
  public:
   SyncedVector();
-  SyncedVector(size_t size);
+  explicit SyncedVector(size_t size);
   ~SyncedVector() = default;
 
   SyncedVector(const SyncedVector<T>& vec);

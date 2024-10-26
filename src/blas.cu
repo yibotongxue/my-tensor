@@ -1,8 +1,9 @@
+// Copyright 2024 yibotongxue
+
 #include <blas.cuh>
 #include <handle.cuh>
 
 #include <cublas_v2.h>
-#include <iostream>
 #include <thrust/device_vector.h>
 #include <thrust/reduce.h>
 #include <thrust/transform.h>
@@ -13,25 +14,25 @@ extern HandlePtr handle;
 #define DEFINE_ABC_VEC(broadcast)\
   int stride_A = (broadcast == 1) ? 0 : (m * k);\
   thrust::device_vector<const float *> A_vec(batch_count);\
-  thrust::transform(thrust::counting_iterator<int>(0),\
-                    thrust::counting_iterator<int>(batch_count),\
-                    A_vec.begin(),\
-                    [A, stride_A] __device__ (int i) -> const float* {\
+  thrust::transform(thrust::counting_iterator<int>(0), \
+                    thrust::counting_iterator<int>(batch_count), \
+                    A_vec.begin(), \
+                    [A, stride_A] __device__(int i) -> const float* {\
                         return A + i * stride_A;\
                     });\
   int stride_B = (broadcast == 2) ? 0 : (k * n);\
   thrust::device_vector<const float *> B_vec(batch_count);\
-  thrust::transform(thrust::counting_iterator<int>(0),\
-                    thrust::counting_iterator<int>(batch_count),\
-                    B_vec.begin(),\
-                    [B, stride_B] __device__ (int i) -> const float* {\
+  thrust::transform(thrust::counting_iterator<int>(0), \
+                    thrust::counting_iterator<int>(batch_count), \
+                    B_vec.begin(), \
+                    [B, stride_B] __device__(int i) -> const float* {\
                         return B + i * stride_B;\
                     });\
   thrust::device_vector<float *> C_vec(batch_count);\
-  thrust::transform(thrust::counting_iterator<int>(0),\
-                    thrust::counting_iterator<int>(batch_count),\
-                    C_vec.begin(),\
-                    [C, m, n] __device__ (int i) -> float* {\
+  thrust::transform(thrust::counting_iterator<int>(0), \
+                    thrust::counting_iterator<int>(batch_count), \
+                    C_vec.begin(), \
+                    [C, m, n] __device__(int i) -> float* {\
                         return C + i * m * n;\
                     });
 
@@ -57,9 +58,8 @@ void matmul(const float *A, const float *B, float *C,
     k,  // leading dimension of A<sup>T</sup>
     &beta,  // beta
     RAW_PTR(C_vec),  // C pointer, in cublas will be C<sup>T</sup>
-    n, // leading dimension of C<sup>T</sup>
-    batch_count
-  ));
+    n,  // leading dimension of C<sup>T</sup>
+    batch_count));
 }
 
 template <>
@@ -85,8 +85,7 @@ void transpose_matmul(const float *A, const float *B,
     &beta,  // beta
     RAW_PTR(C_vec),  // C pointer, in cublas will be C<sup>T</sup>
     n,  // leading dimension of C<sup>T</sup>
-    batch_count
-  ));
+    batch_count));
 }
 
 template <>
@@ -112,8 +111,7 @@ void matmul_transpose(const float *A, const float *B,
     &beta,  // beta
     RAW_PTR(C_vec),  // C pointer, in cublas will be C<sup>T</sup>
     n,  // leading dimension of C<sup>T</sup>
-    batch_count
-  ));
+    batch_count));
 }
 
 template <>
@@ -140,8 +138,7 @@ void transpose_matmul_transpose(const float *A,
     &beta,  // beta
     RAW_PTR(C_vec),  // C pointer, in cublas will be C<sup>T</sup>
     n,  // leading dimension of C<sup>T</sup>
-    batch_count
-  ));
+    batch_count));
 }
 
 namespace {
@@ -215,8 +212,7 @@ void row_sum(const float *mat, float *result, const int m, const int n) {
     1,
     &beta,
     result,
-    1
-  ));
+    1));
 }
 
 template <>
@@ -237,8 +233,7 @@ void col_sum(const float *mat, float *result, const int m, const int n) {
     1,
     &beta,
     result,
-    1
-  ));
+    1));
   cudaFree(ones);
 }
 

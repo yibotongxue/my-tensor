@@ -1,16 +1,19 @@
+// Copyright 2024 yibotongxue
+
 #ifndef INCLUDE_TENSOR_CUH_
 #define INCLUDE_TENSOR_CUH_
 
 #include <synced-vector.cuh>
 
-#include <vector>
-#include <string>
 #include <thrust/device_vector.h>
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace my_tensor {
 
 // Tensor class
-template <typename T=float>
+template <typename T = float>
 class Tensor {
  public:
   // The explicit constructors.
@@ -33,15 +36,31 @@ class Tensor {
 
   // Get methods.
   // CPU
-  const thrust::host_vector<T>& GetCPUData() const { return data_->GetCPUData(); }
-  thrust::host_vector<T>& GetCPUData() { return data_->GetMutableCPUData(); }
-  const thrust::host_vector<T>& GetCPUDiff() const { return diff_->GetCPUData(); }
-  thrust::host_vector<T>& GetCPUDiff() { return diff_->GetMutableCPUData(); }
+  const thrust::host_vector<T>& GetCPUData() const {
+    return data_->GetCPUData();
+  }
+  thrust::host_vector<T>& GetCPUData() {
+    return data_->GetMutableCPUData();
+  }
+  const thrust::host_vector<T>& GetCPUDiff() const {
+    return diff_->GetCPUData();
+  }
+  thrust::host_vector<T>& GetCPUDiff() {
+    return diff_->GetMutableCPUData();
+  }
   // GPU
-  const thrust::device_vector<T>& GetGPUData() const { return data_->GetGPUData(); }
-  thrust::device_vector<T>& GetGPUData() { return data_->GetMutableGPUData(); }
-  const thrust::device_vector<T>& GetGPUDiff() const { return diff_->GetGPUData(); }
-  thrust::device_vector<T>& GetGPUDiff() { return diff_->GetMutableGPUData(); }
+  const thrust::device_vector<T>& GetGPUData() const {
+    return data_->GetGPUData();
+  }
+  thrust::device_vector<T>& GetGPUData() {
+    return data_->GetMutableGPUData();
+  }
+  const thrust::device_vector<T>& GetGPUDiff() const {
+    return diff_->GetGPUData();
+  }
+  thrust::device_vector<T>& GetGPUDiff() {
+    return diff_->GetMutableGPUData();
+  }
   // CPU
   const T* GetCPUDataPtr() const { return data_->GetCPUPtr(); }
   T* GetCPUDataPtr() { return data_->GetMutableCPUPtr(); }

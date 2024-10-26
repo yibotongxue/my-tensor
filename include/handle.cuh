@@ -1,3 +1,5 @@
+// Copyright 2024 yibotongxue
+
 #ifndef INCLUDE_HANDLE_CUH_
 #define INCLUDE_HANDLE_CUH_
 
@@ -10,7 +12,7 @@ class Handle;
 using HandlePtr = std::shared_ptr<Handle>;
 
 class Handle {
-public:
+ public:
   ~Handle() {
     cublasDestroy(h_);
   }
@@ -29,7 +31,7 @@ public:
     return h_;
   }
 
-private:
+ private:
   cublasHandle_t h_;
 
   static HandlePtr handle_;

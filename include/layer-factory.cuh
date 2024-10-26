@@ -1,3 +1,5 @@
+// Copyright 2024 yibotongxue
+
 #ifndef INCLUDE_LAYER_FACTORY_CUH_
 #define INCLUDE_LAYER_FACTORY_CUH_
 

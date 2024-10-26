@@ -18,13 +18,13 @@ class Convolution final : public Layer<T> {
 
   DISABLE_LAYER_COPY(Convolution)
 
-  void ForwardCPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) override;
-  void BackwardCPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) override;
-  void ForwardGPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) override;
-  void BackwardGPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) override;
+  void ForwardCPU(const TensorPtr<T> bottom, TensorPtr<T> top) override;
+  void BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) override;
+  void ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) override;
+  void BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottom) override;
 
  private:
-  void CheckShape(const TensorPtr<T>& bottom, const TensorPtr<T>& top) const;
+  void CheckShape(const TensorPtr<T> bottom, const TensorPtr<T> top) const;
 };  // class Convolution
 
 extern template class Convolution<>;

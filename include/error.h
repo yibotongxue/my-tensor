@@ -1,3 +1,5 @@
+// Copyright 2024 yibotongxue
+
 #ifndef INCLUDE_ERROR_H_
 #define INCLUDE_ERROR_H_
 

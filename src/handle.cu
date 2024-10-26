@@ -1,3 +1,5 @@
+// Copyright 2024 yibotongxue
+
 #include <handle.cuh>
 
 namespace my_tensor {

@@ -1,9 +1,12 @@
+// Copyright 2024 yibotongxue
+
 #include <linear.cuh>
 #include <blas.cuh>
 #include <error.h>
 
 #include <thrust/fill.h>
 #include <iostream>
+#include <vector>
 
 namespace my_tensor {
 
@@ -31,7 +34,7 @@ Linear<T>::Linear(const std::vector<TensorPtr<T>>& params) : Layer<T>(params) {
 }
 
 template <typename T>
-void Linear<T>::ForwardCPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) {
+void Linear<T>::ForwardCPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
   CheckShape(bottom, top);
   const auto& weight_data = this->params_[0]->GetCPUData();
   const auto& bias_data = this->params_[1]->GetCPUData();
@@ -54,7 +57,7 @@ void Linear<T>::ForwardCPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) {
 }
 
 template <typename T>
-void Linear<T>::BackwardCPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) {
+void Linear<T>::BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
   CheckShape(bottom, top);
   DEFINE_MKN
   const auto& weight = this->params_[0]->GetCPUData();
@@ -103,7 +106,7 @@ void Linear<T>::BackwardCPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) {
 }
 
 template <typename T>
-void Linear<T>::ForwardGPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) {
+void Linear<T>::ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
   CheckShape(bottom, top);
   DEFINE_MKN
   // bottom m * k
@@ -118,7 +121,7 @@ void Linear<T>::ForwardGPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) {
 }
 
 template <typename T>
-void Linear<T>::BackwardGPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) {
+void Linear<T>::BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
   CheckShape(bottom, top);
   DEFINE_MKN
   // bottom m * k
@@ -140,7 +143,8 @@ void Linear<T>::BackwardGPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) {
 }
 
 template <typename T>
-void Linear<T>::CheckShape(const TensorPtr<T>& bottom, const TensorPtr<T>& top) const {
+void Linear<T>::CheckShape(const TensorPtr<T> bottom,
+    const TensorPtr<T> top) const {
   const std::vector<int>& weight_shape = this->params_[0]->GetShape();
   const std::vector<int>& bottom_shape = bottom->GetShape();
   const std::vector<int>& top_shape = top->GetShape();

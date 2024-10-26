@@ -1,3 +1,5 @@
+// Copyright 2024 yibotongxue
+
 #ifndef INCLUDE_LAYER_CUH_
 #define INCLUDE_LAYER_CUH_
 
@@ -5,14 +7,15 @@
 #include <utils.cuh>
 
 #include <memory>
+#include <vector>
 
 namespace my_tensor {
 // Layer abstract class.
-template <typename T=float>
+template <typename T = float>
 class Layer {
  public:
   // Default constructor.
-  Layer(const std::vector<TensorPtr<T>>& params) : params_(params) {}
+  explicit Layer(const std::vector<TensorPtr<T>>& params) : params_(params) {}
 
   // The layer can not be copied or moved.
   DISABLE_LAYER_COPY(Layer)
@@ -21,11 +24,11 @@ class Layer {
 
   // Pure virtual methods, forward and backward.
   // CPU
-  virtual void ForwardCPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) = 0;
-  virtual void BackwardCPU(const TensorPtr<T>& top, TensorPtr<T>& bottome) = 0;
+  virtual void ForwardCPU(const TensorPtr<T> bottom, TensorPtr<T> top) = 0;
+  virtual void BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottome) = 0;
   // GPU
-  virtual void ForwardGPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) = 0;
-  virtual void BackwardGPU(const TensorPtr<T>& top, TensorPtr<T>& bottome) = 0;
+  virtual void ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) = 0;
+  virtual void BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottome) = 0;
 
  protected:
   std::vector<TensorPtr<T>> params_;

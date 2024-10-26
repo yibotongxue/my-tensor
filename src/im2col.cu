@@ -1,3 +1,5 @@
+// Copyright 2024 yibotongxue
+
 #include <im2col.cuh>
 #include <iostream>
 
@@ -97,7 +99,7 @@ __global__ void Im2col_kernel(const T *data_im, const int kernel_nums,
       for (int j = 0; j < kernel_w; j++) {
         int h_read = h_offset + i;
         int w_read = w_offset + j;
-        *data_col_write = 
+        *data_col_write =
           (h_read >= 0 && h_read < height && w_read >= 0 && w_read < width) ?
           data_im_read[h_read * width + w_read] : 0;
         data_col_write += im_size;
@@ -124,8 +126,7 @@ void Im2col_GPU(const int n, const T *data_im, const int channels,
   int col_size = kernel_w * kernel_h * im_size;
   Im2col_kernel<<<CudaGetBlocks(kernel_nums), kCudaThreadNum>>>(
     data_im, kernel_nums, height, width, kernel_h, kernel_w,
-    data_col, im_size, col_size
-  );
+    data_col, im_size, col_size);
 }
 
 namespace {

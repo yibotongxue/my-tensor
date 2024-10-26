@@ -1,8 +1,12 @@
+// Copyright 2024 yibotongxue
+
 #ifndef INCLUDE_LINEAR_CUH_
 #define INCLUDE_LINEAR_CUH_
 
 #include <tensor.cuh>
 #include <layer.cuh>
+
+#include <vector>
 
 namespace my_tensor {
 
@@ -20,13 +24,13 @@ class Linear final : public Layer<T> {
   inline const TensorPtr<T> GetBias() const { return this->params_[1]; }
   inline TensorPtr<T> GetBias() { return this->params_[1]; }
 
-  void ForwardCPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) override;
-  void BackwardCPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) override;
-  void ForwardGPU(const TensorPtr<T>& bottom, TensorPtr<T>& top) override;
-  void BackwardGPU(const TensorPtr<T>& top, TensorPtr<T>& bottom) override;
+  void ForwardCPU(const TensorPtr<T> bottom, TensorPtr<T> top) override;
+  void BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) override;
+  void ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) override;
+  void BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottom) override;
 
-private:
-  void CheckShape(const TensorPtr<T>& bottom, const TensorPtr<T>& top) const;
+ private:
+  void CheckShape(const TensorPtr<T> bottom, const TensorPtr<T> top) const;
 };  // class Linear
 
 extern template class Linear<>;
