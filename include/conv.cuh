@@ -1,9 +1,13 @@
+// Copyright 2024 yibotongxue
+
 #ifndef INCLUDE_CONV_CUH_
 #define INCLUDE_CONV_CUH_
 
 #include <layer.cuh>
 #include <tensor.cuh>
 #include <utils.cuh>
+
+#include <vector>
 
 namespace my_tensor {
 
