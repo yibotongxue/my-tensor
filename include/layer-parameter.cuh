@@ -1,6 +1,5 @@
 // Copyright 2024 yibotongxue
 
-// Copyright [2024] [yibotongxue]
 #ifndef INCLUDE_LAYER_PARAMETER_CUH_
 #define INCLUDE_LAYER_PARAMETER_CUH_
 
