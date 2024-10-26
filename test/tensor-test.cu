@@ -29,7 +29,7 @@ TEST_SHAPE_AND_SIZE(TensorConstructNoData)
 
 class TensorSetMethodTest : public ::testing::Test {
  protected:
-  void SetUp() override{DEFINE_DATA_AND_DIFF(data, diff) DEFINE_TESNOR(tensor)}
+  void SetUp() override {DEFINE_DATA_AND_DIFF(data, diff) DEFINE_TESNOR(tensor)}
 
   std::vector<float> data;
   std::vector<float> diff;
