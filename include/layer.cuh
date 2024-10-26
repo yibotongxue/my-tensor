@@ -41,5 +41,4 @@ using LayerPtr = std::shared_ptr<my_tensor::Layer<T>>;
 extern template class my_tensor::Layer<>;
 }  // namespace my_tensor
 
-
 #endif  // INCLUDE_LAYER_CUH_

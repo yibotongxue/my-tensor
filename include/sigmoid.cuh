@@ -31,5 +31,4 @@ class Sigmoid final : public Layer<T> {
 extern template class my_tensor::Sigmoid<>;
 }  // namespace my_tensor
 
-
 #endif  // INCLUDE_SIGMOID_CUH_

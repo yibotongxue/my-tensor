@@ -5,8 +5,8 @@
 
 #include <error.h>
 
-#include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
+#include <thrust/host_vector.h>
 #include <memory>
 #include <vector>
 
@@ -24,7 +24,7 @@ class SyncedVector {
   SyncedVector(SyncedVector<T>&& vec);
   SyncedVector<T>& operator=(SyncedVector<T>&& vec);
 
-  enum VectorState {kUninitialized, kHeadAtCPU, kHeadAtGPU, kSynced};
+  enum VectorState { kUninitialized, kHeadAtCPU, kHeadAtGPU, kSynced };
 
   const thrust::host_vector<T>& GetCPUData();
   thrust::host_vector<T>& GetMutableCPUData();

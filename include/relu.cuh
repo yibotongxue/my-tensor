@@ -31,5 +31,4 @@ class Relu final : public Layer<T> {
 extern template class my_tensor::Relu<>;
 }  // namespace my_tensor
 
-
 #endif  // INCLUDE_RELU_CUH_

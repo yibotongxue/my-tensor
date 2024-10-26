@@ -24,13 +24,9 @@ class LayerParameter {
 
   LayerParameter() : name(""), type("") {}
 
-  virtual std::string Serialize() const {
-    return "";
-  }
+  virtual std::string Serialize() const { return ""; }
 
-  static LayerParameter Deserialize() {
-    return LayerParameter();
-  }
+  static LayerParameter Deserialize() { return LayerParameter(); }
 };
 
 }  // namespace my_tensor

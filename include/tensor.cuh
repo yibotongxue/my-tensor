@@ -39,28 +39,20 @@ class Tensor {
   const thrust::host_vector<T>& GetCPUData() const {
     return data_->GetCPUData();
   }
-  thrust::host_vector<T>& GetCPUData() {
-    return data_->GetMutableCPUData();
-  }
+  thrust::host_vector<T>& GetCPUData() { return data_->GetMutableCPUData(); }
   const thrust::host_vector<T>& GetCPUDiff() const {
     return diff_->GetCPUData();
   }
-  thrust::host_vector<T>& GetCPUDiff() {
-    return diff_->GetMutableCPUData();
-  }
+  thrust::host_vector<T>& GetCPUDiff() { return diff_->GetMutableCPUData(); }
   // GPU
   const thrust::device_vector<T>& GetGPUData() const {
     return data_->GetGPUData();
   }
-  thrust::device_vector<T>& GetGPUData() {
-    return data_->GetMutableGPUData();
-  }
+  thrust::device_vector<T>& GetGPUData() { return data_->GetMutableGPUData(); }
   const thrust::device_vector<T>& GetGPUDiff() const {
     return diff_->GetGPUData();
   }
-  thrust::device_vector<T>& GetGPUDiff() {
-    return diff_->GetMutableGPUData();
-  }
+  thrust::device_vector<T>& GetGPUDiff() { return diff_->GetMutableGPUData(); }
   // CPU
   const T* GetCPUDataPtr() const { return data_->GetCPUPtr(); }
   T* GetCPUDataPtr() { return data_->GetMutableCPUPtr(); }

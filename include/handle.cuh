@@ -13,9 +13,7 @@ using HandlePtr = std::shared_ptr<Handle>;
 
 class Handle {
  public:
-  ~Handle() {
-    cublasDestroy(h_);
-  }
+  ~Handle() { cublasDestroy(h_); }
 
   Handle(const Handle&) = delete;
   Handle& operator=(const Handle&) = delete;
@@ -27,18 +25,14 @@ class Handle {
     return handle_;
   }
 
-  cublasHandle_t& GetHandle() {
-    return h_;
-  }
+  cublasHandle_t& GetHandle() { return h_; }
 
  private:
   cublasHandle_t h_;
 
   static HandlePtr handle_;
 
-  Handle() {
-    cublasCreate(&h_);
-  }
+  Handle() { cublasCreate(&h_); }
 };  // class Handle
 
 extern HandlePtr handle;

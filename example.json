@@ -1,0 +1,128 @@
+{
+  "layers": [
+    {
+      "name": "conv1",
+      "type": "Convolution",
+      "input_channels": 1,
+      "output_channels": 3,
+      "kernel_size": 3,
+      "params": [
+        {
+          "name": "conv_kernel",
+          "init": "xavier"
+        },
+        {
+          "name": "conv_bias",
+          "init": "constant",
+          "conval": 0
+        }
+      ]
+    },
+    {
+      "name": "relu1",
+      "type": "Relu"
+    },
+    {
+      "name": "pool1",
+      "type": "Pooling",
+      "kernel_size": 2,
+      "stride": 2
+    },
+    {
+      "name": "conv2",
+      "type": "Convolution",
+      "input_channels": 3,
+      "output_channels": 10,
+      "kernel_size": 3,
+      "params": [
+        {
+          "name": "conv_kernel",
+          "init": "xavier"
+        },
+        {
+          "name": "conv_bias",
+          "init": "constant",
+          "conval": 0
+        }
+      ]
+    },
+    {
+      "name": "relu2",
+      "type": "Relu"
+    },
+    {
+      "name": "pool2",
+      "type": "Pooling",
+      "kernel_size": 2,
+      "stride": 2
+    },
+    {
+      "name": "linear1",
+      "type": "Linear",
+      "input_feature": 490,
+      "output_feature": 120,
+      "params": [
+        {
+          "name": "linear_weight",
+          "init": "xavier"
+        },
+        {
+          "name": "linear_bias",
+          "init": "constant",
+          "conval": 0
+        }
+      ]
+    },
+    {
+      "name": "relu3",
+      "type": "Relu"
+    },
+    {
+      "name": "linear2",
+      "type": "Linear",
+      "input_feature": 120,
+      "output_feature": 64,
+      "params": [
+        {
+          "name": "linear_weight",
+          "init": "xavier"
+        },
+        {
+          "name": "linear_bias",
+          "init": "constant",
+          "conval": 0
+        }
+      ]
+    },
+    {
+      "name": "relu3",
+      "type": "Relu"
+    },
+    {
+      "name": "linear3",
+      "type": "Linear",
+      "input_feature": 64,
+      "output_feature": 10,
+      "params": [
+        {
+          "name": "linear_weight",
+          "init": "xavier"
+        },
+        {
+          "name": "linear_bias",
+          "init": "constant",
+          "conval": 0
+        }
+      ]
+    },
+    {
+      "name": "softmax",
+      "type": "Softmax"
+    },
+    {
+      "name": "loss",
+      "type": "CrossEntropyLoss",
+      "is_loss": true
+    }
+  ]
+}

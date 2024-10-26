@@ -3,8 +3,8 @@
 #ifndef INCLUDE_LINEAR_CUH_
 #define INCLUDE_LINEAR_CUH_
 
-#include <tensor.cuh>
 #include <layer.cuh>
+#include <tensor.cuh>
 
 #include <vector>
 
