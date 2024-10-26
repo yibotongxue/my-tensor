@@ -1,8 +1,7 @@
 repos:
-  - repo: https://github.com/pocc/pre-commit-hooks
-    rev: v1.3.5
-    hooks:
-      - id: clang-format
-        args: [--style=Google]
-      - id: cpplint
-
+- repo: https://github.com/pocc/pre-commit-hooks
+  rev: v1.3.5
+  hooks:
+    - id: clang-format
+      args: [--style=Google]
+      files: \.(cpp|h|cuh|cu|hpp)$
