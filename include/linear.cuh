@@ -3,10 +3,10 @@
 #ifndef INCLUDE_LINEAR_CUH_
 #define INCLUDE_LINEAR_CUH_
 
-#include <layer.cuh>
-#include <tensor.cuh>
-
 #include <vector>
+
+#include "layer.cuh"
+#include "tensor.cuh"
 
 namespace my_tensor {
 

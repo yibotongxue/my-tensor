@@ -1,11 +1,12 @@
 // Copyright 2024 yibotongxue
 
-#include <error.h>
-#include <blas.cuh>
-#include <linear.cuh>
-
 #include <thrust/fill.h>
+
 #include <vector>
+
+#include "blas.cuh"
+#include "error.h"
+#include "linear.cuh"
 
 namespace my_tensor {
 

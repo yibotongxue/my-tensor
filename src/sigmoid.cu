@@ -1,9 +1,9 @@
 // Copyright 2024 yibotongxue
 
-#include <sigmoid.cuh>
-#include <utils.cuh>
-
 #include <thrust/transform.h>
+
+#include "sigmoid.cuh"
+#include "utils.cuh"
 
 namespace my_tensor {
 namespace {

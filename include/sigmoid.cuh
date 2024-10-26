@@ -3,10 +3,10 @@
 #ifndef INCLUDE_SIGMOID_CUH_
 #define INCLUDE_SIGMOID_CUH_
 
-#include <tensor.cuh>
-#include <layer.cuh>
-
 #include <memory>
+
+#include "layer.cuh"
+#include "tensor.cuh"
 
 namespace my_tensor {
 // Sigmoid class, implements Layer class.

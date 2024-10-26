@@ -3,12 +3,13 @@
 #ifndef INCLUDE_TENSOR_CUH_
 #define INCLUDE_TENSOR_CUH_
 
-#include <synced-vector.cuh>
-
 #include <thrust/device_vector.h>
+
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "synced-vector.cuh"
 
 namespace my_tensor {
 

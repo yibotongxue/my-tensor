@@ -3,8 +3,8 @@
 #ifndef INCLUDE_BLAS_CUH_
 #define INCLUDE_BLAS_CUH_
 
-#include <error.h>
-#include <utils.cuh>
+#include "error.h"
+#include "utils.cuh"
 
 namespace my_tensor {
 

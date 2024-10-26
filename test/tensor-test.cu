@@ -1,14 +1,15 @@
 // Copyright 2024 yibotongxue
 
-#include <error.h>
-#include <tensor.cuh>
-#include <tensor/tensor-utils.cuh>
-
 #include <gtest/gtest.h>
+
 #include <iostream>
 #include <memory>
 #include <utility>
 #include <vector>
+
+#include "error.h"
+#include "tensor.cuh"
+#include "tensor/tensor-utils.cuh"
 
 class TensorConstructNoDataTest : public ::testing::Test {
  protected:

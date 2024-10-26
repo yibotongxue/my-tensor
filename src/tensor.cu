@@ -1,15 +1,15 @@
 // Copyright 2024 yibotongxue
 
-#include <error.h>
-#include <tensor.cuh>
-#include <utils.cuh>
-
 #include <functional>
 #include <iostream>
 #include <memory>
 #include <numeric>
 #include <utility>
 #include <vector>
+
+#include "error.h"
+#include "tensor.cuh"
+#include "utils.cuh"
 
 namespace my_tensor {
 template <typename T>

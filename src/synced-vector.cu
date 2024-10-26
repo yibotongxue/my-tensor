@@ -1,12 +1,13 @@
 // Copyright 2024 yibotongxue
 
-#include <error.h>
-#include <utils.cuh>
-
 #include <thrust/copy.h>
-#include <synced-vector.cuh>
+
 #include <utility>
 #include <vector>
+
+#include "error.h"
+#include "synced-vector.cuh"
+#include "utils.cuh"
 
 namespace my_tensor {
 

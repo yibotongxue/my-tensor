@@ -1,9 +1,9 @@
 // Copyright 2024 yibotongxue
 
-#include <relu.cuh>
-#include <utils.cuh>
-
 #include <thrust/transform.h>
+
+#include "relu.cuh"
+#include "utils.cuh"
 
 namespace my_tensor {
 

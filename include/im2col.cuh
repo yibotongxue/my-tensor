@@ -3,8 +3,8 @@
 #ifndef INCLUDE_IM2COL_CUH_
 #define INCLUDE_IM2COL_CUH_
 
-#include <error.h>
-#include <utils.cuh>
+#include "error.h"
+#include "utils.cuh"
 
 namespace my_tensor {
 

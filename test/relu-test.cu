@@ -1,13 +1,14 @@
 // Copyright 2024 yibotongxue
 
-#include <layer.cuh>
-#include <layer/layer-utils.cuh>
-#include <relu.cuh>
-
 #include <gtest/gtest.h>
+
 #include <memory>
 #include <random>
 #include <vector>
+
+#include "layer.cuh"
+#include "layer/layer-utils.cuh"
+#include "relu.cuh"
 
 // TEST(TrivialTest, always_succeed) {
 //   EXPECT_TRUE(true);

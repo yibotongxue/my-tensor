@@ -3,10 +3,10 @@
 #ifndef INCLUDE_RELU_CUH_
 #define INCLUDE_RELU_CUH_
 
-#include <layer.cuh>
-#include <tensor.cuh>
-
 #include <memory>
+
+#include "layer.cuh"
+#include "tensor.cuh"
 
 namespace my_tensor {
 // Relu class, implements Layer.

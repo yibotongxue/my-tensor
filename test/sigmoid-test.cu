@@ -1,15 +1,16 @@
 // Copyright 2024 yibotongxue
 
-#include <layer.cuh>
-#include <layer/layer-utils.cuh>
-#include <sigmoid.cuh>
-
 #include <gtest/gtest.h>
+
 #include <algorithm>
 #include <memory>
 #include <random>
 #include <ranges>
 #include <vector>
+
+#include "layer.cuh"
+#include "layer/layer-utils.cuh"
+#include "sigmoid.cuh"
 
 #define SIGMOID_TEST_CLASS(device)                            \
   class Sigmoid##device##Test : public ::testing::Test {      \

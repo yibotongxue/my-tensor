@@ -3,11 +3,11 @@
 #ifndef INCLUDE_LAYER_CUH_
 #define INCLUDE_LAYER_CUH_
 
-#include <tensor.cuh>
-#include <utils.cuh>
-
 #include <memory>
 #include <vector>
+
+#include "tensor.cuh"
+#include "utils.cuh"
 
 namespace my_tensor {
 // Layer abstract class.

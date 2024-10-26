@@ -3,11 +3,11 @@
 #ifndef INCLUDE_CONV_CUH_
 #define INCLUDE_CONV_CUH_
 
-#include <layer.cuh>
-#include <tensor.cuh>
-#include <utils.cuh>
-
 #include <vector>
+
+#include "layer.cuh"
+#include "tensor.cuh"
+#include "utils.cuh"
 
 namespace my_tensor {
 

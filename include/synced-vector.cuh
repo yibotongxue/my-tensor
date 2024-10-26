@@ -3,12 +3,13 @@
 #ifndef INCLUDE_SYNCED_VECTOR_CUH_
 #define INCLUDE_SYNCED_VECTOR_CUH_
 
-#include <error.h>
-
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
+
 #include <memory>
 #include <vector>
+
+#include "error.h"
 
 namespace my_tensor {
 

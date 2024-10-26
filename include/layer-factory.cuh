@@ -3,13 +3,13 @@
 #ifndef INCLUDE_LAYER_FACTORY_CUH_
 #define INCLUDE_LAYER_FACTORY_CUH_
 
-#include <error.h>
-#include <layer.cuh>
-#include <relu.cuh>
-#include <sigmoid.cuh>
-#include <tensor.cuh>
-
 #include <memory>
+
+#include "error.h"
+#include "layer.cuh"
+#include "relu.cuh"
+#include "sigmoid.cuh"
+#include "tensor.cuh"
 
 namespace my_tensor {
 

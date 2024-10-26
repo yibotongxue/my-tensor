@@ -1,16 +1,16 @@
 // Copyright 2024 yibotongxue
 
-
-#include <blas.cuh>
-#include <tensor.cuh>
-
 #include <gtest/gtest.h>
+
 #include <algorithm>
 #include <functional>
 #include <memory>
 #include <random>
 #include <ranges>
 #include <vector>
+
+#include "blas.cuh"
+#include "tensor.cuh"
 
 // TEST(TrivialTest, always_succeed) {
 //   EXPECT_TRUE(true);

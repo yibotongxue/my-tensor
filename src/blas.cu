@@ -1,12 +1,12 @@
 // Copyright 2024 yibotongxue
 
-#include <blas.cuh>
-#include <handle.cuh>
-
 #include <cublas_v2.h>
 #include <thrust/device_vector.h>
 #include <thrust/reduce.h>
 #include <thrust/transform.h>
+
+#include "blas.cuh"
+#include "handle.cuh"
 
 namespace my_tensor {
 extern HandlePtr handle;
