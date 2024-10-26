@@ -1,14 +1,20 @@
+// Copyright 2024 yibotongxue
+
 #include <tensor.cuh>
 #include <utils.cuh>
 #include <error.h>
 
+#include <functional>
+#include <memory>
 #include <numeric>
 #include <iostream>
+#include <utility>
+#include <vector>
 
 namespace my_tensor {
 template <typename T>
 Tensor<T>::Tensor(const std::vector<int>& shape)
-  : shape_(shape) {
+: shape_(shape) {
   size_ = std::accumulate(
     shape_.begin(), shape_.end(), 1, std::multiplies<int>());
   data_ = std::make_shared<SyncedVector<T>>(size_);
@@ -18,9 +24,9 @@ Tensor<T>::Tensor(const std::vector<int>& shape)
 
 template <typename T>
 Tensor<T>::Tensor(const Tensor<T>& tensor)
-  : shape_(tensor.shape_), size_(tensor.size_),
-    data_(std::make_shared<SyncedVector<T>>(*tensor.data_)),
-    diff_(std::make_shared<SyncedVector<T>>(*tensor.diff_)) {
+: shape_(tensor.shape_), size_(tensor.size_),
+data_(std::make_shared<SyncedVector<T>>(*tensor.data_)),
+diff_(std::make_shared<SyncedVector<T>>(*tensor.diff_)) {
   CheckShape();
 }
 
@@ -39,9 +45,9 @@ Tensor<T>& Tensor<T>::operator=(const Tensor<T>& tensor) {
 
 template <typename T>
 Tensor<T>::Tensor(Tensor<T>&& tensor)
-  : shape_(std::move(tensor.shape_)), size_(tensor.size_),
-    data_(std::make_shared<SyncedVector<T>>(std::move(*tensor.data_))),
-    diff_(std::make_shared<SyncedVector<T>>(std::move(*tensor.diff_))) {
+: shape_(std::move(tensor.shape_)), size_(tensor.size_),
+data_(std::make_shared<SyncedVector<T>>(std::move(*tensor.data_))),
+diff_(std::make_shared<SyncedVector<T>>(std::move(*tensor.diff_))) {
   CheckShape();
 }
 
