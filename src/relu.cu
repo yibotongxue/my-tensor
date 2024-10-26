@@ -2,6 +2,7 @@
 
 #include <relu.cuh>
 #include <utils.cuh>
+
 #include <thrust/transform.h>
 
 namespace my_tensor {
@@ -9,9 +10,7 @@ namespace my_tensor {
 namespace {
 template <typename T>
 struct ReluOperator {
-  __device__ __host__ T operator()(T x) {
-    return x > 0 ? x : 0;
-  }
+  __device__ __host__ T operator()(T x) { return x > 0 ? x : 0; }
 };
 
 template <typename T>
@@ -26,30 +25,30 @@ template <typename T>
 void Relu<T>::ForwardCPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
   CHECK_SAME_SHAPE(bottom, top)
   thrust::transform(bottom->GetCPUData().begin(), bottom->GetCPUData().end(),
-    top->GetCPUData().begin(), ReluOperator<T>());
+                    top->GetCPUData().begin(), ReluOperator<T>());
 }
 
 template <typename T>
 void Relu<T>::BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
   CHECK_SAME_SHAPE(bottom, top)
   thrust::transform(bottom->GetCPUData().begin(), bottom->GetCPUData().end(),
-    top->GetCPUDiff().begin(), bottom->GetCPUDiff().begin(),
-    ReluGradOperator<T>());
+                    top->GetCPUDiff().begin(), bottom->GetCPUDiff().begin(),
+                    ReluGradOperator<T>());
 }
 
 template <typename T>
 void Relu<T>::ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
   CHECK_SAME_SHAPE(top, bottom)
   thrust::transform(bottom->GetGPUData().begin(), bottom->GetGPUData().end(),
-    top->GetGPUData().begin(), ReluOperator<T>());
+                    top->GetGPUData().begin(), ReluOperator<T>());
 }
 
 template <typename T>
 void Relu<T>::BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
   CHECK_SAME_SHAPE(top, bottom)
   thrust::transform(bottom->GetGPUData().begin(), bottom->GetGPUData().end(),
-    top->GetGPUDiff().begin(), bottom->GetGPUDiff().begin(),
-    ReluGradOperator<T>());
+                    top->GetGPUDiff().begin(), bottom->GetGPUDiff().begin(),
+                    ReluGradOperator<T>());
 }
 
 template class Relu<>;

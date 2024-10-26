@@ -1,7 +1,6 @@
 // Copyright 2024 yibotongxue
 
 #include <im2col.cuh>
-#include <iostream>
 
 namespace my_tensor {
 
@@ -11,8 +10,8 @@ static inline bool is_a_ge_zero_and_a_lt_b(int a, int b) {
 
 template <typename T>
 void Im2col_CPU(const int n, const T *data_im, const int channels,
-    const int height, const int width, const int kernel_h,
-    const int kernel_w, T *data_col) {
+                const int height, const int width, const int kernel_h,
+                const int kernel_w, T *data_col) {
   CHECK_KERNEL_SHAPE
   const int im_size = height * width;
   for (int channel = n * channels; channel--; data_im += im_size) {
@@ -44,8 +43,8 @@ void Im2col_CPU(const int n, const T *data_im, const int channels,
 
 template <typename T>
 void Col2im_CPU(const int n, const T *data_col, const int channels,
-    const int height, const int width, const int kernel_h,
-    const int kernel_w, T *data_im) {
+                const int height, const int width, const int kernel_h,
+                const int kernel_w, T *data_im) {
   CHECK_KERNEL_SHAPE
   int im_size = height * width;
   memset(data_im, 0, channels * im_size * sizeof(T));
@@ -83,9 +82,10 @@ namespace {
 // col_size = kernel_w * kernel_h * im_size = 9 * 48
 template <typename T>
 __global__ void Im2col_kernel(const T *data_im, const int kernel_nums,
-    const int height, const int width, const int kernel_h,
-    const int kernel_w, T *data_col, const int im_size,
-    const int col_size) {
+                              const int height, const int width,
+                              const int kernel_h, const int kernel_w,
+                              T *data_col, const int im_size,
+                              const int col_size) {
   CUDA_KERNEL_LOOP(index, kernel_nums) {
     int channel_index = index / im_size;
     int w_index = index % im_size;
@@ -93,15 +93,16 @@ __global__ void Im2col_kernel(const T *data_im, const int kernel_nums,
     int w_output = w_index % width;  // w_output will be 1
     T *data_col_write = data_col + channel_index * col_size + w_index;
     const T *data_im_read = data_im + channel_index * im_size;
-    int h_offset = h_output -(kernel_h - 1) / 2;
-    int w_offset = w_output % width -(kernel_w - 1) / 2;
+    int h_offset = h_output - (kernel_h - 1) / 2;
+    int w_offset = w_output % width - (kernel_w - 1) / 2;
     for (int i = 0; i < kernel_h; i++) {
       for (int j = 0; j < kernel_w; j++) {
         int h_read = h_offset + i;
         int w_read = w_offset + j;
         *data_col_write =
-          (h_read >= 0 && h_read < height && w_read >= 0 && w_read < width) ?
-          data_im_read[h_read * width + w_read] : 0;
+            (h_read >= 0 && h_read < height && w_read >= 0 && w_read < width)
+                ? data_im_read[h_read * width + w_read]
+                : 0;
         data_col_write += im_size;
       }
     }
@@ -118,23 +119,24 @@ __global__ void Im2col_kernel(const T *data_im, const int kernel_nums,
 // col_size = im_size * kernel_w * kernel_h
 template <typename T>
 void Im2col_GPU(const int n, const T *data_im, const int channels,
-    const int height, const int width, const int kernel_h,
-    const int kernel_w, T *data_col) {
+                const int height, const int width, const int kernel_h,
+                const int kernel_w, T *data_col) {
   CHECK_KERNEL_SHAPE
   int kernel_nums = n * channels * width * height;
   int im_size = height * width;
   int col_size = kernel_w * kernel_h * im_size;
   Im2col_kernel<<<CudaGetBlocks(kernel_nums), kCudaThreadNum>>>(
-    data_im, kernel_nums, height, width, kernel_h, kernel_w,
-    data_col, im_size, col_size);
+      data_im, kernel_nums, height, width, kernel_h, kernel_w, data_col,
+      im_size, col_size);
 }
 
 namespace {
 template <typename T>
 __global__ void Col2im_kernel(const T *data_col, const int kernel_nums,
-    const int height, const int width, const int kernel_h,
-    const int kernel_w, T *data_im, const int im_size,
-    const int col_size) {
+                              const int height, const int width,
+                              const int kernel_h, const int kernel_w,
+                              T *data_im, const int im_size,
+                              const int col_size) {
   CUDA_KERNEL_LOOP(index, kernel_nums) {
     int channel_index = index / im_size;
     int w_index = index % im_size;
@@ -161,28 +163,32 @@ __global__ void Col2im_kernel(const T *data_col, const int kernel_nums,
 
 template <typename T>
 void Col2im_GPU(const int n, const T *data_col, const int channels,
-    const int height, const int width, const int kernel_h,
-    const int kernel_w, T *data_im) {
+                const int height, const int width, const int kernel_h,
+                const int kernel_w, T *data_im) {
   CHECK_KERNEL_SHAPE
   int im_size = height * width;
   int kernel_nums = n * channels * im_size;
   int col_size = kernel_w * kernel_h * im_size;
   Col2im_kernel<<<CudaGetBlocks(kernel_nums), kCudaThreadNum>>>(
-      data_col, kernel_nums, height, width, kernel_h, kernel_w,
-      data_im, im_size, col_size);
+      data_col, kernel_nums, height, width, kernel_h, kernel_w, data_im,
+      im_size, col_size);
 }
 
 template void Im2col_CPU<float>(const int n, const float *data_im,
-    const int channels, const int height, int width,
-    const int kernel_h, const int kernel_w, float *data_col);
+                                const int channels, const int height, int width,
+                                const int kernel_h, const int kernel_w,
+                                float *data_col);
 template void Col2im_CPU<float>(const int n, const float *data_col,
-    const int channels, const int height, const int width,
-    const int kernel_h, const int kernel_w, float *data_im);
+                                const int channels, const int height,
+                                const int width, const int kernel_h,
+                                const int kernel_w, float *data_im);
 template void Im2col_GPU<float>(const int n, const float *data_im,
-    const int channels, const int height, int width,
-    const int kernel_h, const int kernel_w, float *data_col);
+                                const int channels, const int height, int width,
+                                const int kernel_h, const int kernel_w,
+                                float *data_col);
 template void Col2im_GPU<float>(const int n, const float *data_col,
-    const int channels, const int height, const int width,
-    const int kernel_h, const int kernel_w, float *data_im);
+                                const int channels, const int height,
+                                const int width, const int kernel_h,
+                                const int kernel_w, float *data_im);
 
 }  // namespace my_tensor

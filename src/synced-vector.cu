@@ -1,10 +1,10 @@
 // Copyright 2024 yibotongxue
 
 #include <error.h>
-#include <synced-vector.cuh>
 #include <utils.cuh>
 
 #include <thrust/copy.h>
+#include <synced-vector.cuh>
 #include <utility>
 #include <vector>
 
@@ -15,12 +15,14 @@ SyncedVector<T>::SyncedVector() : state_(kUninitialized), size_(0) {}
 
 template <typename T>
 SyncedVector<T>::SyncedVector(size_t size)
-: state_(kUninitialized), size_(size) {}
+    : state_(kUninitialized), size_(size) {}
 
 template <typename T>
 SyncedVector<T>::SyncedVector(const SyncedVector<T>& vec)
-: state_(vec.state_), size_(vec.size_), cpu_data_(vec.cpu_data_),
-gpu_data_(vec.gpu_data_) {}
+    : state_(vec.state_),
+      size_(vec.size_),
+      cpu_data_(vec.cpu_data_),
+      gpu_data_(vec.gpu_data_) {}
 
 template <typename T>
 SyncedVector<T>& SyncedVector<T>::operator=(const SyncedVector<T>& vec) {
@@ -38,8 +40,10 @@ SyncedVector<T>& SyncedVector<T>::operator=(const SyncedVector<T>& vec) {
 
 template <typename T>
 SyncedVector<T>::SyncedVector(SyncedVector<T>&& vec)
-  : state_(vec.state_), size_(vec.size_), cpu_data_(std::move(vec.cpu_data_)),
-    gpu_data_(std::move(vec.gpu_data_)) {}
+    : state_(vec.state_),
+      size_(vec.size_),
+      cpu_data_(std::move(vec.cpu_data_)),
+      gpu_data_(std::move(vec.gpu_data_)) {}
 
 template <typename T>
 SyncedVector<T>& SyncedVector<T>::operator=(SyncedVector<T>&& vec) {
@@ -125,18 +129,18 @@ template <typename T>
 void SyncedVector<T>::ClearCPUData() {
   cpu_data_.clear();
   switch (state_) {
-  case kHeadAtCPU:
-    size_ = 0;
-    state_ = kUninitialized;
-    break;
-  case kSynced:
-    state_ = kHeadAtGPU;
-    break;
-  case kUninitialized:
-  case kHeadAtGPU:
-    break;
-  default:
-    throw VectorError("Unimplemention error!");
+    case kHeadAtCPU:
+      size_ = 0;
+      state_ = kUninitialized;
+      break;
+    case kSynced:
+      state_ = kHeadAtGPU;
+      break;
+    case kUninitialized:
+    case kHeadAtGPU:
+      break;
+    default:
+      throw VectorError("Unimplemention error!");
   }
 }
 
@@ -144,58 +148,58 @@ template <typename T>
 void SyncedVector<T>::ClearGPUData() {
   gpu_data_.clear();
   switch (state_) {
-  case kHeadAtGPU:
-    state_ = kUninitialized;
-    size_ = 0;
-    break;
-  case kSynced:
-    state_ = kHeadAtCPU;
-    break;
-  case kUninitialized:
-  case kHeadAtCPU:
-    break;
-  default:
-    throw VectorError("Unimplemention error!");
+    case kHeadAtGPU:
+      state_ = kUninitialized;
+      size_ = 0;
+      break;
+    case kSynced:
+      state_ = kHeadAtCPU;
+      break;
+    case kUninitialized:
+    case kHeadAtCPU:
+      break;
+    default:
+      throw VectorError("Unimplemention error!");
   }
 }
 
 template <typename T>
 inline void SyncedVector<T>::ToCPU() {
   switch (state_) {
-  case kUninitialized:
-    cpu_data_.resize(size_);
-    state_ = kHeadAtCPU;
-    break;
-  case kHeadAtGPU:
-    cpu_data_.resize(gpu_data_.size());
-    thrust::copy(gpu_data_.begin(), gpu_data_.end(), cpu_data_.begin());
-    state_ = kSynced;
-    break;
-  case kHeadAtCPU:
-  case kSynced:
-    break;
-  default:
-    throw VectorError("Unimplemtation error!");
+    case kUninitialized:
+      cpu_data_.resize(size_);
+      state_ = kHeadAtCPU;
+      break;
+    case kHeadAtGPU:
+      cpu_data_.resize(gpu_data_.size());
+      thrust::copy(gpu_data_.begin(), gpu_data_.end(), cpu_data_.begin());
+      state_ = kSynced;
+      break;
+    case kHeadAtCPU:
+    case kSynced:
+      break;
+    default:
+      throw VectorError("Unimplemtation error!");
   }
 }
 
 template <typename T>
 void SyncedVector<T>::ToGPU() {
   switch (state_) {
-  case kUninitialized:
-    gpu_data_.resize(size_);
-    state_ = kHeadAtGPU;
-    break;
-  case kHeadAtCPU:
-    gpu_data_.resize(cpu_data_.size());
-    thrust::copy(cpu_data_.begin(), cpu_data_.end(), gpu_data_.begin());
-    state_ = kSynced;
-    break;
-  case kHeadAtGPU:
-  case kSynced:
-    break;
-  default:
-    throw VectorError("Unimplemention error!");
+    case kUninitialized:
+      gpu_data_.resize(size_);
+      state_ = kHeadAtGPU;
+      break;
+    case kHeadAtCPU:
+      gpu_data_.resize(cpu_data_.size());
+      thrust::copy(cpu_data_.begin(), cpu_data_.end(), gpu_data_.begin());
+      state_ = kSynced;
+      break;
+    case kHeadAtGPU:
+    case kSynced:
+      break;
+    default:
+      throw VectorError("Unimplemention error!");
   }
 }
 

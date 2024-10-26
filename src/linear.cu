@@ -1,16 +1,15 @@
 // Copyright 2024 yibotongxue
 
-#include <linear.cuh>
-#include <blas.cuh>
 #include <error.h>
+#include <blas.cuh>
+#include <linear.cuh>
 
 #include <thrust/fill.h>
-#include <iostream>
 #include <vector>
 
 namespace my_tensor {
 
-#define DEFINE_MKN \
+#define DEFINE_MKN               \
   int m = bottom->GetShape()[0]; \
   int k = bottom->GetShape()[1]; \
   int n = this->params_[0]->GetShape()[1];
@@ -74,7 +73,7 @@ void Linear<T>::BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
   // partial x
   for (int i = 0; i < m; i++) {
     for (int j = 0; j < k; j++) {
-      T temp {0};
+      T temp{0};
       for (int l = 0; l < n; l++) {
         temp += top_diff[i * n + l] * weight[j * n + l];
       }
@@ -88,7 +87,7 @@ void Linear<T>::BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
   // partial weight
   for (int i = 0; i < k; i++) {
     for (int j = 0; j < n; j++) {
-      T temp {0};
+      T temp{0};
       for (int l = 0; l < m; l++) {
         temp += bottom_data[l * k + i] * top_diff[l * n + j];
       }
@@ -97,7 +96,7 @@ void Linear<T>::BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
   }
   // partial bias
   for (int i = 0; i < n; i++) {
-    T temp {0};
+    T temp{0};
     for (int j = 0; j < m; j++) {
       temp += top_diff[j * n + i];
     }
@@ -113,10 +112,8 @@ void Linear<T>::ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
   // weight k * n
   // top    m * n
   // bias   n * 1
-  matmul(bottom->GetGPUDataPtr(),
-         this->params_[0]->GetGPUDataPtr(),
-         top->GetGPUDataPtr(),
-         m, k, n);
+  matmul(bottom->GetGPUDataPtr(), this->params_[0]->GetGPUDataPtr(),
+         top->GetGPUDataPtr(), m, k, n);
   add_col_vector(top->GetGPUDataPtr(), this->params_[1]->GetGPUDataPtr(), m, n);
 }
 
@@ -128,14 +125,10 @@ void Linear<T>::BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
   // weight k * n
   // top    m * n
   // bias   n * 1
-  matmul_transpose(top->GetGPUDiffPtr(),
-                   this->GetWeight()->GetGPUDataPtr(),
-                   bottom->GetGPUDiffPtr(),
-                   m, n, k);
-  transpose_matmul(bottom->GetGPUDataPtr(),
-                   top->GetGPUDiffPtr(),
-                   this->GetWeight()->GetGPUDiffPtr(),
-                   k, m, n);
+  matmul_transpose(top->GetGPUDiffPtr(), this->GetWeight()->GetGPUDataPtr(),
+                   bottom->GetGPUDiffPtr(), m, n, k);
+  transpose_matmul(bottom->GetGPUDataPtr(), top->GetGPUDiffPtr(),
+                   this->GetWeight()->GetGPUDiffPtr(), k, m, n);
   col_sum(top->GetGPUDiffPtr(), this->GetBias()->GetGPUDiffPtr(), m, n);
   // *bottom = transpose_matmul(*this->params_[0], *top, true);
   // *this->params_[0] = matmul_transpose(*top, *bottom, true);
@@ -144,7 +137,7 @@ void Linear<T>::BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
 
 template <typename T>
 void Linear<T>::CheckShape(const TensorPtr<T> bottom,
-    const TensorPtr<T> top) const {
+                           const TensorPtr<T> top) const {
   const std::vector<int>& weight_shape = this->params_[0]->GetShape();
   const std::vector<int>& bottom_shape = bottom->GetShape();
   const std::vector<int>& top_shape = top->GetShape();
