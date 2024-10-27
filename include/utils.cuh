@@ -79,9 +79,6 @@ inline int CudaGetBlocks(const int N) {
     throw Im2colError("Kernel shape not be even."); \
   }
 
-#define AT_GRAD_GPU_DATA(tensor) \
-  at_grad ? tensor.GetGPUDiffPtr() : tensor.GetGPUDataPtr()
-
 #define RAW_PTR(vec) thrust::raw_pointer_cast(vec.data())
 
 #endif  // INCLUDE_UTILS_CUH_
