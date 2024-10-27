@@ -90,7 +90,7 @@ __global__ void Im2col_kernel(const T *data_im, const int kernel_nums,
     int channel_index = index / im_size;
     int w_index = index % im_size;
     int h_output = w_index / width;
-    int w_output = w_index % width;  // w_output will be 1
+    int w_output = w_index % width;
     T *data_col_write = data_col + channel_index * col_size + w_index;
     const T *data_im_read = data_im + channel_index * im_size;
     int h_offset = h_output - (kernel_h - 1) / 2;
