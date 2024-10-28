@@ -4,4 +4,4 @@ repos:
     hooks:
       - id: cpplint
         args: ["--filter=-whitespace/indent,-build/include_subdir"]
-        files: \.(cpp|h|cuh|cu|hpp)$
+        files: \.(cpp|h|cuh|cu|hpp|cc)$
