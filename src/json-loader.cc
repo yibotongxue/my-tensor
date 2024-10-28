@@ -11,20 +11,6 @@
 
 namespace my_tensor {
 
-namespace {
-std::string&& ReadFromFile(const std::string& file_path) {
-  std::fstream fs(file_path);
-  if (fs.fail()) {
-    throw FileError("File fail.");
-  }
-  if (!fs.is_open()) {
-    throw FileError("File not open.");
-  }
-  return std::string((std::istreambuf_iterator<char>(fs)),
-                     std::istreambuf_iterator<char>());
-}
-}  // namespace
-
 std::unordered_map<std::string, InitMode> JsonLoader::mode_map_ = {
     {"xavier", InitMode::kXavier}, {"constant", InitMode::kConstant}};
 
@@ -51,7 +37,9 @@ JsonLoader::JsonLoader(const std::string& json_file_path) {
 std::vector<ParamPtr> JsonLoader::Load() {
   std::vector<ParamPtr> result;
   for (auto&& layer : layers_) {
+    result.push_back(LoadParam(layer));
   }
+  return std::move(result);
 }
 
 ParamPtr JsonLoader::LoadParam(const nlohmann::json& js) {
@@ -64,9 +52,9 @@ ParamPtr JsonLoader::LoadParam(const nlohmann::json& js) {
   auto &&name = js["name"].get<std::string>(),
        &&type = js["type"].get<std::string>();
   if (type == "Relu") {
-    return std::make_unique<ReluParamter>(name);
+    return std::move(std::make_unique<ReluParamter>(name));
   } else if (type == "Sigmoid") {
-    return std::make_unique<SigmoidParameter>(name);
+    return std::move(std::make_unique<SigmoidParameter>(name));
   } else if (type == "Linear") {
     auto param = std::make_unique<LinearParameter>(name);
     if (!js.contains("input_feature") ||
@@ -92,8 +80,7 @@ ParamPtr JsonLoader::LoadParam(const nlohmann::json& js) {
     }
     auto params = js["params"];
     for (auto&& linear_param : params) {
-      if (!linear_param.contains("name") || !linear_param.contains("xavier") ||
-          !linear_param.contains("constant")) {
+      if (!linear_param.contains("name") || !linear_param.contains("init")) {
         throw FileError("Invalid linear param error.");
       }
       if (!linear_param["name"].is_string() ||
@@ -126,38 +113,46 @@ ParamPtr JsonLoader::LoadParam(const nlohmann::json& js) {
         }
       }
     }
-    return param;
+    return std::move(param);
   } else if (type == "Convolution") {
     auto param = std::make_unique<ConvolutionParameter>(name);
-    if (!js.contains("input_channels") || !js["input_channels"].is_number_integer()) {
-      throw FileError("Convolution layer should have an integer object as input_channels");
+    if (!js.contains("input_channels") ||
+        !js["input_channels"].is_number_integer()) {
+      throw FileError(
+          "Convolution layer should have an integer object as input_channels");
     }
-    if (!js.contains("output_channels") || !js["output_channels"].is_number_integer()) {
-      throw FileError("Convolution layer should have an integer object as output_channels");
+    if (!js.contains("output_channels") ||
+        !js["output_channels"].is_number_integer()) {
+      throw FileError(
+          "Convolution layer should have an integer object as output_channels");
     }
     if (!js.contains("kernel_size") || !js["kernel_size"].is_number_integer()) {
-      throw FileError("Convolution layer should have an integer object as kernel_size");
+      throw FileError(
+          "Convolution layer should have an integer object as kernel_size");
     }
     param->input_channels_ = js["input_channels"].get<int>();
     param->output_channels_ = js["output_channels"].get<int>();
     param->kernel_size_ = js["kernel_size"].get<int>();
     if (param->input_channels_ <= 0) {
-      throw FileError("The input channels of convolution layer should be greater than zero.");
+      throw FileError(
+          "The input channels of convolution layer should be greater than "
+          "zero.");
     }
     if (param->output_channels_ <= 0) {
-      throw FileError("The output channels of convolution layer should be greater than zero.");
+      throw FileError(
+          "The output channels of convolution layer should be greater than "
+          "zero.");
     }
     if (param->kernel_size_ <= 0) {
-      throw FileError("The kernel size of convolution layer should be greater than zero.");
+      throw FileError(
+          "The kernel size of convolution layer should be greater than zero.");
     }
     auto params = js["params"];
     for (auto&& conv_param : params) {
-      if (!conv_param.contains("name") || !conv_param.contains("xavier") ||
-          !conv_param.contains("constant")) {
+      if (!conv_param.contains("name") || !conv_param.contains("init")) {
         throw FileError("Invalid conv param error.");
       }
-      if (!conv_param["name"].is_string() ||
-          !conv_param["init"].is_string()) {
+      if (!conv_param["name"].is_string() || !conv_param["init"].is_string()) {
         throw FileError("Invalid conv param error.");
       }
       auto &&name = conv_param["name"].get<std::string>(),
@@ -186,6 +181,7 @@ ParamPtr JsonLoader::LoadParam(const nlohmann::json& js) {
         }
       }
     }
+    return std::move(param);
   } else {
     throw FileError("Unimplemented layer type.");
   }

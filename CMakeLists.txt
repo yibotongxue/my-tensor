@@ -37,6 +37,7 @@ find_gtest()
 
 # Set include directories for libraries
 include_directories(include)
+include_directories(third_parts)
 include_directories(test/include)
 include_directories(third_parts/googletest/googletest/include)
 include_directories(third_parts/googletest/googlemock/include)
@@ -56,6 +57,7 @@ endfunction()
 enable_testing()
 
 # Define source files
+set(JSON_SRC src/json-loader.cc)
 set(TENSOR_SRC src/synced-vector.cu src/tensor.cu)
 set(LAYER_SRC src/layer.cu)
 set(RELU_SRC src/relu.cu)
@@ -130,6 +132,10 @@ add_executable(conv_test test/conv-test.cu)
 set_cuda_properties(conv_test)
 link_googletest(conv_test conv_lib)
 add_test(NAMD conv_test COMMAND conv_test)
+
+add_executable(json_test test/json-loader-test.cc src/json-loader.cc)
+link_googletest(json_test)
+add_test(NAMD json_test COMMAND json_test)
 
 # Add the main target
 add_executable(my_tensor main.cpp)
