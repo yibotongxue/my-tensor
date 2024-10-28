@@ -1,7 +1,7 @@
 // Copyright 2024 yibotongxue
 
-#ifndef INCLUDE_LAYER_PARAMETER_CUH_
-#define INCLUDE_LAYER_PARAMETER_CUH_
+#ifndef INCLUDE_LAYER_PARAMETER_H_
+#define INCLUDE_LAYER_PARAMETER_H_
 
 #include <string>
 
@@ -28,4 +28,4 @@ class LayerParameter {
 
 }  // namespace my_tensor
 
-#endif  // INCLUDE_LAYER_PARAMETER_CUH_
+#endif  // INCLUDE_LAYER_PARAMETER_H_
