@@ -3,21 +3,28 @@
 #ifndef INCLUDE_JSON_LOADER_H_
 #define INCLUDE_JSON_LOADER_H_
 
+#include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
+#include "layer-parameter.hpp"
 #include "nlohmann/json.hpp"
-
-using nlohmann::json;
 
 namespace my_tensor {
 
 class JsonLoader {
  public:
-  explicit JsonLoader(const std::string& json_file_path) {}
+  explicit JsonLoader(const std::string& json_file_path);
+
+  std::vector<ParamPtr> Load();
 
  private:
-  std::vector<json> layer_json_;
+  nlohmann::json layers_;
+
+  ParamPtr LoadParam(const nlohmann::json& js);
+
+  static std::unordered_map<std::string, InitMode> mode_map_;
 };
 
 }  // namespace my_tensor

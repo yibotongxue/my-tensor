@@ -6,6 +6,11 @@
 #include <stdexcept>
 
 namespace my_tensor {
+class FileError : public std::runtime_error {
+ public:
+  using runtime_error::runtime_error;
+};  // class FileError
+
 class VectorError : public std::runtime_error {
  public:
   using runtime_error::runtime_error;
