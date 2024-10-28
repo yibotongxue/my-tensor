@@ -5,26 +5,30 @@
 
 #include <string>
 
+#include "nlohmann/json.hpp"
+
 namespace my_tensor {
 
-// 本代码片段修改自 Moonshot AI 提供的示例代码
-//
-// 原始代码版权归 Moonshot AI 所有
-//
-// 许可证：MIT License
-//
-// 感谢 Moonshot AI 提供的示例代码
 class LayerParameter {
  public:
-  std::string name;
-  std::string type;
+  std::string name_;
+  std::string type_;
 
-  LayerParameter() : name(""), type("") {}
+  explicit LayerParameter(const std::string& name, const std::string& type)
+      : name_(name), type_(type) {}
+};  // class LayerParameter
 
-  virtual std::string Serialize() const { return ""; }
+class ReluParamter : public LayerParameter {
+ public:
+  explicit ReluParamter(const std::string& name)
+      : LayerParameter(name, "Relu") {}
+};  // class ReluParameter
 
-  static LayerParameter Deserialize() { return LayerParameter(); }
-};
+class SigmoidParameter : public LayerParameter {
+ public:
+  explicit SigmoidParameter(const std::string& name)
+      : LayerParameter(name, "Sigmoid") {}
+};  // class SigmoidParameter
 
 }  // namespace my_tensor
 
