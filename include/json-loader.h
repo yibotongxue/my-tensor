@@ -17,12 +17,12 @@ class JsonLoader {
  public:
   explicit JsonLoader(const std::string& json_file_path);
 
-  std::vector<ParamPtr> Load();
+  std::vector<LayerParameterPtr> Load();
 
  private:
   nlohmann::json layers_;
 
-  ParamPtr LoadParam(const nlohmann::json& js);
+  LayerParameterPtr LoadParam(const nlohmann::json& js);
 
   static std::unordered_map<std::string, InitMode> mode_map_;
 };

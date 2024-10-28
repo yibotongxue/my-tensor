@@ -37,15 +37,15 @@ JsonLoader::JsonLoader(const std::string& json_file_path) {
   }
 }
 
-std::vector<ParamPtr> JsonLoader::Load() {
-  std::vector<ParamPtr> result;
+std::vector<LayerParameterPtr> JsonLoader::Load() {
+  std::vector<LayerParameterPtr> result;
   for (auto&& layer : layers_) {
     result.push_back(LoadParam(layer));
   }
   return std::move(result);
 }
 
-ParamPtr JsonLoader::LoadParam(const nlohmann::json& js) {
+LayerParameterPtr JsonLoader::LoadParam(const nlohmann::json& js) {
   if (!js.contains("name") || !js["name"].is_string()) {
     throw FileError("Layer object in layers object should contain key name");
   }
