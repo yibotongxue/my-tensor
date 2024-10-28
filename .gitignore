@@ -57,3 +57,5 @@ CMakeUserPresets.json
 .vscode/c_cpp_properties.json
 
 CMakePresets.json
+
+add-copyright.sh
