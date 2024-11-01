@@ -7,6 +7,7 @@
 #include <thrust/fill.h>
 
 #include <cmath>
+#include <memory>
 
 #include "error.h"
 #include "filler-parameter.hpp"
@@ -38,7 +39,7 @@ class ZeroFiller final : public Filler<T> {
 
   void Fill(TensorPtr<T> tensor) override {
     T *data = tensor->GetGPUDataPtr();
-    ERROR_CHECK(cudaMemset(&data, 0, tensor->GetSize() * sizeof(T)));
+    ERROR_CHECK(cudaMemset(data, 0, tensor->GetSize() * sizeof(T)));
   }
 };  // class ZeroFiller
 
@@ -57,7 +58,7 @@ class ConstantFiller final : public Filler<T> {
   }
 
  private:
-  const T val_;
+  T val_;
 };  // class ConstantFiller
 
 template <typename T = float>
@@ -126,6 +127,32 @@ void HeFiller<>::Fill(TensorPtr<> tensor) {
   int n = tensor->GetSize();
   float limit = std::sqrt(2.0f / n_);
   HeFillKernel<<<CudaGetBlocks(n), kCudaThreadNum>>>(data, limit, n);
+}
+
+template <typename T = float>
+using FillerPtr = std::shared_ptr<Filler<T>>;
+
+template class Filler<>;
+template class ZeroFiller<>;
+template class ConstantFiller<>;
+template class XavierFiller<>;
+template class HeFiller<>;
+
+template <typename T = float>
+inline FillerPtr<T> CreateFiller(FillerParameterPtr param) {
+  auto mode = param->init_mode_;
+  switch (mode) {
+    case InitMode::kZero:
+      return std::make_shared<ZeroFiller<T>>(param);
+    case InitMode::kConstant:
+      return std::make_shared<ConstantFiller<T>>(param);
+    case InitMode::kXavier:
+      return std::make_shared<XavierFiller<T>>(param);
+    case InitMode::kHe:
+      return std::make_shared<HeFiller<T>>(param);
+    default:
+      throw FillerError("Unimplemention error.");
+  }
 }
 
 }  // namespace my_tensor

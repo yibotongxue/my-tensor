@@ -5,6 +5,8 @@
 
 #include <memory>
 
+#include "error.h"
+
 namespace my_tensor {
 
 enum class InitMode { kZero, kXavier, kConstant, kHe };  // enum class InitMode

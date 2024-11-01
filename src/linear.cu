@@ -7,6 +7,8 @@
 
 #include "blas.cuh"
 #include "error.h"
+#include "filler-parameter.hpp"
+#include "filler.cuh"
 #include "linear.cuh"
 
 namespace my_tensor {
@@ -31,6 +33,10 @@ void Linear<T>::SetUp(const TensorPtr<T> bottom) {
   const std::vector<int> bias_shape = {n};
   weight_ = std::make_shared<Tensor<T>>(weight_shape);
   bias_ = std::make_shared<Tensor<T>>(bias_shape);
+  FillerPtr<T> weight_filler = CreateFiller<T>(param->weight_filler_parameter_);
+  weight_filler->Fill(weight_);
+  FillerPtr<T> bias_filler = CreateFiller<T>(param->bias_filler_parameter_);
+  bias_filler->Fill(bias_);
 }
 
 template <typename T>

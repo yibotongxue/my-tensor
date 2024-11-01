@@ -9,12 +9,11 @@
       "params": [
         {
           "name": "conv_kernel",
-          "init": "constant",
-          "conval": 2
+          "init": "he"
         },
         {
           "name": "conv_bias",
-          "init": "xavier"
+          "init": "zero"
         }
       ]
     }

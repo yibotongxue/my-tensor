@@ -6,6 +6,8 @@
 #include "blas.cuh"
 #include "conv.cuh"
 #include "error.h"
+#include "filler-parameter.hpp"
+#include "filler.cuh"
 #include "im2col.cuh"
 
 namespace my_tensor {
@@ -29,9 +31,13 @@ void Convolution<T>::SetUp(const TensorPtr<T> bottom) {
                                       kernel_height_, kernel_width_};
   kernel_.reset();
   kernel_ = std::make_shared<Tensor<T>>(kernel_shape);
+  FillerPtr<T> kernel_filler = CreateFiller<T>(param->kernel_filler_parameter_);
+  kernel_filler->Fill(kernel_);
   const std::vector<int> bias_shape{output_channels_};
   bias_.reset();
   bias_ = std::make_shared<Tensor<T>>(bias_shape);
+  FillerPtr<T> bias_filler = CreateFiller<T>(param->bias_filler_parameter_);
+  bias_filler->Fill(bias_);
   batch_size_ = bottom->GetShape()[0];
   if (bottom->GetShape()[1] != input_channels_) {
     throw ConvError("The input channels not match.");

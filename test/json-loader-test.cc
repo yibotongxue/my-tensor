@@ -96,13 +96,9 @@ TEST(JsonTest, ConvolutionSuccess) {
   ASSERT_EQ(cptr->output_channels_, 3);
   ASSERT_EQ(cptr->kernel_size_, 3);
   ASSERT_EQ(cptr->kernel_filler_parameter_->init_mode_,
-            my_tensor::InitMode::kConstant);
-  ASSERT_EQ(std::dynamic_pointer_cast<my_tensor::ConstantFillerParameter>(
-                cptr->kernel_filler_parameter_)
-                ->val_,
-            2);
+            my_tensor::InitMode::kHe);
   ASSERT_EQ(cptr->bias_filler_parameter_->init_mode_,
-            my_tensor::InitMode::kXavier);
+            my_tensor::InitMode::kZero);
 }
 
 int main(int argc, char** argv) {

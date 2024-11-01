@@ -130,9 +130,8 @@ LayerParameterPtr JsonLoader::LoadLayerParam(const nlohmann::json& js) {
           } else {
             throw FileError("Missing 'conval' in linear_param.");
           }
-        }
-        if (!std::dynamic_pointer_cast<ZeroFillerParameter>(
-                param->bias_filler_parameter_)) {
+        } else if (!std::dynamic_pointer_cast<ZeroFillerParameter>(
+                       param->bias_filler_parameter_)) {
           throw FileError("Unsurported init mode for bias.");
         }
       }
@@ -207,9 +206,8 @@ LayerParameterPtr JsonLoader::LoadLayerParam(const nlohmann::json& js) {
           } else {
             throw FileError("Missing 'conval' in conv_param.");
           }
-        }
-        if (!std::dynamic_pointer_cast<ZeroFillerParameter>(
-                param->bias_filler_parameter_)) {
+        } else if (!std::dynamic_pointer_cast<ZeroFillerParameter>(
+                       param->bias_filler_parameter_)) {
           throw FileError("Unsurported init mode for bias.");
         }
       }
