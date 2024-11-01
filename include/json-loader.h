@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "filler-parameter.hpp"
 #include "layer-parameter.hpp"
 #include "nlohmann/json.hpp"
 
@@ -22,7 +23,8 @@ class JsonLoader {
  private:
   nlohmann::json layers_;
 
-  LayerParameterPtr LoadParam(const nlohmann::json& js);
+  FillerParameterPtr LoadFillerParam(const nlohmann::json& js);
+  LayerParameterPtr LoadLayerParam(const nlohmann::json& js);
 
   static std::unordered_map<std::string, InitMode> mode_map_;
 };

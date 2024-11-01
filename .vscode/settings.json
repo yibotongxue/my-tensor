@@ -78,6 +78,7 @@
         "text_encoding": "cpp",
         "codecvt": "cpp",
         "forward_list": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "fstream": "cpp"
     }
 }

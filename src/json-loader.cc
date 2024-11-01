@@ -16,7 +16,10 @@
 namespace my_tensor {
 
 std::unordered_map<std::string, InitMode> JsonLoader::mode_map_ = {
-    {"xavier", InitMode::kXavier}, {"constant", InitMode::kConstant}};
+    {"xavier", InitMode::kXavier},
+    {"constant", InitMode::kConstant},
+    {"he", InitMode::kHe},
+    {"zero", InitMode::kZero}};
 
 JsonLoader::JsonLoader(const std::string& json_file_path) {
   std::ifstream fs(json_file_path);
@@ -41,12 +44,23 @@ JsonLoader::JsonLoader(const std::string& json_file_path) {
 std::vector<LayerParameterPtr> JsonLoader::Load() {
   std::vector<LayerParameterPtr> result;
   for (auto&& layer : layers_) {
-    result.push_back(LoadParam(layer));
+    result.push_back(LoadLayerParam(layer));
   }
   return result;
 }
 
-LayerParameterPtr JsonLoader::LoadParam(const nlohmann::json& js) {
+FillerParameterPtr JsonLoader::LoadFillerParam(const nlohmann::json& js) {
+  if (!js.contains("init")) {
+    throw FileError("Invalid linear param error.");
+  }
+  auto&& init = js["init"].get<std::string>();
+  if (!mode_map_.contains(init)) {
+    throw FileError("Invalid param init mode.");
+  }
+  return CreateFillerParameter(mode_map_[init]);
+}
+
+LayerParameterPtr JsonLoader::LoadLayerParam(const nlohmann::json& js) {
   if (!js.contains("name") || !js["name"].is_string()) {
     throw FileError("Layer object in layers object should contain key name");
   }
@@ -84,48 +98,42 @@ LayerParameterPtr JsonLoader::LoadParam(const nlohmann::json& js) {
     }
     auto params = js["params"];
     for (auto&& linear_param : params) {
-      if (!linear_param.contains("name") || !linear_param.contains("init")) {
+      if (!linear_param.contains("name")) {
         throw FileError("Invalid linear param error.");
       }
-      if (!linear_param["name"].is_string() ||
-          !linear_param["init"].is_string()) {
-        throw FileError("Invalid linear param error.");
-      }
-      auto &&name = linear_param["name"].get<std::string>(),
-           &&init = linear_param["init"].get<std::string>();
+      auto&& name = linear_param["name"].get<std::string>();
       if (name == "linear_weight") {
-        if (!mode_map_.contains(init)) {
-          throw FileError("Invalid linear param init mode.");
-        }
-        if (init == "constant") {
+        param->weight_filler_parameter_ = LoadFillerParam(linear_param);
+        if (auto temp = std::dynamic_pointer_cast<ConstantFillerParameter>(
+                param->weight_filler_parameter_)) {
           if (linear_param.contains("conval")) {
-            if (!linear_param["conval"].is_number_integer()) {
-              throw FileError("Invalid linear param conval");
-            }
-            int conval = linear_param["conval"].get<int>();
-            param->weight_filler_parameter_ =
-                std::make_shared<ConstantFillerParameter>(conval);
+            temp->val_ = linear_param.at("conval").get<int>();
+          } else {
+            throw FileError("Missing 'conval' in linear_param.");
           }
-        } else if (init == "xavier") {
-          param->weight_filler_parameter_ =
-              std::make_shared<XavierFillerParameter>();
+        } else if (auto temp = std::dynamic_pointer_cast<XavierFillerParameter>(
+                       param->weight_filler_parameter_)) {
+          temp->n_in_ = param->input_feature_;
+          temp->n_out_ = param->output_feature_;
+        } else if (auto temp = std::dynamic_pointer_cast<HeFillerParameter>(
+                       param->weight_filler_parameter_)) {
+          temp->n_ = param->input_feature_;
+        } else {
+          throw FileError("Unsurported init mode for weight.");
         }
       } else if (name == "linear_bias") {
-        if (!mode_map_.contains(init)) {
-          throw FileError("Invalid linear param init mode.");
-        }
-        if (init == "constant") {
+        param->bias_filler_parameter_ = LoadFillerParam(linear_param);
+        if (auto temp = std::dynamic_pointer_cast<ConstantFillerParameter>(
+                param->bias_filler_parameter_)) {
           if (linear_param.contains("conval")) {
-            if (!linear_param["conval"].is_number_integer()) {
-              throw FileError("Invalid linear param conval");
-            }
-            int conval = linear_param["conval"].get<int>();
-            param->bias_filler_parameter_ =
-                std::make_shared<ConstantFillerParameter>(conval);
+            temp->val_ = linear_param.at("conval").get<int>();
+          } else {
+            throw FileError("Missing 'conval' in linear_param.");
           }
-        } else if (init == "xavier") {
-          param->bias_filler_parameter_ =
-              std::make_shared<XavierFillerParameter>();
+        }
+        if (!std::dynamic_pointer_cast<ZeroFillerParameter>(
+                param->bias_filler_parameter_)) {
+          throw FileError("Unsurported init mode for bias.");
         }
       }
     }
@@ -165,47 +173,44 @@ LayerParameterPtr JsonLoader::LoadParam(const nlohmann::json& js) {
     }
     auto params = js["params"];
     for (auto&& conv_param : params) {
-      if (!conv_param.contains("name") || !conv_param.contains("init")) {
+      if (!conv_param.contains("name")) {
         throw FileError("Invalid conv param error.");
       }
-      if (!conv_param["name"].is_string() || !conv_param["init"].is_string()) {
-        throw FileError("Invalid conv param error.");
-      }
-      auto &&name = conv_param["name"].get<std::string>(),
-           &&init = conv_param["init"].get<std::string>();
+      auto&& name = conv_param["name"].get<std::string>();
       if (name == "conv_kernel") {
-        if (!mode_map_.contains(init)) {
-          throw FileError("Invalid linear param init mode.");
-        }
-        if (init == "constant") {
+        param->kernel_filler_parameter_ = LoadFillerParam(conv_param);
+        if (auto temp = std::dynamic_pointer_cast<ConstantFillerParameter>(
+                param->kernel_filler_parameter_)) {
           if (conv_param.contains("conval")) {
-            if (!conv_param["conval"].is_number_integer()) {
-              throw FileError("Invalid linear param conval");
-            }
-            int conval = conv_param["conval"].get<int>();
-            param->kernel_filler_parameter_ =
-                std::make_shared<ConstantFillerParameter>(conval);
+            temp->val_ = conv_param.at("conval").get<int>();
+          } else {
+            throw FileError("Missing 'conval' in conv_param.");
           }
-        } else if (init == "xavier") {
-          param->kernel_filler_parameter_ =
-              std::make_shared<XavierFillerParameter>();
+        } else if (auto temp = std::dynamic_pointer_cast<XavierFillerParameter>(
+                       param->kernel_filler_parameter_)) {
+          temp->n_in_ = param->input_channels_ * param->kernel_size_ *
+                        param->kernel_size_;
+          temp->n_out_ = param->output_channels_;
+        } else if (auto temp = std::dynamic_pointer_cast<HeFillerParameter>(
+                       param->kernel_filler_parameter_)) {
+          temp->n_ = param->input_channels_ * param->kernel_size_ *
+                     param->kernel_size_;
+        } else {
+          throw FileError("Unsurported init mode for kernel.");
         }
       } else if (name == "conv_bias") {
-        if (!mode_map_.contains(init)) {
-          throw FileError("Invalid linear param init mode.");
-        }
-        if (init == "constant") {
+        param->bias_filler_parameter_ = LoadFillerParam(conv_param);
+        if (auto temp = std::dynamic_pointer_cast<ConstantFillerParameter>(
+                param->bias_filler_parameter_)) {
           if (conv_param.contains("conval")) {
-            if (!conv_param["conval"].is_number_integer()) {
-              throw FileError("Invalid linear param conval");
-            }
-            int conval = conv_param["conval"].get<int>();
-            param->bias_filler_parameter_ =
-                std::make_shared<ConstantFillerParameter>(conval);
+            temp->val_ = conv_param.at("conval").get<int>();
+          } else {
+            throw FileError("Missing 'conval' in conv_param.");
           }
-        } else if (init == "xavier") {
-          param->bias_filler_parameter_ =
-              std::make_shared<XavierFillerParameter>();
+        }
+        if (!std::dynamic_pointer_cast<ZeroFillerParameter>(
+                param->bias_filler_parameter_)) {
+          throw FileError("Unsurported init mode for bias.");
         }
       }
     }

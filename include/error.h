@@ -45,6 +45,11 @@ class ConvError : public std::runtime_error {
  public:
   using runtime_error::runtime_error;
 };  // class ConvError
+
+class FillerError : public std::runtime_error {
+ public:
+  using runtime_error::runtime_error;
+};  // class FillerError
 }  // namespace my_tensor
 
 #endif  // INCLUDE_ERROR_H_
