@@ -138,7 +138,6 @@ void Convolution<T>::BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
   }
 }
 
-// TODO(yibotongxue) Add bias to top
 template <typename T>
 void Convolution<T>::ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
   CheckShape(bottom, top);
@@ -150,9 +149,10 @@ void Convolution<T>::ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
   matmul(kernel_->GetGPUDataPtr(), col_cache_->GetGPUDataPtr(),
          top->GetGPUDataPtr(), output_channels_, input_channels_ * kernel_size,
          im_size, batch_size_, 1);
+  add_row_vector(top->GetGPUDataPtr(), bias_->GetGPUDataPtr(), output_channels_,
+                 im_size, batch_size_);
 }
 
-// TODO(yibotongxue) Add bias backward
 template <typename T>
 void Convolution<T>::BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
   CheckShape(bottom, top);
@@ -174,6 +174,13 @@ void Convolution<T>::BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
                    input_channels_ * kernel_size, batch_size_);
   col_sum(batch_kernel->GetGPUDiffPtr(), kernel_->GetGPUDiffPtr(), batch_size_,
           output_channels_ * input_channels_ * kernel_height_ * kernel_width_);
+  // partial bias
+  float* temp_diff = nullptr;
+  cudaMalloc(&temp_diff, batch_size_ * output_channels_ * sizeof(float));
+  row_sum(top->GetGPUDiffPtr(), temp_diff, output_channels_, im_size,
+          batch_size_);
+  col_sum(temp_diff, bias_->GetGPUDiffPtr(), batch_size_, output_channels_);
+  cudaFree(temp_diff);
 }
 
 template <typename T>

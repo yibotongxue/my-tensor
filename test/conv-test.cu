@@ -29,6 +29,7 @@
       input_data.resize(102400);                                              \
       output_diff.resize(184320);                                             \
       kernels_data.resize(405);                                               \
+      bias_data.resize(9);                                                    \
       std::random_device rd;                                                  \
       std::mt19937 gen(rd());                                                 \
       std::uniform_real_distribution<float> dis(-10.0f, 10.0f);               \
@@ -36,6 +37,7 @@
       std::ranges::generate(input_data, random_func);                         \
       std::ranges::generate(output_diff, random_func);                        \
       std::ranges::generate(kernels_data, random_func);                       \
+      std::ranges::generate(bias_data, random_func);                          \
       input = std::make_shared<my_tensor::Tensor<>>(input_shape);             \
       input->Set##device##Data(input_data);                                   \
       output = std::make_shared<my_tensor::Tensor<>>(output_shape);           \
@@ -45,16 +47,21 @@
       auto temp = std::dynamic_pointer_cast<my_tensor::Convolution<>>(conv);  \
       kernels = temp->GetKernel();                                            \
       kernels->Set##device##Data(kernels_data);                               \
+      bias = temp->GetBias();                                                 \
+      bias->Set##device##Data(bias_data);                                     \
     }                                                                         \
     const std::vector<int> input_shape{10, 5, 32, 64};                        \
     const std::vector<int> output_shape{10, 9, 32, 64};                       \
     const std::vector<int> kernels_shape{9, 5, 3, 3};                         \
+    const std::vector<int> bias_shape{9, 1};                                  \
     std::vector<float> input_data;                                            \
     std::vector<float> output_diff;                                           \
     std::vector<float> kernels_data;                                          \
+    std::vector<float> bias_data;                                             \
     my_tensor::TensorPtr<> input;                                             \
     my_tensor::TensorPtr<> output;                                            \
     my_tensor::TensorPtr<> kernels;                                           \
+    my_tensor::TensorPtr<> bias;                                              \
     my_tensor::LayerPtr<> conv;                                               \
   };
 
@@ -71,7 +78,7 @@ CONVOLUTION_TEST_CLASS(GPU)
       int c = (i % 18432) / 2048;                                          \
       int row = (i % 2048) / 64;                                           \
       int col = i % 64;                                                    \
-      float expect = 0.0f;                                                 \
+      float expect = bias_data[c];                                         \
       for (int j = 0; j < 5; j++) {                                        \
         for (int x = 0; x < 3; x++) {                                      \
           for (int y = 0; y < 3; y++) {                                    \
@@ -160,6 +167,26 @@ CONVOLUTION_BACKWARD_BOTTOM(GPU)
 
 CONVOLUTION_BACKWARD_KERNEL(CPU)
 CONVOLUTION_BACKWARD_KERNEL(GPU)
+
+#define CONVOLUTION_BACKWARD_BIAS(device)                        \
+  TEST_F(Convolution##device##Test, BackwardBiasTest) {          \
+    conv->Forward##device(input, output);                        \
+    conv->Backward##device(output, input);                       \
+    std::vector<float> actual(bias->Get##device##Diff().begin(), \
+                              bias->Get##device##Diff().end());  \
+    for (int i = 0; i < 9; i++) {                                \
+      float expect = 0.0f;                                       \
+      for (int t = 0; t < 10; t++) {                             \
+        for (int j = 0; j < 2048; j++) {                         \
+          expect += output_diff[t * 18432 + i * 2048 + j];       \
+        }                                                        \
+      }                                                          \
+      ASSERT_NEAR(actual[i], expect, 0.01);                      \
+    }                                                            \
+  }
+
+CONVOLUTION_BACKWARD_BIAS(CPU)
+CONVOLUTION_BACKWARD_BIAS(GPU)
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);

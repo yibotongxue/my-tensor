@@ -23,6 +23,8 @@ class Convolution final : public Layer<T> {
 
   const TensorPtr<T> GetKernel() const { return kernel_; }
   TensorPtr<T> GetKernel() { return kernel_; }
+  const TensorPtr<T> GetBias() const { return bias_; }
+  TensorPtr<T> GetBias() { return bias_; }
 
   void ForwardCPU(const TensorPtr<T> bottom, TensorPtr<T> top) override;
   void BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) override;
