@@ -35,6 +35,11 @@ void Convolution<T>::SetUp(const TensorPtr<T> bottom) {
   }
   height_ = bottom->GetShape()[2];
   width_ = bottom->GetShape()[3];
+  const std::vector<int> col_shape{
+      batch_size_, input_channels_ * kernel_height_ * kernel_width_,
+      height_ * width_};
+  col_cache_.reset();
+  col_cache_ = std::make_shared<Tensor<T>>(col_shape);
 }
 
 template <typename T>
@@ -45,21 +50,18 @@ void Convolution<T>::ForwardCPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
   auto& top_data = top->GetCPUData();
   int kernel_size = kernel_height_ * kernel_width_;
   int im_size = height_ * width_;
-  std::vector<int> temp_shape{batch_size_, input_channels_ * kernel_size,
-                              im_size};
-  auto temp_tensor = std::make_shared<Tensor<T>>(temp_shape);
   Im2col_CPU(batch_size_, bottom->GetCPUDataPtr(), input_channels_, height_,
              width_, kernel_height_, kernel_width_,
-             temp_tensor->GetCPUDataPtr());
-  const auto& temp_data = temp_tensor->GetCPUData();
+             col_cache_->GetCPUDataPtr());
+  const auto& col_data = col_cache_->GetCPUData();
   for (int t = 0; t < batch_size_; t++) {
     for (int i = 0; i < output_channels_; i++) {
       for (int j = 0; j < im_size; j++) {
         T val = 0;
         for (int k = 0; k < input_channels_ * kernel_size; k++) {
           val += kernel_data[i * input_channels_ * kernel_size + k] *
-                 temp_data[t * input_channels_ * im_size * kernel_size +
-                           k * im_size + j];
+                 col_data[t * input_channels_ * im_size * kernel_size +
+                          k * im_size + j];
         }
         top_data[t * output_channels_ * im_size + i * im_size + j] = val;
       }
@@ -77,14 +79,8 @@ void Convolution<T>::BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
   auto& kernel_diff = kernel_->GetCPUDiff();
   int kernel_size = kernel_height_ * kernel_width_;
   int im_size = height_ * width_;
-  std::vector<int> temp_shape{batch_size_, input_channels_ * kernel_size,
-                              im_size};
-  auto temp_tensor = std::make_shared<Tensor<T>>(temp_shape);
-  Im2col_CPU(batch_size_, bottom->GetCPUDataPtr(), input_channels_, height_,
-             width_, kernel_height_, kernel_width_,
-             temp_tensor->GetCPUDataPtr());
-  const auto& temp_data = temp_tensor->GetCPUData();
-  auto& temp_diff = temp_tensor->GetCPUDiff();
+  const auto& col_data = col_cache_->GetCPUData();
+  auto& col_diff = col_cache_->GetCPUDiff();
   // top = kernel * temp
   // [n * output_channels_ * im_size] = [(n *) output_channels_ *
   // (input_channels_ * kernel_size)]
@@ -98,14 +94,13 @@ void Convolution<T>::BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
           val += kernel_data[k * input_channels_ * kernel_size + i] *
                  top_diff[t * output_channels_ * im_size + k * im_size + j];
         }
-        temp_diff[t * input_channels_ * kernel_size * im_size + i * im_size +
-                  j] = val;
+        col_diff[t * input_channels_ * kernel_size * im_size + i * im_size +
+                 j] = val;
       }
     }
   }
-  Col2im_CPU(batch_size_, temp_tensor->GetCPUDiffPtr(), input_channels_,
-             height_, width_, kernel_height_, kernel_width_,
-             bottom->GetCPUDiffPtr());
+  Col2im_CPU(batch_size_, col_cache_->GetCPUDiffPtr(), input_channels_, height_,
+             width_, kernel_height_, kernel_width_, bottom->GetCPUDiffPtr());
   // partial kernel
   for (int i = 0; i < output_channels_; i++) {
     for (int j = 0; j < input_channels_ * kernel_size; j++) {
@@ -113,8 +108,8 @@ void Convolution<T>::BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
       for (int t = 0; t < batch_size_; t++) {
         for (int k = 0; k < im_size; k++) {
           val += top_diff[t * output_channels_ * im_size + i * im_size + k] *
-                 temp_data[t * input_channels_ * kernel_size * im_size +
-                           j * im_size + k];
+                 col_data[t * input_channels_ * kernel_size * im_size +
+                          j * im_size + k];
         }
       }
       kernel_diff[i * input_channels_ * kernel_size + j] = val;
@@ -127,13 +122,10 @@ void Convolution<T>::ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
   CheckShape(bottom, top);
   int kernel_size = kernel_height_ * kernel_width_;
   int im_size = height_ * width_;
-  std::vector<int> temp_shape{batch_size_, input_channels_ * kernel_size,
-                              im_size};
-  auto temp_tensor = std::make_shared<Tensor<T>>(temp_shape);
   Im2col_GPU(batch_size_, bottom->GetGPUDataPtr(), input_channels_, height_,
              width_, kernel_height_, kernel_width_,
-             temp_tensor->GetGPUDataPtr());
-  matmul(kernel_->GetGPUDataPtr(), temp_tensor->GetGPUDataPtr(),
+             col_cache_->GetGPUDataPtr());
+  matmul(kernel_->GetGPUDataPtr(), col_cache_->GetGPUDataPtr(),
          top->GetGPUDataPtr(), output_channels_, input_channels_ * kernel_size,
          im_size, batch_size_, 1);
 }
@@ -143,25 +135,18 @@ void Convolution<T>::BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
   CheckShape(bottom, top);
   int kernel_size = kernel_height_ * kernel_width_;
   int im_size = height_ * width_;
-  std::vector<int> temp_shape{batch_size_, input_channels_ * kernel_size,
-                              im_size};
-  auto temp_tensor = std::make_shared<Tensor<T>>(temp_shape);
-  Im2col_GPU(batch_size_, bottom->GetGPUDataPtr(), input_channels_, height_,
-             width_, kernel_height_, kernel_width_,
-             temp_tensor->GetGPUDataPtr());
   // partial temp
   transpose_matmul(kernel_->GetGPUDataPtr(), top->GetGPUDiffPtr(),
-                   temp_tensor->GetGPUDiffPtr(), input_channels_ * kernel_size,
+                   col_cache_->GetGPUDiffPtr(), input_channels_ * kernel_size,
                    output_channels_, im_size, batch_size_, 1);
-  Col2im_GPU(batch_size_, temp_tensor->GetGPUDiffPtr(), input_channels_,
-             height_, width_, kernel_height_, kernel_width_,
-             bottom->GetGPUDiffPtr());
+  Col2im_GPU(batch_size_, col_cache_->GetGPUDiffPtr(), input_channels_, height_,
+             width_, kernel_height_, kernel_width_, bottom->GetGPUDiffPtr());
   // partial kernel
   std::vector<int> batch_kernel_shape{batch_size_, output_channels_,
                                       input_channels_, kernel_height_,
                                       kernel_width_};
   auto batch_kernel = std::make_shared<Tensor<T>>(batch_kernel_shape);
-  matmul_transpose(top->GetGPUDiffPtr(), temp_tensor->GetGPUDataPtr(),
+  matmul_transpose(top->GetGPUDiffPtr(), col_cache_->GetGPUDataPtr(),
                    batch_kernel->GetGPUDiffPtr(), output_channels_, im_size,
                    input_channels_ * kernel_size, batch_size_);
   col_sum(batch_kernel->GetGPUDiffPtr(), kernel_->GetGPUDiffPtr(), batch_size_,

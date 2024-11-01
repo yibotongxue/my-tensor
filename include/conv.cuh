@@ -31,6 +31,7 @@ class Convolution final : public Layer<T> {
 
  private:
   TensorPtr<T> kernel_;
+  TensorPtr<T> col_cache_;
   int input_channels_;
   int output_channels_;
   int kernel_height_;

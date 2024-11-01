@@ -95,6 +95,7 @@ CONVOLUTION_FORWARD_TEST(GPU)
 
 #define CONVOLUTION_BACKWARD_BOTTOM(device)                                  \
   TEST_F(Convolution##device##Test, BackwardBottomTest) {                    \
+    conv->Forward##device(input, output);                                    \
     conv->Backward##device(output, input);                                   \
     std::vector<float> actual(input->Get##device##Diff().begin(),            \
                               input->Get##device##Diff().end());             \
@@ -127,6 +128,7 @@ CONVOLUTION_BACKWARD_BOTTOM(GPU)
 
 #define CONVOLUTION_BACKWARD_KERNEL(device)                                   \
   TEST_F(Convolution##device##Test, BackwardKernelTest) {                     \
+    conv->Forward##device(input, output);                                     \
     conv->Backward##device(output, input);                                    \
     std::vector<float> actual(kernels->Get##device##Diff().begin(),           \
                               kernels->Get##device##Diff().end());            \
