@@ -145,27 +145,40 @@ namespace {
 __global__ void SetAllOnes(float *ones, int n) {
   CUDA_KERNEL_LOOP(i, n) { ones[i] = 1.0f; }
 }
+
+__global__ void RepeatVec(const float *vec, float *result, const int m,
+                          const int batch_count) {
+  CUDA_KERNEL_LOOP(i, m * batch_count) { result[i] = vec[i % m]; }
+}
 }  // namespace
 
 template <>
-void add_row_vector(float *mat, const float *vec, const int m, const int n) {
+void add_row_vector(float *mat, const float *vec, const int m, const int n,
+                    const int batch_count) {
   float alpha = 1.0f;
   float *ones = nullptr;
-  cudaMalloc(&ones, sizeof(float));
+  cudaMalloc(&ones, n * sizeof(float));
   SetAllOnes<<<CudaGetBlocks(n), kCudaThreadNum>>>(ones, n);
-  CUBLAS_ERROR_CHECK(
-      cublasSger(handle->GetHandle(), n, m, &alpha, ones, 1, vec, 1, mat, n));
+  float *repeat_vec = nullptr;
+  cudaMalloc(&repeat_vec, m * batch_count * sizeof(float));
+  RepeatVec<<<CudaGetBlocks(m * batch_count), kCudaThreadNum>>>(vec, repeat_vec,
+                                                                m, batch_count);
+  CUBLAS_ERROR_CHECK(cublasSger(handle->GetHandle(), n, m * batch_count, &alpha,
+                                ones, 1, repeat_vec, 1, mat, n));
   cudaFree(ones);
+  cudaFree(repeat_vec);
 }
 
 template <>
-void add_col_vector(float *mat, const float *vec, const int m, const int n) {
+void add_col_vector(float *mat, const float *vec, const int m, const int n,
+                    const int batch_count) {
   float alpha = 1.0f;
   float *ones = nullptr;
-  cudaMalloc(&ones, m * sizeof(float));
-  SetAllOnes<<<CudaGetBlocks(m), kCudaThreadNum>>>(ones, m);
-  CUBLAS_ERROR_CHECK(
-      cublasSger(handle->GetHandle(), n, m, &alpha, vec, 1, ones, 1, mat, n));
+  cudaMalloc(&ones, m * batch_count * sizeof(float));
+  SetAllOnes<<<CudaGetBlocks(m * batch_count), kCudaThreadNum>>>(
+      ones, m * batch_count);
+  CUBLAS_ERROR_CHECK(cublasSger(handle->GetHandle(), n, m * batch_count, &alpha,
+                                vec, 1, ones, 1, mat, n));
   cudaFree(ones);
 }
 
@@ -177,26 +190,47 @@ float tensor_sum(const float *tensor, const int cnt) {
 }
 
 template <>
-void row_sum(const float *mat, float *result, const int m, const int n) {
+void row_sum(const float *mat, float *result, const int m, const int n,
+             const int batch_count) {
   float alpha = 1.0f;
   float beta = 0.0f;
   float *ones = nullptr;
   cudaMalloc(&ones, n * sizeof(float));
   SetAllOnes<<<CudaGetBlocks(n), kCudaThreadNum>>>(ones, n);
-  CUBLAS_ERROR_CHECK(cublasSgemv(handle->GetHandle(), CUBLAS_OP_T, n, m, &alpha,
-                                 mat, n, ones, 1, &beta, result, 1));
+  CUBLAS_ERROR_CHECK(cublasSgemv(handle->GetHandle(), CUBLAS_OP_T, n,
+                                 m * batch_count, &alpha, mat, n, ones, 1,
+                                 &beta, result, 1));
 }
 
 template <>
-void col_sum(const float *mat, float *result, const int m, const int n) {
+void col_sum(const float *mat, float *result, const int m, const int n,
+             const int batch_count) {
   float alpha = 1.0f;
   float beta = 0.0f;
   float *ones = nullptr;
   cudaMalloc(&ones, m * sizeof(float));
-  SetAllOnes<<<CudaGetBlocks(m), kCudaThreadNum>>>(ones, m);
-  CUBLAS_ERROR_CHECK(cublasSgemv(handle->GetHandle(), CUBLAS_OP_N, n, m, &alpha,
-                                 mat, n, ones, 1, &beta, result, 1));
+  SetAllOnes<<<CudaGetBlocks(m), kCudaThreadNum>>>(ones, m * batch_count);
+  thrust::device_vector<const float *> mat_vec(batch_count);
+  int mat_stride = m * n;
+  thrust::transform(thrust::counting_iterator<int>(0),
+                    thrust::counting_iterator<int>(batch_count),
+                    mat_vec.begin(),
+                    [mat, mat_stride] __device__(int i) -> const float * {
+                      return mat + i * mat_stride;
+                    });
+  thrust::device_vector<const float *> ones_vec(batch_count);
+  thrust::fill(ones_vec.begin(), ones_vec.end(), ones);
+  thrust::device_vector<float *> result_vec(batch_count);
+  thrust::transform(
+      thrust::counting_iterator<int>(0),
+      thrust::counting_iterator<int>(batch_count), result_vec.begin(),
+      [result, n] __device__(int i) -> float * { return result + i * n; });
+  CUBLAS_ERROR_CHECK(cublasSgemvBatched(
+      handle->GetHandle(), CUBLAS_OP_N, n, m, &alpha, RAW_PTR(mat_vec), n,
+      RAW_PTR(ones_vec), 1, &beta, RAW_PTR(result_vec), 1, batch_count));
   cudaFree(ones);
 }
+
+#undef DEFINE_ABC_VEC
 
 }  // namespace my_tensor
