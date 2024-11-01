@@ -20,7 +20,7 @@ enum class ParamType {
 enum class InitMode { kXavier, kConstant };  // enum class InitMode
 
 class LayerParameter;
-using LayerParameterPtr = std::unique_ptr<LayerParameter>;
+using LayerParameterPtr = std::shared_ptr<LayerParameter>;
 
 class LayerParameter {
  public:

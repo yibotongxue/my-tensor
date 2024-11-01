@@ -42,7 +42,7 @@ std::vector<LayerParameterPtr> JsonLoader::Load() {
   for (auto&& layer : layers_) {
     result.push_back(LoadParam(layer));
   }
-  return std::move(result);
+  return result;
 }
 
 LayerParameterPtr JsonLoader::LoadParam(const nlohmann::json& js) {
@@ -55,11 +55,11 @@ LayerParameterPtr JsonLoader::LoadParam(const nlohmann::json& js) {
   auto &&name = js["name"].get<std::string>(),
        &&type = js["type"].get<std::string>();
   if (type == "Relu") {
-    return std::move(std::make_unique<ReluParamter>(name));
+    return std::make_shared<ReluParamter>(name);
   } else if (type == "Sigmoid") {
-    return std::move(std::make_unique<SigmoidParameter>(name));
+    return std::make_shared<SigmoidParameter>(name);
   } else if (type == "Linear") {
-    auto param = std::make_unique<LinearParameter>(name);
+    auto param = std::make_shared<LinearParameter>(name);
     if (!js.contains("input_feature") ||
         !js["input_feature"].is_number_integer()) {
       throw FileError(
@@ -116,9 +116,9 @@ LayerParameterPtr JsonLoader::LoadParam(const nlohmann::json& js) {
         }
       }
     }
-    return std::move(param);
+    return param;
   } else if (type == "Convolution") {
-    auto param = std::make_unique<ConvolutionParameter>(name);
+    auto param = std::make_shared<ConvolutionParameter>(name);
     if (!js.contains("input_channels") ||
         !js["input_channels"].is_number_integer()) {
       throw FileError(
@@ -184,7 +184,7 @@ LayerParameterPtr JsonLoader::LoadParam(const nlohmann::json& js) {
         }
       }
     }
-    return std::move(param);
+    return param;
   } else {
     throw FileError("Unimplemented layer type.");
   }

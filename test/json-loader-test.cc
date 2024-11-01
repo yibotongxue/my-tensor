@@ -47,7 +47,7 @@ TEST(JsonTest, WithoutType) {
 TEST(JsonTest, ReluSuccess) {
   my_tensor::JsonLoader loader("../test/json-test/example.json");
   auto params = loader.Load();
-  auto param = std::move(params[1]);
+  auto param = params[1];
   ASSERT_EQ(param->name_, "relu1");
   ASSERT_EQ(param->type_, my_tensor::ParamType::kRelu);
   auto* ptr = param.get();
@@ -57,7 +57,7 @@ TEST(JsonTest, ReluSuccess) {
 TEST(JsonTest, SigmoidSuccess) {
   my_tensor::JsonLoader loader("../test/json-test/example.json");
   auto params = loader.Load();
-  auto param = std::move(params[3]);
+  auto param = params[3];
   ASSERT_EQ(param->name_, "sigmoid2");
   ASSERT_EQ(param->type_, my_tensor::ParamType::kSigmoid);
   auto* ptr = param.get();
@@ -67,7 +67,7 @@ TEST(JsonTest, SigmoidSuccess) {
 TEST(JsonTest, LinearSuccess) {
   my_tensor::JsonLoader loader("../test/json-test/example.json");
   auto params = loader.Load();
-  auto param = std::move(params[4]);
+  auto param = params[4];
   ASSERT_EQ(param->name_, "linear1");
   ASSERT_EQ(param->type_, my_tensor::ParamType::kLinear);
   auto* lptr = dynamic_cast<my_tensor::LinearParameter*>(param.get());
@@ -82,7 +82,7 @@ TEST(JsonTest, LinearSuccess) {
 TEST(JsonTest, ConvolutionSuccess) {
   my_tensor::JsonLoader loader("../test/json-test/example.json");
   auto params = loader.Load();
-  auto param = std::move(params[0]);
+  auto param = params[0];
   ASSERT_EQ(param->name_, "conv1");
   ASSERT_EQ(param->type_, my_tensor::ParamType::kConvolution);
   auto* cptr = dynamic_cast<my_tensor::ConvolutionParameter*>(param.get());
