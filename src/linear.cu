@@ -28,7 +28,7 @@ void Linear<T>::SetUp(const TensorPtr<T> bottom) {
   n = param->output_feature_;
   m = bottom->GetShape()[0];
   const std::vector<int> weight_shape = {k, n};
-  const std::vector<int> bias_shape = {n, 1};
+  const std::vector<int> bias_shape = {n};
   weight_ = std::make_shared<Tensor<T>>(weight_shape);
   bias_ = std::make_shared<Tensor<T>>(bias_shape);
 }

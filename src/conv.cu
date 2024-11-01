@@ -29,6 +29,9 @@ void Convolution<T>::SetUp(const TensorPtr<T> bottom) {
                                       kernel_height_, kernel_width_};
   kernel_.reset();
   kernel_ = std::make_shared<Tensor<T>>(kernel_shape);
+  const std::vector<int> bias_shape{output_channels_};
+  bias_.reset();
+  bias_ = std::make_shared<Tensor<T>>(bias_shape);
   batch_size_ = bottom->GetShape()[0];
   if (bottom->GetShape()[1] != input_channels_) {
     throw ConvError("The input channels not match.");
@@ -46,6 +49,7 @@ template <typename T>
 void Convolution<T>::ForwardCPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
   CheckShape(bottom, top);
   const auto& kernel_data = kernel_->GetCPUData();
+  const auto& bias_data = bias_->GetCPUData();
   const auto& bottom_data = bottom->GetCPUData();
   auto& top_data = top->GetCPUData();
   int kernel_size = kernel_height_ * kernel_width_;
@@ -57,7 +61,7 @@ void Convolution<T>::ForwardCPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
   for (int t = 0; t < batch_size_; t++) {
     for (int i = 0; i < output_channels_; i++) {
       for (int j = 0; j < im_size; j++) {
-        T val = 0;
+        T val = bias_data[i];
         for (int k = 0; k < input_channels_ * kernel_size; k++) {
           val += kernel_data[i * input_channels_ * kernel_size + k] *
                  col_data[t * input_channels_ * im_size * kernel_size +
@@ -81,6 +85,7 @@ void Convolution<T>::BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
   int im_size = height_ * width_;
   const auto& col_data = col_cache_->GetCPUData();
   auto& col_diff = col_cache_->GetCPUDiff();
+  auto& bias_diff = bias_->GetCPUDiff();
   // top = kernel * temp
   // [n * output_channels_ * im_size] = [(n *) output_channels_ *
   // (input_channels_ * kernel_size)]
@@ -115,8 +120,19 @@ void Convolution<T>::BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
       kernel_diff[i * input_channels_ * kernel_size + j] = val;
     }
   }
+  // partial bias
+  for (int i = 0; i < output_channels_; i++) {
+    T val = 0;
+    for (int t = 0; t < batch_size_; t++) {
+      for (int j = 0; j < im_size; j++) {
+        val += top_diff[t * output_channels_ * im_size + i * im_size + j];
+      }
+    }
+    bias_diff[i] = val;
+  }
 }
 
+// TODO(yibotongxue) Add bias to top
 template <typename T>
 void Convolution<T>::ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
   CheckShape(bottom, top);
@@ -130,6 +146,7 @@ void Convolution<T>::ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
          im_size, batch_size_, 1);
 }
 
+// TODO(yibotongxue) Add bias backward
 template <typename T>
 void Convolution<T>::BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
   CheckShape(bottom, top);
