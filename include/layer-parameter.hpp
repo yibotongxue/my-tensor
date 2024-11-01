@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 
+#include "filler-parameter.hpp"
 #include "nlohmann/json.hpp"
 
 namespace my_tensor {
@@ -16,8 +17,6 @@ enum class ParamType {
   kLinear,
   kConvolution
 };  // enum class ParamType
-
-enum class InitMode { kXavier, kConstant };  // enum class InitMode
 
 class LayerParameter;
 using LayerParameterPtr = std::shared_ptr<LayerParameter>;
@@ -49,10 +48,8 @@ class LinearParameter : public LayerParameter {
  public:
   int input_feature_;
   int output_feature_;
-  InitMode weight_init_mode_;
-  int weight_conval_{0};
-  InitMode bias_init_mode_;
-  int bias_conval_{0};
+  FillerParameterPtr weight_filler_parameter_;
+  FillerParameterPtr bias_filler_parameter_;
 
   explicit LinearParameter(const std::string& name)
       : LayerParameter(name, ParamType::kLinear) {}
@@ -63,10 +60,8 @@ class ConvolutionParameter : public LayerParameter {
   int input_channels_;
   int output_channels_;
   int kernel_size_;
-  InitMode kernel_init_mode_;
-  int kernel_conval_{0};
-  InitMode bias_init_mode_;
-  int bias_conval_{0};
+  FillerParameterPtr kernel_filler_parameter_;
+  FillerParameterPtr bias_filler_parameter_;
 
   explicit ConvolutionParameter(const std::string& name)
       : LayerParameter(name, ParamType::kConvolution) {}

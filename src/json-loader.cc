@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "error.h"
+#include "filler-parameter.hpp"
 #include "layer-parameter.hpp"
 
 namespace my_tensor {
@@ -96,23 +97,35 @@ LayerParameterPtr JsonLoader::LoadParam(const nlohmann::json& js) {
         if (!mode_map_.contains(init)) {
           throw FileError("Invalid linear param init mode.");
         }
-        param->weight_init_mode_ = mode_map_[init];
-        if (linear_param.contains("conval")) {
-          if (!linear_param["conval"].is_number_integer()) {
-            throw FileError("Invalid linear param conval");
+        if (init == "constant") {
+          if (linear_param.contains("conval")) {
+            if (!linear_param["conval"].is_number_integer()) {
+              throw FileError("Invalid linear param conval");
+            }
+            int conval = linear_param["conval"].get<int>();
+            param->weight_filler_parameter_ =
+                std::make_shared<ConstantFillerParameter>(conval);
           }
-          param->weight_conval_ = linear_param["conval"].get<int>();
+        } else if (init == "xavier") {
+          param->weight_filler_parameter_ =
+              std::make_shared<XavierFillerParameter>();
         }
       } else if (name == "linear_bias") {
         if (!mode_map_.contains(init)) {
           throw FileError("Invalid linear param init mode.");
         }
-        param->bias_init_mode_ = mode_map_[init];
-        if (linear_param.contains("conval")) {
-          if (!linear_param["conval"].is_number_integer()) {
-            throw FileError("Invalid linear param conval");
+        if (init == "constant") {
+          if (linear_param.contains("conval")) {
+            if (!linear_param["conval"].is_number_integer()) {
+              throw FileError("Invalid linear param conval");
+            }
+            int conval = linear_param["conval"].get<int>();
+            param->bias_filler_parameter_ =
+                std::make_shared<ConstantFillerParameter>(conval);
           }
-          param->bias_conval_ = linear_param["conval"].get<int>();
+        } else if (init == "xavier") {
+          param->bias_filler_parameter_ =
+              std::make_shared<XavierFillerParameter>();
         }
       }
     }
@@ -162,25 +175,37 @@ LayerParameterPtr JsonLoader::LoadParam(const nlohmann::json& js) {
            &&init = conv_param["init"].get<std::string>();
       if (name == "conv_kernel") {
         if (!mode_map_.contains(init)) {
-          throw FileError("Invalid conv param init mode.");
+          throw FileError("Invalid linear param init mode.");
         }
-        param->kernel_init_mode_ = mode_map_[init];
-        if (conv_param.contains("conval")) {
-          if (!conv_param["conval"].is_number_integer()) {
-            throw FileError("Invalid conv param conval");
+        if (init == "constant") {
+          if (conv_param.contains("conval")) {
+            if (!conv_param["conval"].is_number_integer()) {
+              throw FileError("Invalid linear param conval");
+            }
+            int conval = conv_param["conval"].get<int>();
+            param->kernel_filler_parameter_ =
+                std::make_shared<ConstantFillerParameter>(conval);
           }
-          param->kernel_conval_ = conv_param["conval"].get<int>();
+        } else if (init == "xavier") {
+          param->kernel_filler_parameter_ =
+              std::make_shared<XavierFillerParameter>();
         }
       } else if (name == "conv_bias") {
         if (!mode_map_.contains(init)) {
-          throw FileError("Invalid conv param init mode.");
+          throw FileError("Invalid linear param init mode.");
         }
-        param->bias_init_mode_ = mode_map_[init];
-        if (conv_param.contains("conval")) {
-          if (!conv_param["conval"].is_number_integer()) {
-            throw FileError("Invalid conv param conval");
+        if (init == "constant") {
+          if (conv_param.contains("conval")) {
+            if (!conv_param["conval"].is_number_integer()) {
+              throw FileError("Invalid linear param conval");
+            }
+            int conval = conv_param["conval"].get<int>();
+            param->bias_filler_parameter_ =
+                std::make_shared<ConstantFillerParameter>(conval);
           }
-          param->bias_conval_ = conv_param["conval"].get<int>();
+        } else if (init == "xavier") {
+          param->bias_filler_parameter_ =
+              std::make_shared<XavierFillerParameter>();
         }
       }
     }

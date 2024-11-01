@@ -74,9 +74,14 @@ TEST(JsonTest, LinearSuccess) {
   ASSERT_NE(lptr, nullptr);
   ASSERT_EQ(lptr->input_feature_, 490);
   ASSERT_EQ(lptr->output_feature_, 120);
-  ASSERT_EQ(lptr->weight_init_mode_, my_tensor::InitMode::kXavier);
-  ASSERT_EQ(lptr->bias_init_mode_, my_tensor::InitMode::kConstant);
-  ASSERT_EQ(lptr->bias_conval_, 1);
+  ASSERT_EQ(lptr->weight_filler_parameter_->init_mode_,
+            my_tensor::InitMode::kXavier);
+  ASSERT_EQ(lptr->bias_filler_parameter_->init_mode_,
+            my_tensor::InitMode::kConstant);
+  ASSERT_EQ(std::dynamic_pointer_cast<my_tensor::ConstantFillerParameter>(
+                lptr->bias_filler_parameter_)
+                ->val_,
+            1);
 }
 
 TEST(JsonTest, ConvolutionSuccess) {
@@ -90,9 +95,14 @@ TEST(JsonTest, ConvolutionSuccess) {
   ASSERT_EQ(cptr->input_channels_, 1);
   ASSERT_EQ(cptr->output_channels_, 3);
   ASSERT_EQ(cptr->kernel_size_, 3);
-  ASSERT_EQ(cptr->kernel_init_mode_, my_tensor::InitMode::kConstant);
-  ASSERT_EQ(cptr->kernel_conval_, 2);
-  ASSERT_EQ(cptr->bias_init_mode_, my_tensor::InitMode::kXavier);
+  ASSERT_EQ(cptr->kernel_filler_parameter_->init_mode_,
+            my_tensor::InitMode::kConstant);
+  ASSERT_EQ(std::dynamic_pointer_cast<my_tensor::ConstantFillerParameter>(
+                cptr->kernel_filler_parameter_)
+                ->val_,
+            2);
+  ASSERT_EQ(cptr->bias_filler_parameter_->init_mode_,
+            my_tensor::InitMode::kXavier);
 }
 
 int main(int argc, char** argv) {
