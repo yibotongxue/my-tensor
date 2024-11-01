@@ -5,6 +5,7 @@
 
 #include <memory>
 
+#include "layer-parameter.hpp"
 #include "layer.cuh"
 #include "tensor.cuh"
 
@@ -13,7 +14,7 @@ namespace my_tensor {
 template <typename T = float>
 class Sigmoid final : public Layer<T> {
  public:
-  Sigmoid() : Layer<T>({}) {}
+  explicit Sigmoid(LayerParameterPtr param) : Layer<T>(param) {}
 
   DISABLE_LAYER_COPY(Sigmoid)
 

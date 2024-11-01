@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "conv.cuh"
+#include "json-loader.h"
+#include "layer-parameter.hpp"
 
 // TEST(TrivialTest, always_succeed) {
 //   EXPECT_TRUE(true);
@@ -18,39 +20,42 @@
 //   EXPECT_TRUE(false);
 // }
 
-#define CONVOLUTION_TEST_CLASS(device)                                 \
-  class Convolution##device##Test : public ::testing::Test {           \
-   protected:                                                          \
-    void SetUp() override {                                            \
-      input_data.resize(102400);                                       \
-      output_diff.resize(184320);                                      \
-      kernels_data.resize(405);                                        \
-      std::random_device rd;                                           \
-      std::mt19937 gen(rd());                                          \
-      std::uniform_real_distribution<float> dis(-10.0f, 10.0f);        \
-      auto random_func = [&gen, &dis]() -> float { return dis(gen); }; \
-      std::ranges::generate(input_data, random_func);                  \
-      std::ranges::generate(output_diff, random_func);                 \
-      std::ranges::generate(kernels_data, random_func);                \
-      input = std::make_shared<my_tensor::Tensor<>>(input_shape);      \
-      input->Set##device##Data(input_data);                            \
-      output = std::make_shared<my_tensor::Tensor<>>(output_shape);    \
-      output->Set##device##Diff(output_diff);                          \
-      kernels = std::make_shared<my_tensor::Tensor<>>(kernels_shape);  \
-      kernels->Set##device##Data(kernels_data);                        \
-      std::vector<my_tensor::TensorPtr<>> params = {kernels};          \
-      conv = std::make_shared<my_tensor::Convolution<>>(params);       \
-    }                                                                  \
-    const std::vector<int> input_shape{10, 5, 32, 64};                 \
-    const std::vector<int> output_shape{10, 9, 32, 64};                \
-    const std::vector<int> kernels_shape{9, 5, 3, 3};                  \
-    std::vector<float> input_data;                                     \
-    std::vector<float> output_diff;                                    \
-    std::vector<float> kernels_data;                                   \
-    my_tensor::TensorPtr<> input;                                      \
-    my_tensor::TensorPtr<> output;                                     \
-    my_tensor::TensorPtr<> kernels;                                    \
-    my_tensor::LayerPtr<> conv;                                        \
+#define CONVOLUTION_TEST_CLASS(device)                                        \
+  class Convolution##device##Test : public ::testing::Test {                  \
+   protected:                                                                 \
+    void SetUp() override {                                                   \
+      my_tensor::JsonLoader loader("../test/json-test/conv.json");            \
+      auto&& layer_parameters = loader.Load();                                \
+      input_data.resize(102400);                                              \
+      output_diff.resize(184320);                                             \
+      kernels_data.resize(405);                                               \
+      std::random_device rd;                                                  \
+      std::mt19937 gen(rd());                                                 \
+      std::uniform_real_distribution<float> dis(-10.0f, 10.0f);               \
+      auto random_func = [&gen, &dis]() -> float { return dis(gen); };        \
+      std::ranges::generate(input_data, random_func);                         \
+      std::ranges::generate(output_diff, random_func);                        \
+      std::ranges::generate(kernels_data, random_func);                       \
+      input = std::make_shared<my_tensor::Tensor<>>(input_shape);             \
+      input->Set##device##Data(input_data);                                   \
+      output = std::make_shared<my_tensor::Tensor<>>(output_shape);           \
+      output->Set##device##Diff(output_diff);                                 \
+      conv = std::make_shared<my_tensor::Convolution<>>(layer_parameters[0]); \
+      conv->SetUp(input);                                                     \
+      auto temp = std::dynamic_pointer_cast<my_tensor::Convolution<>>(conv);  \
+      kernels = temp->GetKernel();                                            \
+      kernels->Set##device##Data(kernels_data);                               \
+    }                                                                         \
+    const std::vector<int> input_shape{10, 5, 32, 64};                        \
+    const std::vector<int> output_shape{10, 9, 32, 64};                       \
+    const std::vector<int> kernels_shape{9, 5, 3, 3};                         \
+    std::vector<float> input_data;                                            \
+    std::vector<float> output_diff;                                           \
+    std::vector<float> kernels_data;                                          \
+    my_tensor::TensorPtr<> input;                                             \
+    my_tensor::TensorPtr<> output;                                            \
+    my_tensor::TensorPtr<> kernels;                                           \
+    my_tensor::LayerPtr<> conv;                                               \
   };
 
 CONVOLUTION_TEST_CLASS(CPU)

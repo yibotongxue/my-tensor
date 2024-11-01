@@ -2,6 +2,7 @@
 
 #include <thrust/fill.h>
 
+#include <memory>
 #include <vector>
 
 #include "blas.cuh"
@@ -10,37 +11,35 @@
 
 namespace my_tensor {
 
-#define DEFINE_MKN               \
-  int m = bottom->GetShape()[0]; \
-  int k = bottom->GetShape()[1]; \
-  int n = this->params_[0]->GetShape()[1];
-
 template <typename T>
-Linear<T>::Linear(const std::vector<TensorPtr<T>>& params) : Layer<T>(params) {
-  if (this->params_.size() != 2) {
-    throw LinearError("Params size not equals to 2 in linear layer.");
+void Linear<T>::SetUp(const TensorPtr<T> bottom) {
+  if (this->layer_param_->type_ != ParamType::kLinear) {
+    throw LayerError("Layer type not match.");
   }
-  const std::vector<int>& weight_shape = this->params_[0]->GetShape();
-  const std::vector<int>& bias_shape = this->params_[1]->GetShape();
-  if (weight_shape.size() != 2) {
-    throw LinearError("Weight shape not be two dimension.");
+  if (bottom->GetShape().size() != 2) {
+    throw LinearError("Input of linear layer should be two dimesion tensor.");
   }
-  if (bias_shape.size() != 1) {
-    throw LinearError("Bias shape not be one dimension.");
-  }
-  if (bias_shape[0] != weight_shape[1]) {
-    throw LinearError("Weight shape not matches bias.");
-  }
+  std::shared_ptr<LinearParameter> param =
+      std::dynamic_pointer_cast<LinearParameter>(this->layer_param_);
+  assert(param.get() != nullptr);
+  weight_.reset();
+  bias_.reset();
+  k = param->input_feature_;
+  n = param->output_feature_;
+  m = bottom->GetShape()[0];
+  const std::vector<int> weight_shape = {k, n};
+  const std::vector<int> bias_shape = {n, 1};
+  weight_ = std::make_shared<Tensor<T>>(weight_shape);
+  bias_ = std::make_shared<Tensor<T>>(bias_shape);
 }
 
 template <typename T>
 void Linear<T>::ForwardCPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
   CheckShape(bottom, top);
-  const auto& weight_data = this->params_[0]->GetCPUData();
-  const auto& bias_data = this->params_[1]->GetCPUData();
+  const auto& weight_data = weight_->GetCPUData();
+  const auto& bias_data = bias_->GetCPUData();
   const auto& bottom_data = bottom->GetCPUData();
   auto& top_data = top->GetCPUData();
-  DEFINE_MKN
   // bottom m * k
   // weight k * n
   // top    m * n
@@ -59,13 +58,12 @@ void Linear<T>::ForwardCPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
 template <typename T>
 void Linear<T>::BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
   CheckShape(bottom, top);
-  DEFINE_MKN
-  const auto& weight = this->params_[0]->GetCPUData();
-  const auto& bias = this->params_[1]->GetCPUData();
+  const auto& weight_data = weight_->GetCPUData();
+  const auto& bias_data = bias_->GetCPUData();
   const auto& top_diff = top->GetCPUDiff();
   const auto& bottom_data = bottom->GetCPUData();
-  auto& weight_diff = this->params_[0]->GetCPUDiff();
-  auto& bias_diff = this->params_[1]->GetCPUDiff();
+  auto& weight_diff = weight_->GetCPUDiff();
+  auto& bias_diff = bias_->GetCPUDiff();
   auto& bottom_diff = bottom->GetCPUDiff();
   // bottom m * k
   // weight k * n
@@ -76,7 +74,7 @@ void Linear<T>::BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
     for (int j = 0; j < k; j++) {
       T temp{0};
       for (int l = 0; l < n; l++) {
-        temp += top_diff[i * n + l] * weight[j * n + l];
+        temp += top_diff[i * n + l] * weight_data[j * n + l];
       }
       bottom_diff[i * k + j] = temp;
     }
@@ -108,20 +106,18 @@ void Linear<T>::BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
 template <typename T>
 void Linear<T>::ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
   CheckShape(bottom, top);
-  DEFINE_MKN
   // bottom m * k
   // weight k * n
   // top    m * n
   // bias   n * 1
-  matmul(bottom->GetGPUDataPtr(), this->params_[0]->GetGPUDataPtr(),
+  matmul(bottom->GetGPUDataPtr(), weight_->GetGPUDataPtr(),
          top->GetGPUDataPtr(), m, k, n);
-  add_col_vector(top->GetGPUDataPtr(), this->params_[1]->GetGPUDataPtr(), m, n);
+  add_col_vector(top->GetGPUDataPtr(), bias_->GetGPUDataPtr(), m, n);
 }
 
 template <typename T>
 void Linear<T>::BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
   CheckShape(bottom, top);
-  DEFINE_MKN
   // bottom m * k
   // weight k * n
   // top    m * n
@@ -131,29 +127,29 @@ void Linear<T>::BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
   transpose_matmul(bottom->GetGPUDataPtr(), top->GetGPUDiffPtr(),
                    this->GetWeight()->GetGPUDiffPtr(), k, m, n);
   col_sum(top->GetGPUDiffPtr(), this->GetBias()->GetGPUDiffPtr(), m, n);
-  // *bottom = transpose_matmul(*this->params_[0], *top, true);
-  // *this->params_[0] = matmul_transpose(*top, *bottom, true);
-  // *this->params_[1] = row_sum(*top, true);
+  // *bottom = transpose_matmul(*weight_, *top, true);
+  // *weight_ = matmul_transpose(*top, *bottom, true);
+  // *bias_ = row_sum(*top, true);
 }
 
 template <typename T>
 void Linear<T>::CheckShape(const TensorPtr<T> bottom,
                            const TensorPtr<T> top) const {
-  const std::vector<int>& weight_shape = this->params_[0]->GetShape();
   const std::vector<int>& bottom_shape = bottom->GetShape();
   const std::vector<int>& top_shape = top->GetShape();
-  if (weight_shape[0] != bottom_shape[1]) {
+  if (bottom_shape[0] != m) {
+    throw LinearError("Input not match input features.");
+  }
+  if (bottom_shape[1] != k) {
     throw LinearError("Matmul weight and bottom shapes not match.");
   }
-  if (weight_shape[1] != top_shape[1]) {
+  if (top_shape[1] != n) {
     throw LinearError("Matmul weight and top shapes not match.");
   }
   if (bottom_shape[0] != top_shape[0]) {
     throw LinearError("Matmul bottom and top shapes not match.");
   }
 }
-
-#undef DEFINE_MKN
 
 template class Linear<>;
 

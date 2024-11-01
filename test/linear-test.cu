@@ -3,11 +3,14 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
+#include <iostream>
 #include <memory>
 #include <random>
 #include <ranges>
 #include <vector>
 
+#include "json-loader.h"
+#include "layer-parameter.hpp"
 #include "layer/layer-utils.cuh"
 #include "linear.cuh"
 
@@ -19,56 +22,59 @@
 //   EXPECT_TRUE(false);
 // }
 
-#define LINEAR_TEST(device)                                              \
-  class Linear##device##Test : public ::testing::Test {                  \
-   protected:                                                            \
-    void SetUp() override {                                              \
-      weight_data.resize(80000);                                         \
-      x_data.resize(60000);                                              \
-      bias_data.resize(400);                                             \
-      y_diff.resize(120000);                                             \
-      std::random_device rd;                                             \
-      std::mt19937 gen(rd());                                            \
-      std::uniform_real_distribution<float> dis(-10.0f, 10.0f);          \
-      auto random_func = [&gen, &dis]() -> float { return dis(gen); };   \
-      std::ranges::generate(weight_data, random_func);                   \
-      std::ranges::generate(x_data, random_func);                        \
-      std::ranges::generate(bias_data, random_func);                     \
-      std::ranges::generate(y_diff, random_func);                        \
-      X.reset();                                                         \
-      weight.reset();                                                    \
-      bias.reset();                                                      \
-      Y.reset();                                                         \
-      weight = std::make_shared<my_tensor::Tensor<>>(weight_shape);      \
-      X = std::make_shared<my_tensor::Tensor<>>(x_shape);                \
-      bias = std::make_shared<my_tensor::Tensor<>>(bias_shape);          \
-      Y = std::make_shared<my_tensor::Tensor<>>(y_shape);                \
-      weight->Set##device##Data(weight_data);                            \
-      X->Set##device##Data(x_data);                                      \
-      bias->Set##device##Data(bias_data);                                \
-      const std::vector<my_tensor::TensorPtr<>> params = {weight, bias}; \
-      linear.reset();                                                    \
-      linear = std::make_shared<my_tensor::Linear<>>(params);            \
-      linear->Forward##device(X, Y);                                     \
-      Y->Set##device##Diff(y_diff);                                      \
-      linear->Backward##device(Y, X);                                    \
-    }                                                                    \
-    const std::vector<int> weight_shape{200, 400};                       \
-    const std::vector<int> x_shape{300, 200};                            \
-    const std::vector<int> bias_shape{400};                              \
-    const std::vector<int> y_shape{300, 400};                            \
-    std::vector<float> weight_data;                                      \
-    std::vector<float> x_data;                                           \
-    std::vector<float> bias_data;                                        \
-    std::vector<float> y_diff;                                           \
-    my_tensor::TensorPtr<> X;                                            \
-    my_tensor::TensorPtr<> weight;                                       \
-    my_tensor::TensorPtr<> bias;                                         \
-    my_tensor::TensorPtr<> Y;                                            \
-    my_tensor::LayerPtr<> linear;                                        \
-    int m = 300;                                                         \
-    int k = 200;                                                         \
-    int n = 400;                                                         \
+#define LINEAR_TEST(device)                                                \
+  class Linear##device##Test : public ::testing::Test {                    \
+   protected:                                                              \
+    void SetUp() override {                                                \
+      my_tensor::JsonLoader loader("../test/json-test/linear.json");       \
+      auto&& layer_parameters = loader.Load();                             \
+      weight_data.resize(80000);                                           \
+      x_data.resize(60000);                                                \
+      bias_data.resize(400);                                               \
+      y_diff.resize(120000);                                               \
+      std::random_device rd;                                               \
+      std::mt19937 gen(rd());                                              \
+      std::uniform_real_distribution<float> dis(-10.0f, 10.0f);            \
+      auto random_func = [&gen, &dis]() -> float { return dis(gen); };     \
+      std::ranges::generate(weight_data, random_func);                     \
+      std::ranges::generate(x_data, random_func);                          \
+      std::ranges::generate(bias_data, random_func);                       \
+      std::ranges::generate(y_diff, random_func);                          \
+      X.reset();                                                           \
+      weight.reset();                                                      \
+      bias.reset();                                                        \
+      Y.reset();                                                           \
+      X = std::make_shared<my_tensor::Tensor<>>(x_shape);                  \
+      Y = std::make_shared<my_tensor::Tensor<>>(y_shape);                  \
+      X->Set##device##Data(x_data);                                        \
+      linear.reset();                                                      \
+      linear = std::make_shared<my_tensor::Linear<>>(layer_parameters[0]); \
+      auto temp = std::dynamic_pointer_cast<my_tensor::Linear<>>(linear);  \
+      linear->SetUp(X);                                                    \
+      weight = temp->GetWeight();                                          \
+      bias = temp->GetBias();                                              \
+      weight->Set##device##Data(weight_data);                              \
+      bias->Set##device##Data(bias_data);                                  \
+      linear->Forward##device(X, Y);                                       \
+      Y->Set##device##Diff(y_diff);                                        \
+      linear->Backward##device(Y, X);                                      \
+    }                                                                      \
+    const std::vector<int> weight_shape{200, 400};                         \
+    const std::vector<int> x_shape{300, 200};                              \
+    const std::vector<int> bias_shape{400};                                \
+    const std::vector<int> y_shape{300, 400};                              \
+    std::vector<float> weight_data;                                        \
+    std::vector<float> x_data;                                             \
+    std::vector<float> bias_data;                                          \
+    std::vector<float> y_diff;                                             \
+    my_tensor::TensorPtr<> X;                                              \
+    my_tensor::TensorPtr<> weight;                                         \
+    my_tensor::TensorPtr<> bias;                                           \
+    my_tensor::TensorPtr<> Y;                                              \
+    my_tensor::LayerPtr<> linear;                                          \
+    int m = 300;                                                           \
+    int k = 200;                                                           \
+    int n = 400;                                                           \
   };
 
 LINEAR_TEST(CPU)
@@ -144,7 +150,7 @@ LINEAR_BACKWARD_WEIGHT_TEST(GPU)
 LINEAR_BACKWARD_BIAS_TEST(CPU)
 LINEAR_BACKWARD_BIAS_TEST(GPU)
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

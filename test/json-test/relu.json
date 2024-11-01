@@ -1,0 +1,8 @@
+{
+  "layers": [
+    {
+      "name": "relu", 
+      "type": "Relu"
+    }
+  ]
+}

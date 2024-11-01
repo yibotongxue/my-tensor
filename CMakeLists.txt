@@ -59,7 +59,7 @@ enable_testing()
 # Define source files
 set(JSON_SRC src/json-loader.cc)
 set(TENSOR_SRC src/synced-vector.cu src/tensor.cu)
-set(LAYER_SRC src/layer.cu)
+set(LAYER_SRC src/layer.cu src/json-loader.cc)
 set(RELU_SRC src/relu.cu)
 set(SIGMOID_SRC src/sigmoid.cu)
 set(LINEAR_SRC src/linear.cu)

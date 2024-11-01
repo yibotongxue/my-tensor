@@ -1,0 +1,22 @@
+{
+  "layers": [
+    {
+      "name": "conv1",
+      "type": "Convolution",
+      "input_channels": 5,
+      "output_channels": 9,
+      "kernel_size": 3,
+      "params": [
+        {
+          "name": "conv_kernel",
+          "init": "constant",
+          "conval": 2
+        },
+        {
+          "name": "conv_bias",
+          "init": "xavier"
+        }
+      ]
+    }
+  ]
+}

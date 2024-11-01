@@ -1,0 +1,8 @@
+{
+  "layers": [
+    {
+      "name": "sigmoid", 
+      "type": "Sigmoid"
+    }
+  ]
+}

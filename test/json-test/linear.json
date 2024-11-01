@@ -1,0 +1,21 @@
+{
+  "layers": [
+    {
+      "name": "linear1",
+      "type": "Linear",
+      "input_feature": 200,
+      "output_feature": 400,
+      "params": [
+        {
+          "name": "linear_weight",
+          "init": "xavier"
+        },
+        {
+          "name": "linear_bias",
+          "init": "constant",
+          "conval": 1
+        }
+      ]
+    }
+  ]
+}
