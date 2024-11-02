@@ -56,7 +56,7 @@ void Pooling<T>::ForwardCPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
       for (int j = 0; j < output_width_; j++) {
         int h_start = i * stride_h_;
         int w_start = j * stride_w_;
-        T val = static_cast<T>(__FLT_MIN__);
+        T val = static_cast<T>(-__FLT_MAX__);
         int mask_idx = -1;
         for (int x = 0; x < kernel_h_; x++) {
           for (int y = 0; y < kernel_w_; y++) {
@@ -88,7 +88,7 @@ __global__ void PoolingKernel(const int nthreads, const T* const bottom_data,
     int t = index / output_size;
     int h_start = (index % output_size) / output_w * stride_h;
     int w_start = (index % output_w) * stride_w;
-    T val = static_cast<T>(__FLT_MIN__);
+    T val = static_cast<T>(-__FLT_MAX__);
     int idx = -1;
     int row_idx = t * input_size + h_start * input_w + w_start;
     for (int i = 0; i < kernel_h; i++) {
@@ -122,6 +122,7 @@ void Pooling<T>::ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
 
 template <typename T>
 void Pooling<T>::BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
+  CheckShape(bottom, top);
   const auto& top_diff = top->GetCPUDiff();
   const auto& mask_data = mask_->GetCPUData();
   auto& bottom_diff = bottom->GetCPUDiff();
@@ -132,6 +133,7 @@ void Pooling<T>::BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
 
 template <typename T>
 void Pooling<T>::BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
+  CheckShape(bottom, top);
   const auto& top_diff = top->GetGPUDiff();
   const auto& mask_data = mask_->GetGPUData();
   auto& bottom_diff = bottom->GetGPUDiff();

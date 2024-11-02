@@ -3,7 +3,6 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
-#include <iostream>
 #include <memory>
 #include <random>
 #include <ranges>
@@ -69,7 +68,7 @@ POOLING_TEST_CLASS(GPU)
       int col = i % 32;                                                        \
       int input_row = row * 2;                                                 \
       int input_col = col * 2;                                                 \
-      float expect = __FLT_MIN__;                                              \
+      float expect = -__FLT_MAX__;                                             \
       for (int x = 0; x < 2; x++) {                                            \
         for (int y = 0; y < 2; y++) {                                          \
           expect = std::max(                                                   \
@@ -98,7 +97,7 @@ POOLING_FORWARD_TOP_TEST(GPU)
       int input_row = row * 2;                                              \
       int input_col = col * 2;                                              \
       int expect = -1;                                                      \
-      float temp = __FLT_MIN__;                                             \
+      float temp = -__FLT_MAX__;                                            \
       for (int x = 0; x < 2; x++) {                                         \
         for (int y = 0; y < 2; y++) {                                       \
           int temp_idx = t * 1984 + (input_row + x) * 64 + (input_col + y); \
@@ -127,7 +126,7 @@ POOLING_FORWARD_MASK_TEST(GPU)
           int h_start = i * 2;                                              \
           int w_start = j * 2;                                              \
           int idx = -1;                                                     \
-          float temp = __FLT_MIN__;                                         \
+          float temp = -__FLT_MAX__;                                        \
           for (int x = 0; x < 2; x++) {                                     \
             for (int y = 0; y < 2; y++) {                                   \
               int temp_idx = t * 1984 + (h_start + x) * 64 + (w_start + y); \
