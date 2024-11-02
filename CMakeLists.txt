@@ -65,6 +65,7 @@ set(SIGMOID_SRC src/sigmoid.cu)
 set(LINEAR_SRC src/linear.cu)
 set(IM2COL_SRC src/im2col.cu)
 set(CONV_SRC src/conv.cu)
+set(POOLING_SRC src/pooling.cu)
 
 # Add libraries
 add_library(tensor_lib ${TENSOR_SRC})
@@ -96,6 +97,10 @@ set_cuda_properties(im2col_lib)
 add_library(conv_lib ${CONV_SRC})
 set_cuda_properties(conv_lib)
 target_link_libraries(conv_lib PUBLIC layer_lib blas_lib im2col_lib)
+
+add_library(pooling_lib ${POOLING_SRC})
+set_cuda_properties(pooling_lib)
+target_link_libraries(pooling_lib PUBLIC layer_lib)
 
 # Add executables and tests
 add_executable(tensor_test test/tensor-test.cu)
@@ -132,6 +137,11 @@ add_executable(conv_test test/conv-test.cu)
 set_cuda_properties(conv_test)
 link_googletest(conv_test conv_lib)
 add_test(NAMD conv_test COMMAND conv_test)
+
+add_executable(pooling_test test/pooling-test.cu)
+set_cuda_properties(pooling_test)
+link_googletest(pooling_test pooling_lib)
+add_test(NAMD pooling_test COMMAND pooling_test)
 
 add_executable(json_test test/json-loader-test.cc src/json-loader.cc)
 link_googletest(json_test)

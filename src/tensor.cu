@@ -84,5 +84,5 @@ void Tensor<T>::CheckShape() const {
 }
 
 template class Tensor<>;
-template class Tensor<double>;
+template class Tensor<int>;
 }  // namespace my_tensor

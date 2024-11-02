@@ -19,6 +19,15 @@
       ]
     },
     {
+      "name": "pooling1",
+      "type" : "Pooling",
+      "kernel_w": 2,
+      "kernel_h": 2,
+      "stride_w": 2,
+      "stride_h": 2,
+      "input_channels": 3
+    },
+    {
       "name": "relu1",
       "type": "Relu"
     },
@@ -39,6 +48,15 @@
           "conval": 0
         }
       ]
+    },
+    {
+      "name": "pooling2",
+      "type" : "Pooling",
+      "kernel_w": 2,
+      "kernel_h": 2,
+      "stride_w": 2,
+      "stride_h": 2,
+      "input_channels": 10
     },
     {
       "name": "sigmoid2",
@@ -62,7 +80,7 @@
       ]
     },
     {
-      "name": "relu3",
+      "name": "relu2",
       "type": "Relu"
     },
     {

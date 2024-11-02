@@ -59,7 +59,7 @@ template <typename T>
 using SyncedVectorPtr = std::shared_ptr<SyncedVector<T>>;
 
 extern template class SyncedVector<>;
-extern template class SyncedVector<double>;
+extern template class SyncedVector<int>;
 }  // namespace my_tensor
 
 #endif  // INCLUDE_SYNCED_VECTOR_CUH_

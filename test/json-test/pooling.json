@@ -1,0 +1,13 @@
+{
+  "layers": [
+    {
+      "name": "pooling-test",
+      "type": "Pooling",
+      "kernel_w": 2,
+      "kernel_h": 2,
+      "stride_w": 2,
+      "stride_h": 2,
+      "input_channels": 3
+    }
+  ]
+}

@@ -213,6 +213,39 @@ LayerParameterPtr JsonLoader::LoadLayerParam(const nlohmann::json& js) {
       }
     }
     return param;
+  } else if (type == "Pooling") {
+    auto param = std::make_shared<PoolingParameter>(name);
+    if (!js.contains("input_channels") ||
+        !js["input_channels"].is_number_integer()) {
+      throw FileError(
+          "Pooling layer object should have an integer as input channels");
+    }
+    param->input_channels_ = js["input_channels"].get<int>();
+
+    if (!js.contains("kernel_w") || !js["kernel_w"].is_number_integer()) {
+      throw FileError(
+          "Pooling layer object should have an integer as kernel width.");
+    }
+    param->kernel_w_ = js["kernel_w"].get<int>();
+
+    if (!js.contains("kernel_h") || !js["kernel_h"].is_number_integer()) {
+      throw FileError(
+          "Pooling layer object should have an integer as kernel height.");
+    }
+    param->kernel_h_ = js["kernel_h"].get<int>();
+
+    if (!js.contains("stride_w") || !js["stride_w"].is_number_integer()) {
+      throw FileError(
+          "Pooling layer object should have an integer as stride width.");
+    }
+    param->stride_w_ = js["stride_w"].get<int>();
+
+    if (!js.contains("stride_h") || !js["stride_h"].is_number_integer()) {
+      throw FileError(
+          "Pooling layer object should have an integer as stride height.");
+    }
+    param->stride_h_ = js["stride_h"].get<int>();
+    return param;
   } else {
     throw FileError("Unimplemented layer type.");
   }

@@ -84,6 +84,7 @@ template <typename T = float>
 using TensorPtr = std::shared_ptr<my_tensor::Tensor<T>>;
 
 extern template class my_tensor::Tensor<>;
+extern template class my_tensor::Tensor<int>;
 }  // namespace my_tensor
 
 #endif  // INCLUDE_TENSOR_CUH_

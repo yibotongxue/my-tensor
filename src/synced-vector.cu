@@ -205,5 +205,5 @@ void SyncedVector<T>::ToGPU() {
 }
 
 template class SyncedVector<>;
-template class SyncedVector<double>;
+template class SyncedVector<int>;
 }  // namespace my_tensor

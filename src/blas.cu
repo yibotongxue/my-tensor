@@ -200,6 +200,7 @@ void row_sum(const float *mat, float *result, const int m, const int n,
   CUBLAS_ERROR_CHECK(cublasSgemv(handle->GetHandle(), CUBLAS_OP_T, n,
                                  m * batch_count, &alpha, mat, n, ones, 1,
                                  &beta, result, 1));
+  cudaFree(ones);
 }
 
 template <>

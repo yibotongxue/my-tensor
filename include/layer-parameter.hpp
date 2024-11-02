@@ -15,7 +15,8 @@ enum class ParamType {
   kRelu,
   kSigmoid,
   kLinear,
-  kConvolution
+  kConvolution,
+  kPooling
 };  // enum class ParamType
 
 class LayerParameter;
@@ -32,7 +33,7 @@ class LayerParameter {
   virtual ~LayerParameter() = default;
 };  // class LayerParameter
 
-class ReluParamter : public LayerParameter {
+class ReluParamter final : public LayerParameter {
  public:
   explicit ReluParamter(const std::string& name)
       : LayerParameter(name, ParamType::kRelu) {}
@@ -44,7 +45,7 @@ class SigmoidParameter : public LayerParameter {
       : LayerParameter(name, ParamType::kSigmoid) {}
 };  // class SigmoidParameter
 
-class LinearParameter : public LayerParameter {
+class LinearParameter final : public LayerParameter {
  public:
   int input_feature_;
   int output_feature_;
@@ -55,7 +56,7 @@ class LinearParameter : public LayerParameter {
       : LayerParameter(name, ParamType::kLinear) {}
 };  // class LinearParameter
 
-class ConvolutionParameter : public LayerParameter {
+class ConvolutionParameter final : public LayerParameter {
  public:
   int input_channels_;
   int output_channels_;
@@ -66,6 +67,18 @@ class ConvolutionParameter : public LayerParameter {
   explicit ConvolutionParameter(const std::string& name)
       : LayerParameter(name, ParamType::kConvolution) {}
 };  // class ConvolutionParameter
+
+class PoolingParameter final : public LayerParameter {
+ public:
+  int input_channels_;
+  int kernel_h_;
+  int kernel_w_;
+  int stride_h_;
+  int stride_w_;
+
+  explicit PoolingParameter(const std::string& name)
+      : LayerParameter(name, ParamType::kPooling) {}
+};  // class PoolingParameter
 
 }  // namespace my_tensor
 
