@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
+#include <iostream>
 #include <memory>
 #include <random>
 #include <ranges>
@@ -113,6 +114,40 @@ POOLING_FORWARD_TOP_TEST(GPU)
 
 POOLING_FORWARD_MASK_TEST(CPU)
 POOLING_FORWARD_MASK_TEST(GPU)
+
+#define POOLING_BACKWARD_BOTTOM_TEST(device)                                \
+  TEST_F(Pooling##device##Test, BackwardBottom) {                           \
+    pooling->Backward##device(top, bottom);                                 \
+    std::vector<float> actual(bottom->Get##device##Diff().begin(),          \
+                              bottom->Get##device##Diff().end());           \
+    std::vector<float> expect(59520, 0.0f);                                 \
+    for (int t = 0; t < 30; t++) {                                          \
+      for (int i = 0; i < 15; i++) {                                        \
+        for (int j = 0; j < 32; j++) {                                      \
+          int h_start = i * 2;                                              \
+          int w_start = j * 2;                                              \
+          int idx = -1;                                                     \
+          float temp = __FLT_MIN__;                                         \
+          for (int x = 0; x < 2; x++) {                                     \
+            for (int y = 0; y < 2; y++) {                                   \
+              int temp_idx = t * 1984 + (h_start + x) * 64 + (w_start + y); \
+              if (temp < bottom_data[temp_idx]) {                           \
+                temp = bottom_data[temp_idx];                               \
+                idx = temp_idx;                                             \
+              }                                                             \
+            }                                                               \
+          }                                                                 \
+          expect[idx] = top_diff[t * 480 + i * 32 + j];                     \
+        }                                                                   \
+      }                                                                     \
+    }                                                                       \
+    for (int i = 0; i < 59520; i++) {                                       \
+      ASSERT_EQ(actual[i], expect[i]);                                      \
+    }                                                                       \
+  }
+
+POOLING_BACKWARD_BOTTOM_TEST(CPU)
+POOLING_BACKWARD_BOTTOM_TEST(GPU)
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);

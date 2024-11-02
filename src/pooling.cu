@@ -1,5 +1,8 @@
 // Copyright 2024 yibotongxue
 
+#include <thrust/fill.h>
+#include <thrust/scatter.h>
+
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -115,6 +118,26 @@ void Pooling<T>::ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
       nthreads, bottom->GetGPUDataPtr(), n, input_width_, input_size,
       output_width_, output_size, kernel_h_, kernel_w_, stride_h_, stride_w_,
       top->GetGPUDataPtr(), mask_->GetGPUDataPtr());
+}
+
+template <typename T>
+void Pooling<T>::BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
+  const auto& top_diff = top->GetCPUDiff();
+  const auto& mask_data = mask_->GetCPUData();
+  auto& bottom_diff = bottom->GetCPUDiff();
+  thrust::fill(bottom_diff.begin(), bottom_diff.end(), 0);
+  thrust::scatter(top_diff.begin(), top_diff.end(), mask_data.begin(),
+                  bottom_diff.begin());
+}
+
+template <typename T>
+void Pooling<T>::BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
+  const auto& top_diff = top->GetGPUDiff();
+  const auto& mask_data = mask_->GetGPUData();
+  auto& bottom_diff = bottom->GetGPUDiff();
+  thrust::fill(bottom_diff.begin(), bottom_diff.end(), 0);
+  thrust::scatter(top_diff.begin(), top_diff.end(), mask_data.begin(),
+                  bottom_diff.begin());
 }
 
 template <typename T>
