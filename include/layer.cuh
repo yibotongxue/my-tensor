@@ -18,7 +18,16 @@ class Layer {
   // Default constructor.
   explicit Layer(LayerParameterPtr param) : layer_param_(param) {}
 
-  virtual void SetUp(const TensorPtr<T> bottom) {}
+  void SetUp(const std::vector<TensorPtr<T>>& bottom,
+             const std::vector<TensorPtr<T>>& top) {
+    CheckTensorCount(bottom, top);
+    LayerSetUp(bottom, top);
+  }
+
+  virtual void CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
+                                const std::vector<TensorPtr<T>>& top) = 0;
+  virtual void LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
+                          const std::vector<TensorPtr<T>>& top) {}
 
   // The layer can not be copied or moved.
   DISABLE_LAYER_COPY(Layer)
@@ -27,11 +36,15 @@ class Layer {
 
   // Pure virtual methods, forward and backward.
   // CPU
-  virtual void ForwardCPU(const TensorPtr<T> bottom, TensorPtr<T> top) = 0;
-  virtual void BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottome) = 0;
+  virtual void ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
+                          const std::vector<TensorPtr<T>>& top) = 0;
+  virtual void BackwardCPU(const std::vector<TensorPtr<T>>& top,
+                           const std::vector<TensorPtr<T>>& bottom) = 0;
   // GPU
-  virtual void ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) = 0;
-  virtual void BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottome) = 0;
+  virtual void ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
+                          const std::vector<TensorPtr<T>>& top) = 0;
+  virtual void BackwardGPU(const std::vector<TensorPtr<T>>& top,
+                           const std::vector<TensorPtr<T>>& bottom) = 0;
 
  protected:
   LayerParameterPtr layer_param_;

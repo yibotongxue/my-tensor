@@ -12,8 +12,8 @@
 
 #define BACKWARD_TEST(layer_class, layer_name, device)                         \
   TEST_F(layer_class##device##Test, BackwardDiff) {                            \
-    layer_name->Forward##device(bottom, top);                                  \
-    layer_name->Backward##device(top, bottom);                                 \
+    layer_name->Forward##device(bottom_vec, top_vec);                          \
+    layer_name->Backward##device(top_vec, bottom_vec);                         \
     std::vector<float> bottom_diff(bottom->Get##device##Diff().begin(),        \
                                    bottom->Get##device##Diff().end());         \
     my_tensor::TensorPtr<> new_bottom =                                        \
@@ -24,7 +24,7 @@
     new_bottom->Set##device##Data(new_bottom_data);                            \
     my_tensor::TensorPtr<> new_top =                                           \
         std::make_shared<my_tensor::Tensor<>>(shape);                          \
-    layer_name->Forward##device(new_bottom, new_top);                          \
+    layer_name->Forward##device({new_bottom}, {new_top});                      \
     std::vector<float> new_top_data(new_top->Get##device##Data().begin(),      \
                                     new_top->Get##device##Data().end());       \
     const std::vector<float> top_data(top->Get##device##Data().begin(),        \

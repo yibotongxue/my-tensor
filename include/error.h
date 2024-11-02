@@ -31,6 +31,11 @@ class LayerError : public std::runtime_error {
   using runtime_error::runtime_error;
 };  // class LayerError
 
+class ReluError : public std::runtime_error {
+ public:
+  using runtime_error::runtime_error;
+};  // class ReluError
+
 class LinearError : public std::runtime_error {
  public:
   using runtime_error::runtime_error;

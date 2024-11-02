@@ -4,7 +4,9 @@
 #define INCLUDE_RELU_CUH_
 
 #include <memory>
+#include <vector>
 
+#include "error.h"
 #include "layer-parameter.hpp"
 #include "layer.cuh"
 #include "tensor.cuh"
@@ -18,15 +20,29 @@ class Relu final : public Layer<T> {
 
   DISABLE_LAYER_COPY(Relu)
 
+  void CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
+                        const std::vector<TensorPtr<T>>& top) override {
+    if (bottom.size() != 1) {
+      throw ReluError("The bottom of relu layer should have one tensor.");
+    }
+    if (top.size() != 1) {
+      throw ReluError("The top of relu layer should have one tensor.");
+    }
+  }
+
   virtual ~Relu() = default;
 
   // Override forward and backward methods of Layer class.
   // CPU
-  void ForwardCPU(const TensorPtr<T> bottom, TensorPtr<T> top) override;
-  void BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) override;
+  void ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
+                  const std::vector<TensorPtr<T>>& top) override;
+  void BackwardCPU(const std::vector<TensorPtr<T>>& top,
+                   const std::vector<TensorPtr<T>>& bottom) override;
   // GPU
-  void ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) override;
-  void BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottom) override;
+  void ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
+                  const std::vector<TensorPtr<T>>& top) override;
+  void BackwardGPU(const std::vector<TensorPtr<T>>& top,
+                   const std::vector<TensorPtr<T>>& bottom) override;
 };
 
 extern template class my_tensor::Relu<>;
