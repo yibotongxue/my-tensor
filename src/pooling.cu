@@ -8,6 +8,7 @@
 #include "layer-parameter.hpp"
 #include "pooling.cuh"
 #include "tensor.cuh"
+#include "utils.cuh"
 
 namespace my_tensor {
 
@@ -70,6 +71,50 @@ void Pooling<T>::ForwardCPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
       }
     }
   }
+}
+
+namespace {
+template <typename T>
+__global__ void PoolingKernel(const int nthreads, const T* const bottom_data,
+                              const int n, const int input_w,
+                              const int input_size, const int output_w,
+                              const int output_size, const int kernel_h,
+                              const int kernel_w, const int stride_h,
+                              const int stride_w, T* top_data, int* mask_data) {
+  CUDA_KERNEL_LOOP(index, nthreads) {
+    int t = index / output_size;
+    int h_start = (index % output_size) / output_w * stride_h;
+    int w_start = (index % output_w) * stride_w;
+    T val = static_cast<T>(__FLT_MIN__);
+    int idx = -1;
+    int row_idx = t * input_size + h_start * input_w + w_start;
+    for (int i = 0; i < kernel_h; i++) {
+      int col_idx = row_idx;
+      for (int j = 0; j < kernel_w; j++) {
+        if (val < bottom_data[col_idx]) {
+          val = bottom_data[col_idx];
+          idx = col_idx;
+        }
+        col_idx += 1;
+      }
+      row_idx += input_w;
+    }
+    top_data[index] = val;
+    mask_data[index] = idx;
+  }
+}
+}  // namespace
+
+template <typename T>
+void Pooling<T>::ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
+  int input_size = input_height_ * input_width_;
+  int output_size = output_height_ * output_width_;
+  int n = batch_size_ * input_channels_;
+  int nthreads = n * output_size;
+  PoolingKernel<<<CudaGetBlocks(nthreads), kCudaThreadNum>>>(
+      nthreads, bottom->GetGPUDataPtr(), n, input_width_, input_size,
+      output_width_, output_size, kernel_h_, kernel_w_, stride_h_, stride_w_,
+      top->GetGPUDataPtr(), mask_->GetGPUDataPtr());
 }
 
 template <typename T>

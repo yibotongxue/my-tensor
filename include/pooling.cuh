@@ -26,7 +26,7 @@ class Pooling final : public Layer<T> {
 #endif  // DEBUG
 
   void ForwardCPU(const TensorPtr<T> bottom, TensorPtr<T> top) override;
-  void ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) override {}
+  void ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) override;
   void BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) override {}
   void BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottom) override {}
 
