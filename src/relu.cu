@@ -4,10 +4,22 @@
 
 #include <vector>
 
+#include "error.h"
 #include "relu.cuh"
 #include "utils.cuh"
 
 namespace my_tensor {
+
+template <typename T>
+void Relu<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
+                               const std::vector<TensorPtr<T>>& top) const {
+  if (bottom.size() != 1) {
+    throw ReluError("The bottom of relu layer should have one tensor.");
+  }
+  if (top.size() != 1) {
+    throw ReluError("The top of relu layer should have one tensor.");
+  }
+}
 
 namespace {
 template <typename T>

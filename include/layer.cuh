@@ -25,7 +25,7 @@ class Layer {
   }
 
   virtual void CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
-                                const std::vector<TensorPtr<T>>& top) = 0;
+                                const std::vector<TensorPtr<T>>& top) const = 0;
   virtual void LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
                           const std::vector<TensorPtr<T>>& top) {}
 

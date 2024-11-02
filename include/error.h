@@ -36,6 +36,11 @@ class ReluError : public std::runtime_error {
   using runtime_error::runtime_error;
 };  // class ReluError
 
+class SigmoidError : public std::runtime_error {
+ public:
+  using runtime_error::runtime_error;
+};  // class SigmoidError
+
 class LinearError : public std::runtime_error {
  public:
   using runtime_error::runtime_error;

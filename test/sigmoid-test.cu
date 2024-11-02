@@ -39,6 +39,11 @@
       top = std::make_shared<my_tensor::Tensor<>>(shape);                    \
       bottom->Set##device##Data(data);                                       \
       top->Set##device##Diff(diff);                                          \
+      bottom_vec.clear();                                                    \
+      top_vec.clear();                                                       \
+      bottom_vec.push_back(bottom);                                          \
+      top_vec.push_back(top);                                                \
+      sigmoid->SetUp(bottom_vec, top_vec);                                   \
     }                                                                        \
     const std::vector<int> shape{10000, 3};                                  \
     std::vector<float> data;                                                 \
@@ -46,6 +51,8 @@
     my_tensor::LayerPtr<> sigmoid;                                           \
     my_tensor::TensorPtr<> bottom;                                           \
     my_tensor::TensorPtr<> top;                                              \
+    std::vector<my_tensor::TensorPtr<>> bottom_vec;                          \
+    std::vector<my_tensor::TensorPtr<>> top_vec;                             \
   };
 
 SIGMOID_TEST_CLASS(CPU)
@@ -53,7 +60,7 @@ SIGMOID_TEST_CLASS(GPU)
 
 #define SIGMOID_FORWARD_TEST(device)                                    \
   TEST_F(Sigmoid##device##Test, Forward_Data) {                         \
-    sigmoid->Forward##device(bottom, top);                              \
+    sigmoid->Forward##device(bottom_vec, top_vec);                      \
     const std::vector<float> top_data(top->Get##device##Data().begin(), \
                                       top->Get##device##Data().end());  \
     std::ranges::transform(data, data.begin(), [](float x) {            \
