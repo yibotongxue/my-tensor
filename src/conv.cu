@@ -13,11 +13,24 @@
 namespace my_tensor {
 
 template <typename T>
-void Convolution<T>::SetUp(const TensorPtr<T> bottom) {
+void Convolution<T>::CheckTensorCount(
+    const std::vector<TensorPtr<T>>& bottom,
+    const std::vector<TensorPtr<T>>& top) const {
+  if (bottom.size() != 1) {
+    throw ConvError("The bottom of convolution layer should have one tensor.");
+  }
+  if (top.size() != 1) {
+    throw ConvError("The top of convolution layer should have one tensor.");
+  }
+}
+
+template <typename T>
+void Convolution<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
+                                const std::vector<TensorPtr<T>>& top) {
   if (this->layer_param_->type_ != ParamType::kConvolution) {
     throw LayerError("Layer not match type.");
   }
-  if (bottom->GetShape().size() != 4) {
+  if (bottom[0]->GetShape().size() != 4) {
     throw ConvError("The dimension of the inputshould be 4.");
   }
   std::shared_ptr<ConvolutionParameter> param =
@@ -38,12 +51,12 @@ void Convolution<T>::SetUp(const TensorPtr<T> bottom) {
   bias_ = std::make_shared<Tensor<T>>(bias_shape);
   FillerPtr<T> bias_filler = CreateFiller<T>(param->bias_filler_parameter_);
   bias_filler->Fill(bias_);
-  batch_size_ = bottom->GetShape()[0];
-  if (bottom->GetShape()[1] != input_channels_) {
+  batch_size_ = bottom[0]->GetShape()[0];
+  if (bottom[0]->GetShape()[1] != input_channels_) {
     throw ConvError("The input channels not match.");
   }
-  height_ = bottom->GetShape()[2];
-  width_ = bottom->GetShape()[3];
+  height_ = bottom[0]->GetShape()[2];
+  width_ = bottom[0]->GetShape()[3];
   const std::vector<int> col_shape{
       batch_size_, input_channels_ * kernel_height_ * kernel_width_,
       height_ * width_};
@@ -52,15 +65,16 @@ void Convolution<T>::SetUp(const TensorPtr<T> bottom) {
 }
 
 template <typename T>
-void Convolution<T>::ForwardCPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
-  CheckShape(bottom, top);
+void Convolution<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
+                                const std::vector<TensorPtr<T>>& top) {
+  CheckShape(bottom[0], top[0]);
   const auto& kernel_data = kernel_->GetCPUData();
   const auto& bias_data = bias_->GetCPUData();
-  const auto& bottom_data = bottom->GetCPUData();
-  auto& top_data = top->GetCPUData();
+  const auto& bottom_data = bottom[0]->GetCPUData();
+  auto& top_data = top[0]->GetCPUData();
   int kernel_size = kernel_height_ * kernel_width_;
   int im_size = height_ * width_;
-  Im2col_CPU(batch_size_, bottom->GetCPUDataPtr(), input_channels_, height_,
+  Im2col_CPU(batch_size_, bottom[0]->GetCPUDataPtr(), input_channels_, height_,
              width_, kernel_height_, kernel_width_,
              col_cache_->GetCPUDataPtr());
   const auto& col_data = col_cache_->GetCPUData();
@@ -80,12 +94,13 @@ void Convolution<T>::ForwardCPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
 }
 
 template <typename T>
-void Convolution<T>::BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
-  CheckShape(bottom, top);
+void Convolution<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
+                                 const std::vector<TensorPtr<T>>& bottom) {
+  CheckShape(bottom[0], top[0]);
   const auto& kernel_data = kernel_->GetCPUData();
-  const auto& top_diff = top->GetCPUDiff();
-  const auto& bottom_data = bottom->GetCPUData();
-  auto& bottom_diff = bottom->GetCPUDiff();
+  const auto& top_diff = top[0]->GetCPUDiff();
+  const auto& bottom_data = bottom[0]->GetCPUData();
+  auto& bottom_diff = bottom[0]->GetCPUDiff();
   auto& kernel_diff = kernel_->GetCPUDiff();
   int kernel_size = kernel_height_ * kernel_width_;
   int im_size = height_ * width_;
@@ -111,7 +126,7 @@ void Convolution<T>::BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
     }
   }
   Col2im_CPU(batch_size_, col_cache_->GetCPUDiffPtr(), input_channels_, height_,
-             width_, kernel_height_, kernel_width_, bottom->GetCPUDiffPtr());
+             width_, kernel_height_, kernel_width_, bottom[0]->GetCPUDiffPtr());
   // partial kernel
   for (int i = 0; i < output_channels_; i++) {
     for (int j = 0; j < input_channels_ * kernel_size; j++) {
@@ -139,37 +154,39 @@ void Convolution<T>::BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
 }
 
 template <typename T>
-void Convolution<T>::ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
-  CheckShape(bottom, top);
+void Convolution<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
+                                const std::vector<TensorPtr<T>>& top) {
+  CheckShape(bottom[0], top[0]);
   int kernel_size = kernel_height_ * kernel_width_;
   int im_size = height_ * width_;
-  Im2col_GPU(batch_size_, bottom->GetGPUDataPtr(), input_channels_, height_,
+  Im2col_GPU(batch_size_, bottom[0]->GetGPUDataPtr(), input_channels_, height_,
              width_, kernel_height_, kernel_width_,
              col_cache_->GetGPUDataPtr());
   matmul(kernel_->GetGPUDataPtr(), col_cache_->GetGPUDataPtr(),
-         top->GetGPUDataPtr(), output_channels_, input_channels_ * kernel_size,
-         im_size, batch_size_, 1);
-  add_row_vector(top->GetGPUDataPtr(), bias_->GetGPUDataPtr(), output_channels_,
-                 im_size, batch_size_);
+         top[0]->GetGPUDataPtr(), output_channels_,
+         input_channels_ * kernel_size, im_size, batch_size_, 1);
+  add_row_vector(top[0]->GetGPUDataPtr(), bias_->GetGPUDataPtr(),
+                 output_channels_, im_size, batch_size_);
 }
 
 template <typename T>
-void Convolution<T>::BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
-  CheckShape(bottom, top);
+void Convolution<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
+                                 const std::vector<TensorPtr<T>>& bottom) {
+  CheckShape(bottom[0], top[0]);
   int kernel_size = kernel_height_ * kernel_width_;
   int im_size = height_ * width_;
   // partial temp
-  transpose_matmul(kernel_->GetGPUDataPtr(), top->GetGPUDiffPtr(),
+  transpose_matmul(kernel_->GetGPUDataPtr(), top[0]->GetGPUDiffPtr(),
                    col_cache_->GetGPUDiffPtr(), input_channels_ * kernel_size,
                    output_channels_, im_size, batch_size_, 1);
   Col2im_GPU(batch_size_, col_cache_->GetGPUDiffPtr(), input_channels_, height_,
-             width_, kernel_height_, kernel_width_, bottom->GetGPUDiffPtr());
+             width_, kernel_height_, kernel_width_, bottom[0]->GetGPUDiffPtr());
   // partial kernel
   std::vector<int> batch_kernel_shape{batch_size_, output_channels_,
                                       input_channels_, kernel_height_,
                                       kernel_width_};
   auto batch_kernel = std::make_shared<Tensor<T>>(batch_kernel_shape);
-  matmul_transpose(top->GetGPUDiffPtr(), col_cache_->GetGPUDataPtr(),
+  matmul_transpose(top[0]->GetGPUDiffPtr(), col_cache_->GetGPUDataPtr(),
                    batch_kernel->GetGPUDiffPtr(), output_channels_, im_size,
                    input_channels_ * kernel_size, batch_size_);
   col_sum(batch_kernel->GetGPUDiffPtr(), kernel_->GetGPUDiffPtr(), batch_size_,
@@ -177,7 +194,7 @@ void Convolution<T>::BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
   // partial bias
   float* temp_diff = nullptr;
   cudaMalloc(&temp_diff, batch_size_ * output_channels_ * sizeof(float));
-  row_sum(top->GetGPUDiffPtr(), temp_diff, output_channels_, im_size,
+  row_sum(top[0]->GetGPUDiffPtr(), temp_diff, output_channels_, im_size,
           batch_size_);
   col_sum(temp_diff, bias_->GetGPUDiffPtr(), batch_size_, output_channels_);
   cudaFree(temp_diff);

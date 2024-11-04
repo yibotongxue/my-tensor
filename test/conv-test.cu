@@ -42,8 +42,12 @@
       input->Set##device##Data(input_data);                                   \
       output = std::make_shared<my_tensor::Tensor<>>(output_shape);           \
       output->Set##device##Diff(output_diff);                                 \
+      bottom.clear();                                                         \
+      top.clear();                                                            \
+      bottom.push_back(input);                                                \
+      top.push_back(output);                                                  \
       conv = std::make_shared<my_tensor::Convolution<>>(layer_parameters[0]); \
-      conv->SetUp(input);                                                     \
+      conv->SetUp(bottom, top);                                               \
       auto temp = std::dynamic_pointer_cast<my_tensor::Convolution<>>(conv);  \
       kernels = temp->GetKernel();                                            \
       kernels->Set##device##Data(kernels_data);                               \
@@ -60,6 +64,8 @@
     std::vector<float> bias_data;                                             \
     my_tensor::TensorPtr<> input;                                             \
     my_tensor::TensorPtr<> output;                                            \
+    std::vector<my_tensor::TensorPtr<>> bottom;                               \
+    std::vector<my_tensor::TensorPtr<>> top;                                  \
     my_tensor::TensorPtr<> kernels;                                           \
     my_tensor::TensorPtr<> bias;                                              \
     my_tensor::LayerPtr<> conv;                                               \
@@ -70,7 +76,7 @@ CONVOLUTION_TEST_CLASS(GPU)
 
 #define CONVOLUTION_FORWARD_TEST(device)                                   \
   TEST_F(Convolution##device##Test, ForwardTest) {                         \
-    conv->Forward##device(input, output);                                  \
+    conv->Forward##device(bottom, top);                                    \
     std::vector<float> actual(output->Get##device##Data().begin(),         \
                               output->Get##device##Data().end());          \
     for (int i = 0; i < 184320; i++) {                                     \
@@ -102,8 +108,8 @@ CONVOLUTION_FORWARD_TEST(GPU)
 
 #define CONVOLUTION_BACKWARD_BOTTOM(device)                                  \
   TEST_F(Convolution##device##Test, BackwardBottomTest) {                    \
-    conv->Forward##device(input, output);                                    \
-    conv->Backward##device(output, input);                                   \
+    conv->Forward##device(bottom, top);                                      \
+    conv->Backward##device(top, bottom);                                     \
     std::vector<float> actual(input->Get##device##Diff().begin(),            \
                               input->Get##device##Diff().end());             \
     for (int i = 0; i < 102400; i++) {                                       \
@@ -135,8 +141,8 @@ CONVOLUTION_BACKWARD_BOTTOM(GPU)
 
 #define CONVOLUTION_BACKWARD_KERNEL(device)                                   \
   TEST_F(Convolution##device##Test, BackwardKernelTest) {                     \
-    conv->Forward##device(input, output);                                     \
-    conv->Backward##device(output, input);                                    \
+    conv->Forward##device(bottom, top);                                       \
+    conv->Backward##device(top, bottom);                                      \
     std::vector<float> actual(kernels->Get##device##Diff().begin(),           \
                               kernels->Get##device##Diff().end());            \
     for (int i = 0; i < 405; i++) {                                           \
@@ -170,8 +176,8 @@ CONVOLUTION_BACKWARD_KERNEL(GPU)
 
 #define CONVOLUTION_BACKWARD_BIAS(device)                        \
   TEST_F(Convolution##device##Test, BackwardBiasTest) {          \
-    conv->Forward##device(input, output);                        \
-    conv->Backward##device(output, input);                       \
+    conv->Forward##device(bottom, top);                          \
+    conv->Backward##device(top, bottom);                         \
     std::vector<float> actual(bias->Get##device##Diff().begin(), \
                               bias->Get##device##Diff().end());  \
     for (int i = 0; i < 9; i++) {                                \
