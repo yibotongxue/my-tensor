@@ -246,6 +246,14 @@ LayerParameterPtr JsonLoader::LoadLayerParam(const nlohmann::json& js) {
     }
     param->stride_h_ = js["stride_h"].get<int>();
     return param;
+  } else if (type == "Softmax") {
+    auto param = std::make_shared<SoftmaxParameter>(name);
+    if (!js.contains("channels") || !js["channels"].is_number_integer()) {
+      throw FileError(
+          "The softmax layer should have an integer number as channels.");
+    }
+    param->channels_ = js["channels"].get<int>();
+    return param;
   } else {
     throw FileError("Unimplemented layer type.");
   }

@@ -120,6 +120,11 @@
           "conval": 0
         }
       ]
+    },
+    {
+      "name": "softmax",
+      "type": "Softmax",
+      "channels": 10
     }
   ]
 }

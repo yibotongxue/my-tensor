@@ -1,0 +1,9 @@
+{
+  "layers": [
+    {
+      "name": "softmax",
+      "type": "Softmax",
+      "channels": 10
+    }
+  ]
+}

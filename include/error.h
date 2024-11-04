@@ -61,6 +61,11 @@ class PoolingError : public std::runtime_error {
   using runtime_error::runtime_error;
 };  // class PoolingError
 
+class SoftmaxError : public std::runtime_error {
+ public:
+  using runtime_error::runtime_error;
+};  // class SoftmaxError
+
 class FillerError : public std::runtime_error {
  public:
   using runtime_error::runtime_error;

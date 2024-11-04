@@ -108,7 +108,6 @@ TEST(JsonTest, ConvolutionSuccess) {
 TEST(JsonTest, PoolingSuccess) {
   my_tensor::JsonLoader loader("../test/json-test/example.json");
   ASSERT_NO_THROW(loader.Load());
-  ASSERT_NO_THROW(loader.Load());
   auto params = loader.Load();
   auto param = params[1];
   ASSERT_EQ(param->name_, "pooling1");
@@ -120,6 +119,18 @@ TEST(JsonTest, PoolingSuccess) {
   ASSERT_EQ(pptr->kernel_w_, 2);
   ASSERT_EQ(pptr->stride_h_, 2);
   ASSERT_EQ(pptr->stride_w_, 2);
+}
+
+TEST(JsonTest, SoftmaxSuccess) {
+  my_tensor::JsonLoader loader("../test/json-test/example.json");
+  ASSERT_NO_THROW(loader.Load());
+  auto params = loader.Load();
+  auto param = params[11];
+  ASSERT_EQ(param->name_, "softmax");
+  ASSERT_EQ(param->type_, my_tensor::ParamType::kSoftmax);
+  auto* sptr = dynamic_cast<my_tensor::SoftmaxParameter*>(param.get());
+  ASSERT_NE(sptr, nullptr);
+  ASSERT_EQ(sptr->channels_, 10);
 }
 
 int main(int argc, char** argv) {

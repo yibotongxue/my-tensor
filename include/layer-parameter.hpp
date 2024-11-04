@@ -16,7 +16,8 @@ enum class ParamType {
   kSigmoid,
   kLinear,
   kConvolution,
-  kPooling
+  kPooling,
+  kSoftmax
 };  // enum class ParamType
 
 class LayerParameter;
@@ -79,6 +80,14 @@ class PoolingParameter final : public LayerParameter {
   explicit PoolingParameter(const std::string& name)
       : LayerParameter(name, ParamType::kPooling) {}
 };  // class PoolingParameter
+
+class SoftmaxParameter final : public LayerParameter {
+ public:
+  int channels_;
+
+  explicit SoftmaxParameter(const std::string& name)
+      : LayerParameter(name, ParamType::kSoftmax) {}
+};  // class SoftmaxParameter
 
 }  // namespace my_tensor
 

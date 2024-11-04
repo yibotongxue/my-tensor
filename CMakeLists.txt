@@ -66,6 +66,7 @@ set(LINEAR_SRC src/linear.cu)
 set(IM2COL_SRC src/im2col.cu)
 set(CONV_SRC src/conv.cu)
 set(POOLING_SRC src/pooling.cu)
+set(SOFTMAX_SRC src/softmax.cu)
 
 # Add libraries
 add_library(tensor_lib ${TENSOR_SRC})
@@ -101,6 +102,10 @@ target_link_libraries(conv_lib PUBLIC layer_lib blas_lib im2col_lib)
 add_library(pooling_lib ${POOLING_SRC})
 set_cuda_properties(pooling_lib)
 target_link_libraries(pooling_lib PUBLIC layer_lib)
+
+add_library(softmax_lib ${SOFTMAX_SRC})
+set_cuda_properties(softmax_lib)
+target_link_libraries(softmax_lib PUBLIC layer_lib)
 
 # Add executables and tests
 add_executable(tensor_test test/tensor-test.cu)
@@ -142,6 +147,11 @@ add_executable(pooling_test test/pooling-test.cu)
 set_cuda_properties(pooling_test)
 link_googletest(pooling_test pooling_lib)
 add_test(NAMD pooling_test COMMAND pooling_test)
+
+add_executable(softmax_test test/softmax-test.cu)
+set_cuda_properties(softmax_test)
+link_googletest(softmax_test softmax_lib)
+add_test(NAMD softmax_test COMMAND softmax_test)
 
 add_executable(json_test test/json-loader-test.cc src/json-loader.cc)
 link_googletest(json_test)
