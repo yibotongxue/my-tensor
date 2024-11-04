@@ -72,6 +72,40 @@ void Softmax<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
 }
 
 template <typename T>
+void Softmax<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
+                            const std::vector<TensorPtr<T>>& top) {
+  const auto& bottom_data = bottom[0]->GetGPUData();
+  auto& top_data = top[0]->GetGPUData();
+  thrust::device_vector<int> keys(batch_size_ * channels_);
+  int channels = channels_;
+  thrust::transform(
+      thrust::counting_iterator(0),
+      thrust::counting_iterator(batch_size_ * channels_), keys.begin(),
+      [channels] __device__(int i) -> int { return (i / channels) + 1; });
+  thrust::device_vector<T> output_keys(batch_size_);
+  thrust::device_vector<T> max_values(batch_size_);
+  thrust::reduce_by_key(keys.begin(), keys.end(), bottom_data.begin(),
+                        output_keys.begin(), max_values.begin(),
+                        thrust::equal_to<int>(), thrust::maximum<T>());
+  T* max_ptr = RAW_PTR(max_values);
+  thrust::transform(
+      thrust::counting_iterator(0),
+      thrust::counting_iterator(batch_size_ * channels_), bottom_data.begin(),
+      top_data.begin(), [max_ptr, channels] __device__(int i, T val) -> T {
+        return static_cast<T>(std::exp(val - max_ptr[i / channels]));
+      });
+  thrust::reduce_by_key(keys.begin(), keys.end(), top_data.begin(),
+                        output_keys.begin(), max_values.begin(),
+                        thrust::equal_to<int>(), thrust::plus<T>());
+  thrust::transform(thrust::counting_iterator(0),
+                    thrust::counting_iterator(batch_size_ * channels_),
+                    top_data.begin(), top_data.begin(),
+                    [max_ptr, channels] __device__(int i, T val) -> T {
+                      return static_cast<T>(val / max_ptr[i / channels]);
+                    });
+}
+
+template <typename T>
 void Softmax<T>::CheckShape(const TensorPtr<T> bottom,
                             const TensorPtr<T> top) const {
   if (bottom->GetShape().size() != 2) {

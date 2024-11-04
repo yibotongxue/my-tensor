@@ -36,7 +36,7 @@ class Softmax final : public Layer<T> {
   }
 
   void ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
-                  const std::vector<TensorPtr<T>>& top) override {}
+                  const std::vector<TensorPtr<T>>& top) override;
 
   // Don't reference this function. Use the backward in softmax with loss layer
   // instead.
