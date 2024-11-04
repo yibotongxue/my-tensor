@@ -16,7 +16,20 @@
 namespace my_tensor {
 
 template <typename T>
-void Pooling<T>::SetUp(const TensorPtr<T> bottom) {
+void Pooling<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
+                                  const std::vector<TensorPtr<T>>& top) const {
+  if (bottom.size() != 1) {
+    throw PoolingError(
+        "The bottom of convolution layer should have one tensor.");
+  }
+  if (top.size() != 1) {
+    throw PoolingError("The top of convolution layer should have one tensor.");
+  }
+}
+
+template <typename T>
+void Pooling<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
+                            const std::vector<TensorPtr<T>>& top) {
   std::shared_ptr<PoolingParameter> param =
       std::dynamic_pointer_cast<PoolingParameter>(this->layer_param_);
   assert(param.get() != nullptr);
@@ -25,16 +38,16 @@ void Pooling<T>::SetUp(const TensorPtr<T> bottom) {
   kernel_w_ = param->kernel_w_;
   stride_h_ = param->stride_h_;
   stride_w_ = param->stride_w_;
-  if (bottom->GetShape().size() != 4) {
+  if (bottom[0]->GetShape().size() != 4) {
     throw PoolingError(
         "The input of pooling layer should be 4 dimension tensor.");
   }
-  batch_size_ = bottom->GetShape()[0];
-  if (bottom->GetShape()[1] != input_channels_) {
+  batch_size_ = bottom[0]->GetShape()[0];
+  if (bottom[0]->GetShape()[1] != input_channels_) {
     throw PoolingError("The input channels not match.");
   }
-  input_height_ = bottom->GetShape()[2];
-  input_width_ = bottom->GetShape()[3];
+  input_height_ = bottom[0]->GetShape()[2];
+  input_width_ = bottom[0]->GetShape()[3];
   output_height_ = (input_height_ - kernel_h_) / stride_h_ + 1;
   output_width_ = (input_width_ - kernel_w_) / stride_w_ + 1;
   const std::vector<int> mask_shape = {batch_size_, input_channels_,
@@ -44,10 +57,11 @@ void Pooling<T>::SetUp(const TensorPtr<T> bottom) {
 }
 
 template <typename T>
-void Pooling<T>::ForwardCPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
-  CheckShape(bottom, top);
-  const auto& bottom_data = bottom->GetCPUData();
-  auto& top_data = top->GetCPUData();
+void Pooling<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
+                            const std::vector<TensorPtr<T>>& top) {
+  CheckShape(bottom[0], top[0]);
+  const auto& bottom_data = bottom[0]->GetCPUData();
+  auto& top_data = top[0]->GetCPUData();
   auto& mask_data = mask_->GetCPUData();
   int input_im_size = input_height_ * input_width_;
   int output_im_size = output_height_ * output_width_;
@@ -109,34 +123,38 @@ __global__ void PoolingKernel(const int nthreads, const T* const bottom_data,
 }  // namespace
 
 template <typename T>
-void Pooling<T>::ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
+void Pooling<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
+                            const std::vector<TensorPtr<T>>& top) {
+  CheckShape(bottom[0], top[0]);
   int input_size = input_height_ * input_width_;
   int output_size = output_height_ * output_width_;
   int n = batch_size_ * input_channels_;
   int nthreads = n * output_size;
   PoolingKernel<<<CudaGetBlocks(nthreads), kCudaThreadNum>>>(
-      nthreads, bottom->GetGPUDataPtr(), n, input_width_, input_size,
+      nthreads, bottom[0]->GetGPUDataPtr(), n, input_width_, input_size,
       output_width_, output_size, kernel_h_, kernel_w_, stride_h_, stride_w_,
-      top->GetGPUDataPtr(), mask_->GetGPUDataPtr());
+      top[0]->GetGPUDataPtr(), mask_->GetGPUDataPtr());
 }
 
 template <typename T>
-void Pooling<T>::BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
-  CheckShape(bottom, top);
-  const auto& top_diff = top->GetCPUDiff();
+void Pooling<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
+                             const std::vector<TensorPtr<T>>& bottom) {
+  CheckShape(bottom[0], top[0]);
+  const auto& top_diff = top[0]->GetCPUDiff();
   const auto& mask_data = mask_->GetCPUData();
-  auto& bottom_diff = bottom->GetCPUDiff();
+  auto& bottom_diff = bottom[0]->GetCPUDiff();
   thrust::fill(bottom_diff.begin(), bottom_diff.end(), 0);
   thrust::scatter(top_diff.begin(), top_diff.end(), mask_data.begin(),
                   bottom_diff.begin());
 }
 
 template <typename T>
-void Pooling<T>::BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
-  CheckShape(bottom, top);
-  const auto& top_diff = top->GetGPUDiff();
+void Pooling<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
+                             const std::vector<TensorPtr<T>>& bottom) {
+  CheckShape(bottom[0], top[0]);
+  const auto& top_diff = top[0]->GetGPUDiff();
   const auto& mask_data = mask_->GetGPUData();
-  auto& bottom_diff = bottom->GetGPUDiff();
+  auto& bottom_diff = bottom[0]->GetGPUDiff();
   thrust::fill(bottom_diff.begin(), bottom_diff.end(), 0);
   thrust::scatter(top_diff.begin(), top_diff.end(), mask_data.begin(),
                   bottom_diff.begin());

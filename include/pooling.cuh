@@ -3,6 +3,8 @@
 #ifndef INCLUDE_POOLING_CUH_
 #define INCLUDE_POOLING_CUH_
 
+#include <vector>
+
 #include "layer-parameter.hpp"
 #include "layer.cuh"
 #include "tensor.cuh"
@@ -15,20 +17,26 @@ class Pooling final : public Layer<T> {
  public:
   explicit Pooling(LayerParameterPtr param) : Layer<T>(param) {}
 
-  void SetUp(const TensorPtr<T> bottom) override;
+  void CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
+                        const std::vector<TensorPtr<T>>& top) const override;
+
+  void LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
+                  const std::vector<TensorPtr<T>>& top) override;
 
   DISABLE_LAYER_COPY(Pooling)
 
-// Only for test
-#ifdef DEBUG
+  // Only for test
   const TensorPtr<int> GetMask() const { return mask_; }
   TensorPtr<int> GetMask() { return mask_; }
-#endif  // DEBUG
 
-  void ForwardCPU(const TensorPtr<T> bottom, TensorPtr<T> top) override;
-  void ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) override;
-  void BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) override;
-  void BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottom) override;
+  void ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
+                  const std::vector<TensorPtr<T>>& top) override;
+  void BackwardCPU(const std::vector<TensorPtr<T>>& top,
+                   const std::vector<TensorPtr<T>>& bottom) override;
+  void ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
+                  const std::vector<TensorPtr<T>>& top) override;
+  void BackwardGPU(const std::vector<TensorPtr<T>>& top,
+                   const std::vector<TensorPtr<T>>& bottom) override;
 
  private:
   int batch_size_;

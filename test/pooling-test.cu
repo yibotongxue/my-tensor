@@ -41,10 +41,14 @@
       top = std::make_shared<my_tensor::Tensor<>>(top_shape);                \
       bottom->Set##device##Data(bottom_data);                                \
       top->Set##device##Diff(top_diff);                                      \
+      bottom_vec.clear();                                                    \
+      top_vec.clear();                                                       \
+      bottom_vec.push_back(bottom);                                          \
+      top_vec.push_back(top);                                                \
       pooling.reset();                                                       \
       pooling = std::make_shared<my_tensor::Pooling<>>(layer_parameters[0]); \
-      pooling->SetUp(bottom);                                                \
-      pooling->Forward##device(bottom, top);                                 \
+      pooling->SetUp(bottom_vec, top_vec);                                   \
+      pooling->Forward##device(bottom_vec, top_vec);                         \
     }                                                                        \
     std::vector<float> bottom_data;                                          \
     std::vector<float> top_diff;                                             \
@@ -52,6 +56,8 @@
     const std::vector<int> top_shape = {10, 3, 15, 32};                      \
     my_tensor::TensorPtr<> bottom;                                           \
     my_tensor::TensorPtr<> top;                                              \
+    std::vector<my_tensor::TensorPtr<>> bottom_vec;                          \
+    std::vector<my_tensor::TensorPtr<>> top_vec;                             \
     my_tensor::LayerPtr<> pooling;                                           \
   };
 
@@ -116,7 +122,7 @@ POOLING_FORWARD_MASK_TEST(GPU)
 
 #define POOLING_BACKWARD_BOTTOM_TEST(device)                                \
   TEST_F(Pooling##device##Test, BackwardBottom) {                           \
-    pooling->Backward##device(top, bottom);                                 \
+    pooling->Backward##device(top_vec, bottom_vec);                         \
     std::vector<float> actual(bottom->Get##device##Diff().begin(),          \
                               bottom->Get##device##Diff().end());           \
     std::vector<float> expect(59520, 0.0f);                                 \
@@ -126,7 +132,7 @@ POOLING_FORWARD_MASK_TEST(GPU)
           int h_start = i * 2;                                              \
           int w_start = j * 2;                                              \
           int idx = -1;                                                     \
-          float temp = -__FLT_MAX__;                                        \
+          float temp = -11;                                                 \
           for (int x = 0; x < 2; x++) {                                     \
             for (int y = 0; y < 2; y++) {                                   \
               int temp_idx = t * 1984 + (h_start + x) * 64 + (w_start + y); \
