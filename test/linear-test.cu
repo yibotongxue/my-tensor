@@ -50,14 +50,18 @@
       linear.reset();                                                      \
       linear = std::make_shared<my_tensor::Linear<>>(layer_parameters[0]); \
       auto temp = std::dynamic_pointer_cast<my_tensor::Linear<>>(linear);  \
-      linear->SetUp(X);                                                    \
+      bottom.clear();                                                      \
+      top.clear();                                                         \
+      bottom.push_back(X);                                                 \
+      top.push_back(Y);                                                    \
+      linear->SetUp(bottom, top);                                          \
       weight = temp->GetWeight();                                          \
       bias = temp->GetBias();                                              \
       weight->Set##device##Data(weight_data);                              \
       bias->Set##device##Data(bias_data);                                  \
-      linear->Forward##device(X, Y);                                       \
+      linear->Forward##device(bottom, top);                                \
       Y->Set##device##Diff(y_diff);                                        \
-      linear->Backward##device(Y, X);                                      \
+      linear->Backward##device(top, bottom);                               \
     }                                                                      \
     const std::vector<int> weight_shape{200, 400};                         \
     const std::vector<int> x_shape{300, 200};                              \
@@ -71,6 +75,8 @@
     my_tensor::TensorPtr<> weight;                                         \
     my_tensor::TensorPtr<> bias;                                           \
     my_tensor::TensorPtr<> Y;                                              \
+    std::vector<my_tensor::TensorPtr<>> bottom;                            \
+    std::vector<my_tensor::TensorPtr<>> top;                               \
     my_tensor::LayerPtr<> linear;                                          \
     int m = 300;                                                           \
     int k = 200;                                                           \

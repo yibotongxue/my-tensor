@@ -14,11 +14,23 @@
 namespace my_tensor {
 
 template <typename T>
-void Linear<T>::SetUp(const TensorPtr<T> bottom) {
+void Linear<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
+                                 const std::vector<TensorPtr<T>>& top) const {
+  if (bottom.size() != 1) {
+    throw LinearError("The bottom of linear layer should have one tensor.");
+  }
+  if (top.size() != 1) {
+    throw LinearError("The top of linear layer should have one tensor.");
+  }
+}
+
+template <typename T>
+void Linear<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
+                           const std::vector<TensorPtr<T>>& top) {
   if (this->layer_param_->type_ != ParamType::kLinear) {
     throw LayerError("Layer type not match.");
   }
-  if (bottom->GetShape().size() != 2) {
+  if (bottom[0]->GetShape().size() != 2) {
     throw LinearError("Input of linear layer should be two dimesion tensor.");
   }
   std::shared_ptr<LinearParameter> param =
@@ -28,7 +40,7 @@ void Linear<T>::SetUp(const TensorPtr<T> bottom) {
   bias_.reset();
   k = param->input_feature_;
   n = param->output_feature_;
-  m = bottom->GetShape()[0];
+  m = bottom[0]->GetShape()[0];
   const std::vector<int> weight_shape = {k, n};
   const std::vector<int> bias_shape = {n};
   weight_ = std::make_shared<Tensor<T>>(weight_shape);
@@ -40,12 +52,13 @@ void Linear<T>::SetUp(const TensorPtr<T> bottom) {
 }
 
 template <typename T>
-void Linear<T>::ForwardCPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
-  CheckShape(bottom, top);
+void Linear<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
+                           const std::vector<TensorPtr<T>>& top) {
+  CheckShape(bottom[0], top[0]);
   const auto& weight_data = weight_->GetCPUData();
   const auto& bias_data = bias_->GetCPUData();
-  const auto& bottom_data = bottom->GetCPUData();
-  auto& top_data = top->GetCPUData();
+  const auto& bottom_data = bottom[0]->GetCPUData();
+  auto& top_data = top[0]->GetCPUData();
   // bottom m * k
   // weight k * n
   // top    m * n
@@ -62,15 +75,16 @@ void Linear<T>::ForwardCPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
 }
 
 template <typename T>
-void Linear<T>::BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
-  CheckShape(bottom, top);
+void Linear<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
+                            const std::vector<TensorPtr<T>>& bottom) {
+  CheckShape(bottom[0], top[0]);
   const auto& weight_data = weight_->GetCPUData();
   const auto& bias_data = bias_->GetCPUData();
-  const auto& top_diff = top->GetCPUDiff();
-  const auto& bottom_data = bottom->GetCPUData();
+  const auto& top_diff = top[0]->GetCPUDiff();
+  const auto& bottom_data = bottom[0]->GetCPUData();
   auto& weight_diff = weight_->GetCPUDiff();
   auto& bias_diff = bias_->GetCPUDiff();
-  auto& bottom_diff = bottom->GetCPUDiff();
+  auto& bottom_diff = bottom[0]->GetCPUDiff();
   // bottom m * k
   // weight k * n
   // top    m * n
@@ -110,29 +124,31 @@ void Linear<T>::BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
 }
 
 template <typename T>
-void Linear<T>::ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) {
-  CheckShape(bottom, top);
+void Linear<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
+                           const std::vector<TensorPtr<T>>& top) {
+  CheckShape(bottom[0], top[0]);
   // bottom m * k
   // weight k * n
   // top    m * n
   // bias   n * 1
-  matmul(bottom->GetGPUDataPtr(), weight_->GetGPUDataPtr(),
-         top->GetGPUDataPtr(), m, k, n);
-  add_col_vector(top->GetGPUDataPtr(), bias_->GetGPUDataPtr(), m, n);
+  matmul(bottom[0]->GetGPUDataPtr(), weight_->GetGPUDataPtr(),
+         top[0]->GetGPUDataPtr(), m, k, n);
+  add_col_vector(top[0]->GetGPUDataPtr(), bias_->GetGPUDataPtr(), m, n);
 }
 
 template <typename T>
-void Linear<T>::BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottom) {
-  CheckShape(bottom, top);
+void Linear<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
+                            const std::vector<TensorPtr<T>>& bottom) {
+  CheckShape(bottom[0], top[0]);
   // bottom m * k
   // weight k * n
   // top    m * n
   // bias   n * 1
-  matmul_transpose(top->GetGPUDiffPtr(), this->GetWeight()->GetGPUDataPtr(),
-                   bottom->GetGPUDiffPtr(), m, n, k);
-  transpose_matmul(bottom->GetGPUDataPtr(), top->GetGPUDiffPtr(),
+  matmul_transpose(top[0]->GetGPUDiffPtr(), this->GetWeight()->GetGPUDataPtr(),
+                   bottom[0]->GetGPUDiffPtr(), m, n, k);
+  transpose_matmul(bottom[0]->GetGPUDataPtr(), top[0]->GetGPUDiffPtr(),
                    this->GetWeight()->GetGPUDiffPtr(), k, m, n);
-  col_sum(top->GetGPUDiffPtr(), this->GetBias()->GetGPUDiffPtr(), m, n);
+  col_sum(top[0]->GetGPUDiffPtr(), this->GetBias()->GetGPUDiffPtr(), m, n);
   // *bottom = transpose_matmul(*weight_, *top, true);
   // *weight_ = matmul_transpose(*top, *bottom, true);
   // *bias_ = row_sum(*top, true);

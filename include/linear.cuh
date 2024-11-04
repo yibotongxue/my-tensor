@@ -16,7 +16,11 @@ class Linear final : public Layer<T> {
  public:
   explicit Linear(LayerParameterPtr param) : Layer<T>(param) {}
 
-  void SetUp(const TensorPtr<T> bottom) override;
+  void CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
+                        const std::vector<TensorPtr<T>>& top) const override;
+
+  void LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
+                  const std::vector<TensorPtr<T>>& top) override;
 
   DISABLE_LAYER_COPY(Linear)
 
@@ -27,10 +31,14 @@ class Linear final : public Layer<T> {
   inline const TensorPtr<T> GetBias() const { return bias_; }
   inline TensorPtr<T> GetBias() { return bias_; }
 
-  void ForwardCPU(const TensorPtr<T> bottom, TensorPtr<T> top) override;
-  void BackwardCPU(const TensorPtr<T> top, TensorPtr<T> bottom) override;
-  void ForwardGPU(const TensorPtr<T> bottom, TensorPtr<T> top) override;
-  void BackwardGPU(const TensorPtr<T> top, TensorPtr<T> bottom) override;
+  void ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
+                  const std::vector<TensorPtr<T>>& top) override;
+  void BackwardCPU(const std::vector<TensorPtr<T>>& top,
+                   const std::vector<TensorPtr<T>>& bottom) override;
+  void ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
+                  const std::vector<TensorPtr<T>>& top) override;
+  void BackwardGPU(const std::vector<TensorPtr<T>>& top,
+                   const std::vector<TensorPtr<T>>& bottom) override;
 
  private:
   TensorPtr<T> weight_;
