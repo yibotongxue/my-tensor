@@ -27,9 +27,6 @@ void Linear<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
 template <typename T>
 void Linear<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
                            const std::vector<TensorPtr<T>>& top) {
-  if (this->layer_param_->type_ != "Linear") {
-    throw LayerError("Layer type not match.");
-  }
   if (bottom[0]->GetShape().size() != 2) {
     throw LinearError("Input of linear layer should be two dimesion tensor.");
   }

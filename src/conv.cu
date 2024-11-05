@@ -27,9 +27,6 @@ void Convolution<T>::CheckTensorCount(
 template <typename T>
 void Convolution<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
                                 const std::vector<TensorPtr<T>>& top) {
-  if (this->layer_param_->type_ != "Convolution") {
-    throw LayerError("Layer not match type.");
-  }
   if (bottom[0]->GetShape().size() != 4) {
     throw ConvError("The dimension of the inputshould be 4.");
   }

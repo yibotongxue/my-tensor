@@ -26,9 +26,9 @@ using LayerParameterPtr = std::shared_ptr<LayerParameter>;
 class LayerParameter {
  public:
   std::string name_;
-  std::string type_;
+  ParamType type_;
 
-  explicit LayerParameter(const std::string& type) : type_(type) {}
+  explicit LayerParameter(const ParamType type) : type_(type) {}
 
   void Deserialize(const nlohmann::json& js) {
     ParseName(js);
@@ -53,12 +53,12 @@ class LayerParameter {
 
 class ReluParamter final : public LayerParameter {
  public:
-  explicit ReluParamter() : LayerParameter("Relu") {}
+  explicit ReluParamter() : LayerParameter(ParamType::kRelu) {}
 };  // class ReluParameter
 
 class SigmoidParameter : public LayerParameter {
  public:
-  explicit SigmoidParameter() : LayerParameter("Sigmoid") {}
+  explicit SigmoidParameter() : LayerParameter(ParamType::kSigmoid) {}
 
   virtual ~SigmoidParameter() = default;
 };  // class SigmoidParameter
@@ -70,7 +70,7 @@ class LinearParameter final : public LayerParameter {
   FillerParameterPtr weight_filler_parameter_;
   FillerParameterPtr bias_filler_parameter_;
 
-  explicit LinearParameter() : LayerParameter("Linear") {}
+  explicit LinearParameter() : LayerParameter(ParamType::kLinear) {}
 
  private:
   void ParseSettingParameter(const nlohmann::json& js) override;
@@ -85,7 +85,7 @@ class ConvolutionParameter final : public LayerParameter {
   FillerParameterPtr kernel_filler_parameter_;
   FillerParameterPtr bias_filler_parameter_;
 
-  explicit ConvolutionParameter() : LayerParameter("Convolution") {}
+  explicit ConvolutionParameter() : LayerParameter(ParamType::kConvolution) {}
 
  private:
   void ParseSettingParameter(const nlohmann::json& js) override;
@@ -100,7 +100,7 @@ class PoolingParameter final : public LayerParameter {
   int stride_h_;
   int stride_w_;
 
-  explicit PoolingParameter() : LayerParameter("Pooling") {}
+  explicit PoolingParameter() : LayerParameter(ParamType::kPooling) {}
 
  private:
   void ParseSettingParameter(const nlohmann::json& js) override;
@@ -110,7 +110,7 @@ class SoftmaxParameter final : public LayerParameter {
  public:
   int channels_;
 
-  explicit SoftmaxParameter() : LayerParameter("Softmax") {}
+  explicit SoftmaxParameter() : LayerParameter(ParamType::kSoftmax) {}
 
  private:
   void ParseSettingParameter(const nlohmann::json& js) override;

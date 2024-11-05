@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include <functional>
-#include <iostream>
 #include <memory>
 #include <random>
 #include <ranges>
@@ -717,7 +716,6 @@ BLAS_SUM_ROW_SUM_TEST(Diff);
       }                                                                   \
     }                                                                     \
     for (int i = 0; i < 1000; i++) {                                      \
-      std::cout << i << std::endl;                                        \
       ASSERT_NEAR(result_actual[i], result_expect[i], 0.01);              \
     }                                                                     \
   }
