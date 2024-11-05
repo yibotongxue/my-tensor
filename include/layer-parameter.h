@@ -26,26 +26,41 @@ using LayerParameterPtr = std::shared_ptr<LayerParameter>;
 class LayerParameter {
  public:
   std::string name_;
-  ParamType type_;
+  std::string type_;
 
-  explicit LayerParameter(const std::string& name, const ParamType type)
-      : name_(name), type_(type) {}
+  explicit LayerParameter(const std::string& type) : type_(type) {}
 
-  virtual void Deserialize(const nlohmann::json& js) {}
+  void Deserialize(const nlohmann::json& js) {
+    ParseName(js);
+    ParseSettingParameter(js);
+    ParseFillingParameter(js);
+  }
 
   virtual ~LayerParameter() = default;
+
+ protected:
+  void ParseName(const nlohmann::json& js) {
+    if (!js.contains("name") || !js["name"].is_string()) {
+      throw FileError("Layer object in layers object should contain key name");
+    }
+    name_ = js["name"].get<std::string>();
+  }
+
+  virtual void ParseSettingParameter(const nlohmann::json& js) {}
+
+  virtual void ParseFillingParameter(const nlohmann::json& js) {}
 };  // class LayerParameter
 
 class ReluParamter final : public LayerParameter {
  public:
-  explicit ReluParamter(const std::string& name)
-      : LayerParameter(name, ParamType::kRelu) {}
+  explicit ReluParamter() : LayerParameter("Relu") {}
 };  // class ReluParameter
 
 class SigmoidParameter : public LayerParameter {
  public:
-  explicit SigmoidParameter(const std::string& name)
-      : LayerParameter(name, ParamType::kSigmoid) {}
+  explicit SigmoidParameter() : LayerParameter("Sigmoid") {}
+
+  virtual ~SigmoidParameter() = default;
 };  // class SigmoidParameter
 
 class LinearParameter final : public LayerParameter {
@@ -55,10 +70,11 @@ class LinearParameter final : public LayerParameter {
   FillerParameterPtr weight_filler_parameter_;
   FillerParameterPtr bias_filler_parameter_;
 
-  explicit LinearParameter(const std::string& name)
-      : LayerParameter(name, ParamType::kLinear) {}
+  explicit LinearParameter() : LayerParameter("Linear") {}
 
-  void Deserialize(const nlohmann::json& js) override;
+ private:
+  void ParseSettingParameter(const nlohmann::json& js) override;
+  void ParseFillingParameter(const nlohmann::json& js) override;
 };  // class LinearParameter
 
 class ConvolutionParameter final : public LayerParameter {
@@ -69,10 +85,11 @@ class ConvolutionParameter final : public LayerParameter {
   FillerParameterPtr kernel_filler_parameter_;
   FillerParameterPtr bias_filler_parameter_;
 
-  explicit ConvolutionParameter(const std::string& name)
-      : LayerParameter(name, ParamType::kConvolution) {}
+  explicit ConvolutionParameter() : LayerParameter("Convolution") {}
 
-  void Deserialize(const nlohmann::json& js) override;
+ private:
+  void ParseSettingParameter(const nlohmann::json& js) override;
+  void ParseFillingParameter(const nlohmann::json& js) override;
 };  // class ConvolutionParameter
 
 class PoolingParameter final : public LayerParameter {
@@ -83,21 +100,39 @@ class PoolingParameter final : public LayerParameter {
   int stride_h_;
   int stride_w_;
 
-  explicit PoolingParameter(const std::string& name)
-      : LayerParameter(name, ParamType::kPooling) {}
+  explicit PoolingParameter() : LayerParameter("Pooling") {}
 
-  // void Deserialize(const nlohmann::json& js) override;
+ private:
+  void ParseSettingParameter(const nlohmann::json& js) override;
 };  // class PoolingParameter
 
 class SoftmaxParameter final : public LayerParameter {
  public:
   int channels_;
 
-  explicit SoftmaxParameter(const std::string& name)
-      : LayerParameter(name, ParamType::kSoftmax) {}
+  explicit SoftmaxParameter() : LayerParameter("Softmax") {}
 
-  void Deserialize(const nlohmann::json& js) override;
+ private:
+  void ParseSettingParameter(const nlohmann::json& js) override;
 };  // class SoftmaxParameter
+
+inline LayerParameterPtr CreateLayerParameter(const std::string& type) {
+  if (type == "Relu") {
+    return std::make_shared<ReluParamter>();
+  } else if (type == "Sigmoid") {
+    return std::make_shared<SigmoidParameter>();
+  } else if (type == "Linear") {
+    return std::make_shared<LinearParameter>();
+  } else if (type == "Convolution") {
+    return std::make_shared<ConvolutionParameter>();
+  } else if (type == "Pooling") {
+    return std::make_shared<PoolingParameter>();
+  } else if (type == "Softmax") {
+    return std::make_shared<SoftmaxParameter>();
+  } else {
+    throw LayerError("Unimplemented layer type.");
+  }
+}
 
 }  // namespace my_tensor
 

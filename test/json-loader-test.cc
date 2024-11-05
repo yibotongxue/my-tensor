@@ -50,7 +50,7 @@ TEST(JsonTest, ReluSuccess) {
   auto params = loader.Load();
   auto param = params[2];
   ASSERT_EQ(param->name_, "relu1");
-  ASSERT_EQ(param->type_, my_tensor::ParamType::kRelu);
+  ASSERT_EQ(param->type_, "Relu");
   auto* ptr = param.get();
   ASSERT_NE(dynamic_cast<my_tensor::ReluParamter*>(ptr), nullptr);
 }
@@ -61,7 +61,7 @@ TEST(JsonTest, SigmoidSuccess) {
   auto params = loader.Load();
   auto param = params[5];
   ASSERT_EQ(param->name_, "sigmoid2");
-  ASSERT_EQ(param->type_, my_tensor::ParamType::kSigmoid);
+  ASSERT_EQ(param->type_, "Sigmoid");
   auto* ptr = param.get();
   ASSERT_NE(dynamic_cast<my_tensor::SigmoidParameter*>(ptr), nullptr);
 }
@@ -72,7 +72,7 @@ TEST(JsonTest, LinearSuccess) {
   auto params = loader.Load();
   auto param = params[6];
   ASSERT_EQ(param->name_, "linear1");
-  ASSERT_EQ(param->type_, my_tensor::ParamType::kLinear);
+  ASSERT_EQ(param->type_, "Linear");
   auto* lptr = dynamic_cast<my_tensor::LinearParameter*>(param.get());
   ASSERT_NE(lptr, nullptr);
   ASSERT_EQ(lptr->input_feature_, 490);
@@ -93,7 +93,7 @@ TEST(JsonTest, ConvolutionSuccess) {
   auto params = loader.Load();
   auto param = params[0];
   ASSERT_EQ(param->name_, "conv1");
-  ASSERT_EQ(param->type_, my_tensor::ParamType::kConvolution);
+  ASSERT_EQ(param->type_, "Convolution");
   auto* cptr = dynamic_cast<my_tensor::ConvolutionParameter*>(param.get());
   ASSERT_NE(cptr, nullptr);
   ASSERT_EQ(cptr->input_channels_, 1);
@@ -111,7 +111,7 @@ TEST(JsonTest, PoolingSuccess) {
   auto params = loader.Load();
   auto param = params[1];
   ASSERT_EQ(param->name_, "pooling1");
-  ASSERT_EQ(param->type_, my_tensor::ParamType::kPooling);
+  ASSERT_EQ(param->type_, "Pooling");
   auto* pptr = dynamic_cast<my_tensor::PoolingParameter*>(param.get());
   ASSERT_NE(pptr, nullptr);
   ASSERT_EQ(pptr->input_channels_, 3);
@@ -127,7 +127,7 @@ TEST(JsonTest, SoftmaxSuccess) {
   auto params = loader.Load();
   auto param = params[11];
   ASSERT_EQ(param->name_, "softmax");
-  ASSERT_EQ(param->type_, my_tensor::ParamType::kSoftmax);
+  ASSERT_EQ(param->type_, "Softmax");
   auto* sptr = dynamic_cast<my_tensor::SoftmaxParameter*>(param.get());
   ASSERT_NE(sptr, nullptr);
   ASSERT_EQ(sptr->channels_, 10);

@@ -4,6 +4,7 @@
 #define INCLUDE_FILLER_PARAMETER_HPP_
 
 #include <memory>
+#include <string>
 
 #include "error.h"
 
@@ -44,18 +45,17 @@ class HeFillerParameter final : public FillerParameter {
 
 using FillerParameterPtr = std::shared_ptr<FillerParameter>;
 
-inline FillerParameterPtr CreateFillerParameter(InitMode init) {
-  switch (init) {
-    case InitMode::kZero:
-      return std::make_shared<ZeroFillerParameter>();
-    case InitMode::kConstant:
-      return std::make_shared<ConstantFillerParameter>();
-    case InitMode::kXavier:
-      return std::make_shared<XavierFillerParameter>();
-    case InitMode::kHe:
-      return std::make_shared<HeFillerParameter>();
-    default:
-      throw FillerError("Unimplemention error.");
+inline FillerParameterPtr CreateFillerParameter(const std::string& init_name) {
+  if (init_name == "zero") {
+    return std::make_shared<ZeroFillerParameter>();
+  } else if (init_name == "constant") {
+    return std::make_shared<ConstantFillerParameter>();
+  } else if (init_name == "xavier") {
+    return std::make_shared<XavierFillerParameter>();
+  } else if (init_name == "he") {
+    return std::make_shared<HeFillerParameter>();
+  } else {
+    throw FillerError("Unimplemention error.");
   }
 }
 

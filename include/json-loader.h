@@ -23,10 +23,7 @@ class JsonLoader {
  private:
   nlohmann::json layers_;
 
-  FillerParameterPtr LoadFillerParam(const nlohmann::json& js);
   LayerParameterPtr LoadLayerParam(const nlohmann::json& js);
-
-  static std::unordered_map<std::string, InitMode> mode_map_;
 };
 
 }  // namespace my_tensor

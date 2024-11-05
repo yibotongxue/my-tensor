@@ -57,9 +57,8 @@ endfunction()
 enable_testing()
 
 # Define source files
-set(JSON_SRC src/json-loader.cc)
 set(TENSOR_SRC src/synced-vector.cu src/tensor.cu)
-set(LAYER_SRC src/layer.cu src/json-loader.cc)
+set(LAYER_SRC src/layer.cu src/json-loader.cc src/layer-parameter.cc)
 set(RELU_SRC src/relu.cu)
 set(SIGMOID_SRC src/sigmoid.cu)
 set(LINEAR_SRC src/linear.cu)
@@ -153,7 +152,7 @@ set_cuda_properties(softmax_test)
 link_googletest(softmax_test softmax_lib)
 add_test(NAMD softmax_test COMMAND softmax_test)
 
-add_executable(json_test test/json-loader-test.cc src/json-loader.cc)
+add_executable(json_test test/json-loader-test.cc src/json-loader.cc src/layer-parameter.cc)
 link_googletest(json_test)
 add_test(NAMD json_test COMMAND json_test)
 
