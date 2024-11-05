@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "error.h"
-#include "layer-parameter.hpp"
+#include "layer-parameter.h"
 #include "layer.cuh"
 #include "utils.cuh"
 

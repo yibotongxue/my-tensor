@@ -6,7 +6,7 @@
 #include <memory>
 #include <vector>
 
-#include "layer-parameter.hpp"
+#include "layer-parameter.h"
 #include "layer.cuh"
 #include "tensor.cuh"
 

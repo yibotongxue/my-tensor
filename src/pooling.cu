@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "error.h"
-#include "layer-parameter.hpp"
+#include "layer-parameter.h"
 #include "pooling.cuh"
 #include "tensor.cuh"
 #include "utils.cuh"

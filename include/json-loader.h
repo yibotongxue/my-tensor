@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "filler-parameter.hpp"
-#include "layer-parameter.hpp"
+#include "layer-parameter.h"
 #include "nlohmann/json.hpp"
 
 namespace my_tensor {

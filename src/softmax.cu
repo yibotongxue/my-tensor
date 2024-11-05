@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "error.h"
-#include "layer-parameter.hpp"
+#include "layer-parameter.h"
 #include "softmax.cuh"
 #include "tensor.cuh"
 

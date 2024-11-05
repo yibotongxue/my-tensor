@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "json-loader.h"
-#include "layer-parameter.hpp"
+#include "layer-parameter.h"
 #include "layer/layer-utils.cuh"
 #include "linear.cuh"
 

@@ -1,7 +1,7 @@
 // Copyright 2024 yibotongxue
 
-#ifndef INCLUDE_LAYER_PARAMETER_HPP_
-#define INCLUDE_LAYER_PARAMETER_HPP_
+#ifndef INCLUDE_LAYER_PARAMETER_H_
+#define INCLUDE_LAYER_PARAMETER_H_
 
 #include <memory>
 #include <string>
@@ -31,6 +31,8 @@ class LayerParameter {
   explicit LayerParameter(const std::string& name, const ParamType type)
       : name_(name), type_(type) {}
 
+  virtual void Deserialize(const nlohmann::json& js) {}
+
   virtual ~LayerParameter() = default;
 };  // class LayerParameter
 
@@ -55,6 +57,8 @@ class LinearParameter final : public LayerParameter {
 
   explicit LinearParameter(const std::string& name)
       : LayerParameter(name, ParamType::kLinear) {}
+
+  void Deserialize(const nlohmann::json& js) override;
 };  // class LinearParameter
 
 class ConvolutionParameter final : public LayerParameter {
@@ -67,6 +71,8 @@ class ConvolutionParameter final : public LayerParameter {
 
   explicit ConvolutionParameter(const std::string& name)
       : LayerParameter(name, ParamType::kConvolution) {}
+
+  void Deserialize(const nlohmann::json& js) override;
 };  // class ConvolutionParameter
 
 class PoolingParameter final : public LayerParameter {
@@ -79,6 +85,8 @@ class PoolingParameter final : public LayerParameter {
 
   explicit PoolingParameter(const std::string& name)
       : LayerParameter(name, ParamType::kPooling) {}
+
+  // void Deserialize(const nlohmann::json& js) override;
 };  // class PoolingParameter
 
 class SoftmaxParameter final : public LayerParameter {
@@ -87,8 +95,10 @@ class SoftmaxParameter final : public LayerParameter {
 
   explicit SoftmaxParameter(const std::string& name)
       : LayerParameter(name, ParamType::kSoftmax) {}
+
+  void Deserialize(const nlohmann::json& js) override;
 };  // class SoftmaxParameter
 
 }  // namespace my_tensor
 
-#endif  // INCLUDE_LAYER_PARAMETER_HPP_
+#endif  // INCLUDE_LAYER_PARAMETER_H_

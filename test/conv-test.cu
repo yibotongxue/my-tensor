@@ -10,7 +10,7 @@
 
 #include "conv.cuh"
 #include "json-loader.h"
-#include "layer-parameter.hpp"
+#include "layer-parameter.h"
 
 // TEST(TrivialTest, always_succeed) {
 //   EXPECT_TRUE(true);

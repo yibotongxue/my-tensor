@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "json-loader.h"
-#include "layer-parameter.hpp"
+#include "layer-parameter.h"
 #include "layer.cuh"
 #include "layer/layer-utils.cuh"
 #include "sigmoid.cuh"

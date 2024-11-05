@@ -11,7 +11,7 @@
 
 #include "error.h"
 #include "filler-parameter.hpp"
-#include "layer-parameter.hpp"
+#include "layer-parameter.h"
 
 namespace my_tensor {
 
