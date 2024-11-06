@@ -52,26 +52,20 @@ void Softmax<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
   CheckShape(bottom[0], top[0]);
   const auto& bottom_data = bottom[0]->GetCPUData();
   auto& top_data = top[0]->GetCPUData();
+  auto bottom_view = std::views::all(bottom_data);
   for (int i = 0; i < batch_size_; i++) {  // for each row
-    // compute the max element
-    T max_value = *std::max_element(bottom_data.begin() + i * channels_,
-                                    bottom_data.begin() + (i + 1) * channels_);
-    // substract the max element
-    std::transform(bottom_data.begin() + i * channels_,
-                   bottom_data.begin() + (i + 1) * channels_,
-                   top_data.begin() + i * channels_, [max_value](T val) -> T {
-                     return static_cast<T>(std::exp(val - max_value));
-                   });
-    // compute the sum
-    T sum_value = std::accumulate(top_data.begin() + i * channels_,
-                                  top_data.begin() + (i + 1) * channels_, T(0),
-                                  std::plus<T>());
-    // normalization
-    std::transform(top_data.begin() + i * channels_,
-                   top_data.begin() + (i + 1) * channels_,
-                   top_data.begin() + i * channels_, [sum_value](T val) -> T {
-                     return static_cast<T>(val / sum_value);
-                   });
+    auto sub_view = bottom_view | std::views::drop(i * channels_) |
+                    std::views::take(channels_);
+    T max_value = *std::ranges::max_element(sub_view);
+    auto exp_view = sub_view | std::views::transform([max_value](T val) -> T {
+                      return static_cast<T>(std::exp(val - max_value));
+                    });
+    T sum_value =
+        std::accumulate(exp_view.begin(), exp_view.end(), T(0), std::plus<T>());
+    auto norm_view = exp_view | std::views::transform([sum_value](T val) -> T {
+                       return static_cast<T>(val / sum_value);
+                     });
+    std::ranges::copy(norm_view, top_data.begin() + i * channels_);
   }
 }
 
