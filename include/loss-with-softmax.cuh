@@ -38,9 +38,11 @@ class LossWithSoftmax final : public Layer<T> {
   LayerPtr<T> softmax_;
   int channels_;
   int batch_size_;
-
   std::vector<TensorPtr<T>> softmax_bottom_;
   std::vector<TensorPtr<T>> softmax_top_;
+
+  void CheckShape(const TensorPtr<T> input, const TensorPtr<T> label,
+                  const TensorPtr<T> output) const;
 };  // class LossWithSoftmax
 
 extern template class LossWithSoftmax<>;

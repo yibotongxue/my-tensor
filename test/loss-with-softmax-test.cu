@@ -99,6 +99,45 @@ LOSS_WITH_SOFTMAX_TEST_CLASS(GPU)
 LOSS_WITH_SOFTMAX_TEST_FORWARD_LOSS(CPU)
 LOSS_WITH_SOFTMAX_TEST_FORWARD_LOSS(GPU)
 
+#define LOSS_WITH_SOFTMAX_TEST_BACKQARD_BOTTOM(device)                   \
+  TEST_F(LossWithSoftmax##device##Test, BackwardBottom) {                \
+    loss_with_softmax->Forward##device({input, label}, {loss});          \
+    loss_with_softmax->Backward##device({loss}, {input, label});         \
+    std::vector<float> actual(input->Get##device##Diff().begin(),        \
+                              input->Get##device##Diff().end());         \
+    std::vector<float> max_values(1024, -11);                            \
+    for (int i = 0; i < 1024; i++) {                                     \
+      for (int j = 0; j < 10; j++) {                                     \
+        max_values[i] = std::max(input_data[i * 10 + j], max_values[i]); \
+      }                                                                  \
+    }                                                                    \
+    for (int i = 0; i < 1024; i++) {                                     \
+      for (int j = 0; j < 10; j++) {                                     \
+        input_data[i * 10 + j] -= max_values[i];                         \
+      }                                                                  \
+    }                                                                    \
+    std::ranges::transform(input_data, input_data.begin(),               \
+                           [](float val) { return std::exp(val); });     \
+    for (int i = 0; i < 1024; i++) {                                     \
+      max_values[i] = 0;                                                 \
+      for (int j = 0; j < 10; j++) {                                     \
+        max_values[i] += input_data[i * 10 + j];                         \
+      }                                                                  \
+    }                                                                    \
+    for (int i = 0; i < 1024; i++) {                                     \
+      for (int j = 0; j < 10; j++) {                                     \
+        float expect = input_data[i * 10 + j] / max_values[i];           \
+        if (label_data[i] == j) {                                        \
+          expect -= 1;                                                   \
+        }                                                                \
+        ASSERT_NEAR(actual[i * 10 + j], expect, 0.01);                   \
+      }                                                                  \
+    }                                                                    \
+  }
+
+LOSS_WITH_SOFTMAX_TEST_BACKQARD_BOTTOM(CPU)
+LOSS_WITH_SOFTMAX_TEST_BACKQARD_BOTTOM(GPU)
+
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

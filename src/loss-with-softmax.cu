@@ -59,6 +59,7 @@ void LossWithSoftmax<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
 template <typename T>
 void LossWithSoftmax<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                                     const std::vector<TensorPtr<T>>& top) {
+  CheckShape(bottom[0], bottom[1], top[0]);
   softmax_->ForwardCPU(softmax_bottom_, softmax_top_);
   const auto& softmax_top_data = softmax_top_[0]->GetCPUData();
   const auto& label_data = bottom[1]->GetCPUData();
@@ -71,8 +72,9 @@ void LossWithSoftmax<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
 }
 
 template <typename T>
-void LossWithSoftmax<T>::BackwardCPU(const std::vector<TensorPtr<T>>& bottom,
-                                     const std::vector<TensorPtr<T>>& top) {
+void LossWithSoftmax<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
+                                     const std::vector<TensorPtr<T>>& bottom) {
+  CheckShape(bottom[0], bottom[1], top[0]);
   const auto& softmax_top_data = softmax_top_[0]->GetCPUData();
   const auto& label_data = bottom[1]->GetCPUData();
   auto& bottom_diff = bottom[0]->GetCPUDiff();
@@ -87,6 +89,7 @@ void LossWithSoftmax<T>::BackwardCPU(const std::vector<TensorPtr<T>>& bottom,
 template <typename T>
 void LossWithSoftmax<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                                     const std::vector<TensorPtr<T>>& top) {
+  CheckShape(bottom[0], bottom[1], top[0]);
   softmax_->ForwardGPU(softmax_bottom_, softmax_top_);
   const T* softmax_top_data = softmax_top_[0]->GetGPUDataPtr();
   const T* label_data = bottom[1]->GetGPUDataPtr();
@@ -105,8 +108,9 @@ void LossWithSoftmax<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
 }
 
 template <typename T>
-void LossWithSoftmax<T>::BackwardGPU(const std::vector<TensorPtr<T>>& bottom,
-                                     const std::vector<TensorPtr<T>>& top) {
+void LossWithSoftmax<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
+                                     const std::vector<TensorPtr<T>>& bottom) {
+  CheckShape(bottom[0], bottom[1], top[0]);
   const auto& softmax_top_data = softmax_top_[0]->GetGPUData();
   const T* label_ptr = bottom[1]->GetGPUDataPtr();
   auto& bottom_diff = bottom[0]->GetGPUDiff();
@@ -119,6 +123,39 @@ void LossWithSoftmax<T>::BackwardGPU(const std::vector<TensorPtr<T>>& bottom,
       [label_ptr, bottom_ptr, channels] __device__(int i) -> void {
         bottom_ptr[i * channels + static_cast<int>(label_ptr[i])] -= 1;
       });
+}
+
+template <typename T>
+void LossWithSoftmax<T>::CheckShape(const TensorPtr<T> input,
+                                    const TensorPtr<T> label,
+                                    const TensorPtr<T> output) const {
+  if (input->GetShape().size() != 2) {
+    throw LossWithSoftmaxError(
+        "The input of loss with softmax layer should be a two dimension "
+        "tensor.");
+  }
+  if (label->GetShape().size() != 1) {
+    throw LossWithSoftmaxError(
+        "The label of loss with softmax layer should be a one dimension "
+        "tensor.");
+  }
+  if (input->GetShape()[0] != batch_size_) {
+    throw LossWithSoftmaxError(
+        "The input batch size not match that of loss with softmax layer.");
+  }
+  if (input->GetShape()[1] != channels_) {
+    throw LossWithSoftmaxError(
+        "The input channels not match that of loss with softmax layer.");
+  }
+  if (label->GetShape()[0] != batch_size_) {
+    throw LossWithSoftmaxError(
+        "The label batch size not match that of loss with softmax layer.");
+  }
+  if (output->GetShape().size() != 1 || output->GetShape()[0] != 1) {
+    throw LossWithSoftmaxError(
+        "The output of loss with softmax layer should be a one dimension "
+        "contains only one element.");
+  }
 }
 
 template class LossWithSoftmax<>;
