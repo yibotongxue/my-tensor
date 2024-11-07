@@ -133,6 +133,18 @@ TEST(JsonTest, SoftmaxSuccess) {
   ASSERT_EQ(sptr->channels_, 10);
 }
 
+TEST(JsonTest, LossWithSoftmaxSuccess) {
+  my_tensor::JsonLoader loader("../test/json-test/example.json");
+  ASSERT_NO_THROW(loader.Load());
+  auto params = loader.Load();
+  auto param = params[12];
+  ASSERT_EQ(param->name_, "loss_with_softmax");
+  ASSERT_EQ(param->type_, my_tensor::ParamType::kLossWithSoftmax);
+  auto* lptr = dynamic_cast<my_tensor::LossWithSoftmaxParameter*>(param.get());
+  ASSERT_NE(lptr, nullptr);
+  ASSERT_EQ(lptr->channels_, 10);
+}
+
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

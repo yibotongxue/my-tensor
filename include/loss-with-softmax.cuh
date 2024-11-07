@@ -1,0 +1,50 @@
+// Copyright 2024 yibotongxue
+
+#ifndef INCLUDE_LOSS_WITH_SOFTMAX_CUH_
+#define INCLUDE_LOSS_WITH_SOFTMAX_CUH_
+
+#include <iostream>
+#include <vector>
+
+#include "layer-parameter.h"
+#include "layer.cuh"
+#include "utils.cuh"
+
+namespace my_tensor {
+
+template <typename T = float>
+class LossWithSoftmax final : public Layer<T> {
+ public:
+  explicit LossWithSoftmax(LayerParameterPtr param) : Layer<T>(param) {}
+
+  void CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
+                        const std::vector<TensorPtr<T>>& top) const override;
+
+  void LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
+                  const std::vector<TensorPtr<T>>& top) override;
+
+  DISABLE_LAYER_COPY(LossWithSoftmax)
+
+  void ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
+                  const std::vector<TensorPtr<T>>& top) override;
+  void BackwardCPU(const std::vector<TensorPtr<T>>& top,
+                   const std::vector<TensorPtr<T>>& bottom) override;
+  void ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
+                  const std::vector<TensorPtr<T>>& top) override;
+  void BackwardGPU(const std::vector<TensorPtr<T>>& top,
+                   const std::vector<TensorPtr<T>>& bottom) override;
+
+ private:
+  LayerPtr<T> softmax_;
+  int channels_;
+  int batch_size_;
+
+  std::vector<TensorPtr<T>> softmax_bottom_;
+  std::vector<TensorPtr<T>> softmax_top_;
+};  // class LossWithSoftmax
+
+extern template class LossWithSoftmax<>;
+
+}  // namespace my_tensor
+
+#endif  // INCLUDE_LOSS_WITH_SOFTMAX_CUH_

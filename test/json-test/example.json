@@ -125,6 +125,11 @@
       "name": "softmax",
       "type": "Softmax",
       "channels": 10
+    },
+    {
+      "name": "loss_with_softmax",
+      "type": "LossWithSoftmax",
+      "channels": 10
     }
   ]
 }

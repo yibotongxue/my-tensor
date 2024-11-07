@@ -1,0 +1,9 @@
+{
+  "layers": [
+    {
+      "name": "loss_with_softmax",
+      "type": "LossWithSoftmax",
+      "channels": 10
+    }
+  ]
+}

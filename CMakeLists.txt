@@ -66,6 +66,7 @@ set(IM2COL_SRC src/im2col.cu)
 set(CONV_SRC src/conv.cu)
 set(POOLING_SRC src/pooling.cu)
 set(SOFTMAX_SRC src/softmax.cu)
+set(LOSS_SRC src/loss-with-softmax.cu)
 
 # Add libraries
 add_library(tensor_lib ${TENSOR_SRC})
@@ -105,6 +106,10 @@ target_link_libraries(pooling_lib PUBLIC layer_lib)
 add_library(softmax_lib ${SOFTMAX_SRC})
 set_cuda_properties(softmax_lib)
 target_link_libraries(softmax_lib PUBLIC layer_lib)
+
+add_library(loss_with_softmax_lib ${LOSS_SRC})
+set_cuda_properties(loss_with_softmax_lib)
+target_link_libraries(loss_with_softmax_lib PUBLIC layer_lib softmax_lib)
 
 # Add executables and tests
 add_executable(tensor_test test/tensor-test.cu)
@@ -151,6 +156,11 @@ add_executable(softmax_test test/softmax-test.cu)
 set_cuda_properties(softmax_test)
 link_googletest(softmax_test softmax_lib)
 add_test(NAMD softmax_test COMMAND softmax_test)
+
+add_executable(loss_with_softmax_test test/loss-with-softmax-test.cu)
+set_cuda_properties(loss_with_softmax_test)
+link_googletest(loss_with_softmax_test loss_with_softmax_lib)
+add_test(NAMD loss_with_softmax_test COMMAND loss_with_softmax_test)
 
 add_executable(json_test test/json-loader-test.cc src/json-loader.cc src/layer-parameter.cc)
 link_googletest(json_test)

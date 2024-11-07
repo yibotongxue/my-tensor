@@ -17,7 +17,8 @@ enum class ParamType {
   kLinear,
   kConvolution,
   kPooling,
-  kSoftmax
+  kSoftmax,
+  kLossWithSoftmax
 };  // enum class ParamType
 
 class LayerParameter;
@@ -116,6 +117,17 @@ class SoftmaxParameter final : public LayerParameter {
   void ParseSettingParameter(const nlohmann::json& js) override;
 };  // class SoftmaxParameter
 
+class LossWithSoftmaxParameter final : public LayerParameter {
+ public:
+  int channels_;
+
+  explicit LossWithSoftmaxParameter()
+      : LayerParameter(ParamType::kLossWithSoftmax) {}
+
+ private:
+  void ParseSettingParameter(const nlohmann::json& js) override;
+};  // class LossWithSoftmaxParameter
+
 inline LayerParameterPtr CreateLayerParameter(const std::string& type) {
   if (type == "Relu") {
     return std::make_shared<ReluParamter>();
@@ -129,6 +141,8 @@ inline LayerParameterPtr CreateLayerParameter(const std::string& type) {
     return std::make_shared<PoolingParameter>();
   } else if (type == "Softmax") {
     return std::make_shared<SoftmaxParameter>();
+  } else if (type == "LossWithSoftmax") {
+    return std::make_shared<LossWithSoftmaxParameter>();
   } else {
     throw LayerError("Unimplemented layer type.");
   }
