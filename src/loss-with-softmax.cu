@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "error.h"
+#include "layer-factory.cuh"
 #include "loss-with-softmax.cuh"
 #include "softmax.cuh"
 
@@ -52,7 +53,7 @@ void LossWithSoftmax<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
   auto temp_param = std::dynamic_pointer_cast<SoftmaxParameter>(softmax_param);
   temp_param->channels_ = param->channels_;
   softmax_.reset();
-  softmax_ = std::make_shared<Softmax<T>>(softmax_param);
+  softmax_ = CreateLayer<T>(temp_param);
   softmax_->SetUp(softmax_bottom_, softmax_top_);
 }
 

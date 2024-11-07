@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "json-loader.h"
+#include "layer-factory.cuh"
 #include "layer.cuh"
 #include "pooling.cuh"
 #include "tensor.cuh"
@@ -21,44 +22,44 @@
 //   EXPECT_TRUE(false);
 // }
 
-#define POOLING_TEST_CLASS(device)                                           \
-  class Pooling##device##Test : public ::testing::Test {                     \
-   protected:                                                                \
-    void SetUp() override {                                                  \
-      my_tensor::JsonLoader loader("../test/json-test/pooling.json");        \
-      auto&& layer_parameters = loader.Load();                               \
-      bottom_data.resize(59520);                                             \
-      top_diff.resize(14400);                                                \
-      std::random_device rd;                                                 \
-      std::mt19937 gen(rd());                                                \
-      std::uniform_real_distribution<float> dis(-10.0f, 10.0f);              \
-      auto random_func = [&gen, &dis]() -> float { return dis(gen); };       \
-      std::ranges::generate(bottom_data, random_func);                       \
-      std::ranges::generate(top_diff, random_func);                          \
-      bottom.reset();                                                        \
-      top.reset();                                                           \
-      bottom = std::make_shared<my_tensor::Tensor<>>(bottom_shape);          \
-      top = std::make_shared<my_tensor::Tensor<>>(top_shape);                \
-      bottom->Set##device##Data(bottom_data);                                \
-      top->Set##device##Diff(top_diff);                                      \
-      bottom_vec.clear();                                                    \
-      top_vec.clear();                                                       \
-      bottom_vec.push_back(bottom);                                          \
-      top_vec.push_back(top);                                                \
-      pooling.reset();                                                       \
-      pooling = std::make_shared<my_tensor::Pooling<>>(layer_parameters[0]); \
-      pooling->SetUp(bottom_vec, top_vec);                                   \
-      pooling->Forward##device(bottom_vec, top_vec);                         \
-    }                                                                        \
-    std::vector<float> bottom_data;                                          \
-    std::vector<float> top_diff;                                             \
-    const std::vector<int> bottom_shape = {10, 3, 31, 64};                   \
-    const std::vector<int> top_shape = {10, 3, 15, 32};                      \
-    my_tensor::TensorPtr<> bottom;                                           \
-    my_tensor::TensorPtr<> top;                                              \
-    std::vector<my_tensor::TensorPtr<>> bottom_vec;                          \
-    std::vector<my_tensor::TensorPtr<>> top_vec;                             \
-    my_tensor::LayerPtr<> pooling;                                           \
+#define POOLING_TEST_CLASS(device)                                     \
+  class Pooling##device##Test : public ::testing::Test {               \
+   protected:                                                          \
+    void SetUp() override {                                            \
+      my_tensor::JsonLoader loader("../test/json-test/pooling.json");  \
+      auto&& layer_parameters = loader.Load();                         \
+      bottom_data.resize(59520);                                       \
+      top_diff.resize(14400);                                          \
+      std::random_device rd;                                           \
+      std::mt19937 gen(rd());                                          \
+      std::uniform_real_distribution<float> dis(-10.0f, 10.0f);        \
+      auto random_func = [&gen, &dis]() -> float { return dis(gen); }; \
+      std::ranges::generate(bottom_data, random_func);                 \
+      std::ranges::generate(top_diff, random_func);                    \
+      bottom.reset();                                                  \
+      top.reset();                                                     \
+      bottom = std::make_shared<my_tensor::Tensor<>>(bottom_shape);    \
+      top = std::make_shared<my_tensor::Tensor<>>(top_shape);          \
+      bottom->Set##device##Data(bottom_data);                          \
+      top->Set##device##Diff(top_diff);                                \
+      bottom_vec.clear();                                              \
+      top_vec.clear();                                                 \
+      bottom_vec.push_back(bottom);                                    \
+      top_vec.push_back(top);                                          \
+      pooling.reset();                                                 \
+      pooling = my_tensor::CreateLayer<>(layer_parameters[0]);         \
+      pooling->SetUp(bottom_vec, top_vec);                             \
+      pooling->Forward##device(bottom_vec, top_vec);                   \
+    }                                                                  \
+    std::vector<float> bottom_data;                                    \
+    std::vector<float> top_diff;                                       \
+    const std::vector<int> bottom_shape = {10, 3, 31, 64};             \
+    const std::vector<int> top_shape = {10, 3, 15, 32};                \
+    my_tensor::TensorPtr<> bottom;                                     \
+    my_tensor::TensorPtr<> top;                                        \
+    std::vector<my_tensor::TensorPtr<>> bottom_vec;                    \
+    std::vector<my_tensor::TensorPtr<>> top_vec;                       \
+    my_tensor::LayerPtr<> pooling;                                     \
   };
 
 POOLING_TEST_CLASS(CPU)

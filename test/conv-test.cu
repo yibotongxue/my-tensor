@@ -10,6 +10,7 @@
 
 #include "conv.cuh"
 #include "json-loader.h"
+#include "layer-factory.cuh"
 #include "layer-parameter.h"
 
 // TEST(TrivialTest, always_succeed) {
@@ -20,55 +21,55 @@
 //   EXPECT_TRUE(false);
 // }
 
-#define CONVOLUTION_TEST_CLASS(device)                                        \
-  class Convolution##device##Test : public ::testing::Test {                  \
-   protected:                                                                 \
-    void SetUp() override {                                                   \
-      my_tensor::JsonLoader loader("../test/json-test/conv.json");            \
-      auto&& layer_parameters = loader.Load();                                \
-      input_data.resize(102400);                                              \
-      output_diff.resize(184320);                                             \
-      kernels_data.resize(405);                                               \
-      bias_data.resize(9);                                                    \
-      std::random_device rd;                                                  \
-      std::mt19937 gen(rd());                                                 \
-      std::uniform_real_distribution<float> dis(-10.0f, 10.0f);               \
-      auto random_func = [&gen, &dis]() -> float { return dis(gen); };        \
-      std::ranges::generate(input_data, random_func);                         \
-      std::ranges::generate(output_diff, random_func);                        \
-      std::ranges::generate(kernels_data, random_func);                       \
-      std::ranges::generate(bias_data, random_func);                          \
-      input = std::make_shared<my_tensor::Tensor<>>(input_shape);             \
-      input->Set##device##Data(input_data);                                   \
-      output = std::make_shared<my_tensor::Tensor<>>(output_shape);           \
-      output->Set##device##Diff(output_diff);                                 \
-      bottom.clear();                                                         \
-      top.clear();                                                            \
-      bottom.push_back(input);                                                \
-      top.push_back(output);                                                  \
-      conv = std::make_shared<my_tensor::Convolution<>>(layer_parameters[0]); \
-      conv->SetUp(bottom, top);                                               \
-      auto temp = std::dynamic_pointer_cast<my_tensor::Convolution<>>(conv);  \
-      kernels = temp->GetKernel();                                            \
-      kernels->Set##device##Data(kernels_data);                               \
-      bias = temp->GetBias();                                                 \
-      bias->Set##device##Data(bias_data);                                     \
-    }                                                                         \
-    const std::vector<int> input_shape{10, 5, 32, 64};                        \
-    const std::vector<int> output_shape{10, 9, 32, 64};                       \
-    const std::vector<int> kernels_shape{9, 5, 3, 3};                         \
-    const std::vector<int> bias_shape{9, 1};                                  \
-    std::vector<float> input_data;                                            \
-    std::vector<float> output_diff;                                           \
-    std::vector<float> kernels_data;                                          \
-    std::vector<float> bias_data;                                             \
-    my_tensor::TensorPtr<> input;                                             \
-    my_tensor::TensorPtr<> output;                                            \
-    std::vector<my_tensor::TensorPtr<>> bottom;                               \
-    std::vector<my_tensor::TensorPtr<>> top;                                  \
-    my_tensor::TensorPtr<> kernels;                                           \
-    my_tensor::TensorPtr<> bias;                                              \
-    my_tensor::LayerPtr<> conv;                                               \
+#define CONVOLUTION_TEST_CLASS(device)                                       \
+  class Convolution##device##Test : public ::testing::Test {                 \
+   protected:                                                                \
+    void SetUp() override {                                                  \
+      my_tensor::JsonLoader loader("../test/json-test/conv.json");           \
+      auto&& layer_parameters = loader.Load();                               \
+      input_data.resize(102400);                                             \
+      output_diff.resize(184320);                                            \
+      kernels_data.resize(405);                                              \
+      bias_data.resize(9);                                                   \
+      std::random_device rd;                                                 \
+      std::mt19937 gen(rd());                                                \
+      std::uniform_real_distribution<float> dis(-10.0f, 10.0f);              \
+      auto random_func = [&gen, &dis]() -> float { return dis(gen); };       \
+      std::ranges::generate(input_data, random_func);                        \
+      std::ranges::generate(output_diff, random_func);                       \
+      std::ranges::generate(kernels_data, random_func);                      \
+      std::ranges::generate(bias_data, random_func);                         \
+      input = std::make_shared<my_tensor::Tensor<>>(input_shape);            \
+      input->Set##device##Data(input_data);                                  \
+      output = std::make_shared<my_tensor::Tensor<>>(output_shape);          \
+      output->Set##device##Diff(output_diff);                                \
+      bottom.clear();                                                        \
+      top.clear();                                                           \
+      bottom.push_back(input);                                               \
+      top.push_back(output);                                                 \
+      conv = my_tensor::CreateLayer<>(layer_parameters[0]);                  \
+      conv->SetUp(bottom, top);                                              \
+      auto temp = std::dynamic_pointer_cast<my_tensor::Convolution<>>(conv); \
+      kernels = temp->GetKernel();                                           \
+      kernels->Set##device##Data(kernels_data);                              \
+      bias = temp->GetBias();                                                \
+      bias->Set##device##Data(bias_data);                                    \
+    }                                                                        \
+    const std::vector<int> input_shape{10, 5, 32, 64};                       \
+    const std::vector<int> output_shape{10, 9, 32, 64};                      \
+    const std::vector<int> kernels_shape{9, 5, 3, 3};                        \
+    const std::vector<int> bias_shape{9, 1};                                 \
+    std::vector<float> input_data;                                           \
+    std::vector<float> output_diff;                                          \
+    std::vector<float> kernels_data;                                         \
+    std::vector<float> bias_data;                                            \
+    my_tensor::TensorPtr<> input;                                            \
+    my_tensor::TensorPtr<> output;                                           \
+    std::vector<my_tensor::TensorPtr<>> bottom;                              \
+    std::vector<my_tensor::TensorPtr<>> top;                                 \
+    my_tensor::TensorPtr<> kernels;                                          \
+    my_tensor::TensorPtr<> bias;                                             \
+    my_tensor::LayerPtr<> conv;                                              \
   };
 
 CONVOLUTION_TEST_CLASS(CPU)

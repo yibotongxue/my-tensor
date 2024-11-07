@@ -58,58 +58,26 @@ enable_testing()
 
 # Define source files
 set(TENSOR_SRC src/synced-vector.cu src/tensor.cu)
-set(LAYER_SRC src/layer.cu src/json-loader.cc src/layer-parameter.cc)
-set(RELU_SRC src/relu.cu)
-set(SIGMOID_SRC src/sigmoid.cu)
-set(LINEAR_SRC src/linear.cu)
+set(LAYER_SRC src/layer.cu src/json-loader.cc src/layer-parameter.cc src/filler.cu
+src/relu.cu src/sigmoid.cu src/linear.cu src/conv.cu
+src/pooling.cu src/softmax.cu src/loss-with-softmax.cu)
+set(BLAS_SRC src/blas.cu)
 set(IM2COL_SRC src/im2col.cu)
-set(CONV_SRC src/conv.cu)
-set(POOLING_SRC src/pooling.cu)
-set(SOFTMAX_SRC src/softmax.cu)
-set(LOSS_SRC src/loss-with-softmax.cu)
 
 # Add libraries
 add_library(tensor_lib ${TENSOR_SRC})
 set_cuda_properties(tensor_lib)
 
-add_library(layer_lib ${LAYER_SRC})
-set_cuda_properties(layer_lib)
-target_link_libraries(layer_lib PUBLIC tensor_lib)
-
-add_library(relu_lib ${RELU_SRC})
-set_cuda_properties(relu_lib)
-target_link_libraries(relu_lib PUBLIC layer_lib)
-
-add_library(sigmoid_lib ${SIGMOID_SRC})
-set_cuda_properties(sigmoid_lib)
-target_link_libraries(sigmoid_lib PUBLIC layer_lib)
-
 add_library(blas_lib src/handle.cu src/blas.cu)
 set_cuda_properties(blas_lib)
 target_link_libraries(blas_lib PUBLIC cublas)
 
-add_library(linear_lib ${LINEAR_SRC})
-set_cuda_properties(linear_lib)
-target_link_libraries(linear_lib PUBLIC layer_lib blas_lib)
-
 add_library(im2col_lib ${IM2COL_SRC})
 set_cuda_properties(im2col_lib)
 
-add_library(conv_lib ${CONV_SRC})
-set_cuda_properties(conv_lib)
-target_link_libraries(conv_lib PUBLIC layer_lib blas_lib im2col_lib)
-
-add_library(pooling_lib ${POOLING_SRC})
-set_cuda_properties(pooling_lib)
-target_link_libraries(pooling_lib PUBLIC layer_lib)
-
-add_library(softmax_lib ${SOFTMAX_SRC})
-set_cuda_properties(softmax_lib)
-target_link_libraries(softmax_lib PUBLIC layer_lib)
-
-add_library(loss_with_softmax_lib ${LOSS_SRC})
-set_cuda_properties(loss_with_softmax_lib)
-target_link_libraries(loss_with_softmax_lib PUBLIC layer_lib softmax_lib)
+add_library(layer_lib ${LAYER_SRC})
+set_cuda_properties(layer_lib)
+target_link_libraries(layer_lib PUBLIC tensor_lib blas_lib im2col_lib)
 
 # Add executables and tests
 add_executable(tensor_test test/tensor-test.cu)
@@ -119,12 +87,12 @@ add_test(NAME tensor_test COMMAND tensor_test)
 
 add_executable(relu_test test/relu-test.cu)
 set_cuda_properties(relu_test)
-link_googletest(relu_test relu_lib)
+link_googletest(relu_test layer_lib)
 add_test(NAME relu_test COMMAND relu_test)
 
 add_executable(sigmoid_test test/sigmoid-test.cu)
 set_cuda_properties(sigmoid_test)
-link_googletest(sigmoid_test sigmoid_lib)
+link_googletest(sigmoid_test layer_lib)
 add_test(NAME sigmoid_test COMMAND sigmoid_test)
 
 add_executable(blas_test test/blas-test.cu)
@@ -134,7 +102,7 @@ add_test(NAME blas_test COMMAND blas_test)
 
 add_executable(linear_test test/linear-test.cu)
 set_cuda_properties(linear_test)
-link_googletest(linear_test linear_lib)
+link_googletest(linear_test layer_lib)
 add_test(NAMD linear_test COMMAND linear_test)
 
 add_executable(im2col_test test/im2col-test.cu)
@@ -144,22 +112,22 @@ add_test(NAMD im2col_test COMMAND im2col_test)
 
 add_executable(conv_test test/conv-test.cu)
 set_cuda_properties(conv_test)
-link_googletest(conv_test conv_lib)
+link_googletest(conv_test layer_lib)
 add_test(NAMD conv_test COMMAND conv_test)
 
 add_executable(pooling_test test/pooling-test.cu)
 set_cuda_properties(pooling_test)
-link_googletest(pooling_test pooling_lib)
+link_googletest(pooling_test layer_lib)
 add_test(NAMD pooling_test COMMAND pooling_test)
 
 add_executable(softmax_test test/softmax-test.cu)
 set_cuda_properties(softmax_test)
-link_googletest(softmax_test softmax_lib)
+link_googletest(softmax_test layer_lib)
 add_test(NAMD softmax_test COMMAND softmax_test)
 
 add_executable(loss_with_softmax_test test/loss-with-softmax-test.cu)
 set_cuda_properties(loss_with_softmax_test)
-link_googletest(loss_with_softmax_test loss_with_softmax_lib)
+link_googletest(loss_with_softmax_test layer_lib)
 add_test(NAMD loss_with_softmax_test COMMAND loss_with_softmax_test)
 
 add_executable(json_test test/json-loader-test.cc src/json-loader.cc src/layer-parameter.cc)
