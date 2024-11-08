@@ -63,10 +63,15 @@ src/relu.cu src/sigmoid.cu src/linear.cu src/conv.cu
 src/pooling.cu src/softmax.cu src/loss-with-softmax.cu)
 set(BLAS_SRC src/blas.cu)
 set(IM2COL_SRC src/im2col.cu)
+set(DATA_SRC src/dataset.cc src/data-loader.cu)
 
 # Add libraries
 add_library(tensor_lib ${TENSOR_SRC})
 set_cuda_properties(tensor_lib)
+
+add_library(data_lib ${DATA_SRC})
+set_cuda_properties(data_lib)
+target_link_libraries(tensor_lib)
 
 add_library(blas_lib src/handle.cu src/blas.cu)
 set_cuda_properties(blas_lib)
