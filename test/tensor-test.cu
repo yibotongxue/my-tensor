@@ -2,8 +2,10 @@
 
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <iostream>
 #include <memory>
+#include <ranges>
 #include <utility>
 #include <vector>
 
@@ -29,7 +31,9 @@ TEST_SHAPE_AND_SIZE(TensorConstructNoData)
 
 class TensorSetMethodTest : public ::testing::Test {
  protected:
-  void SetUp() override {DEFINE_DATA_AND_DIFF(data, diff) DEFINE_TESNOR(tensor)}
+  void SetUp() override                  // NOLINT
+      {DEFINE_DATA_AND_DIFF(data, diff)  // NOLINT
+       DEFINE_TESNOR(tensor)}            // NOLINT
 
   std::vector<float> data;
   std::vector<float> diff;
@@ -74,6 +78,102 @@ TEST_F(TensorSetMethodTest, TensorSetGPUOnCPUDiff_Left) {
 TEST_F(TensorSetMethodTest, TensorSetGPUOnGPUDiff_Left) {
   tensor->SetCPUDiff(diff);
   DIFF_EQUAL_TEST(GPU)
+}
+
+TEST(TensorSetMethodIteratorTest, TensorSetCPUOnCPUDIterata_Data) {
+  const std::vector<int> shape{3, 4};
+  auto tensor = std::make_shared<my_tensor::Tensor<>>(shape);
+  std::vector<float> data(14);
+  float i = 0;
+  std::ranges::generate(data, [&i]() -> float { return i++; });
+  tensor->SetCPUData(data.begin() + 1, data.end() - 1);
+  for (int j = 0; j < 12; j++) {
+    EXPECT_EQ(tensor->GetCPUData()[j], static_cast<float>(j + 1));
+  }
+}
+
+TEST(TensorSetMethodIteratorTest, TensorSetCPUOnGPUDIterata_Data) {
+  const std::vector<int> shape{3, 4};
+  auto tensor = std::make_shared<my_tensor::Tensor<>>(shape);
+  std::vector<float> data(14);
+  float i = 0;
+  std::ranges::generate(data, [&i]() -> float { return i++; });
+  tensor->SetCPUData(data.begin() + 1, data.end() - 1);
+  for (int j = 0; j < 12; j++) {
+    EXPECT_EQ(tensor->GetGPUData()[j], static_cast<float>(j + 1));
+  }
+}
+
+TEST(TensorSetMethodIteratorTest, TensorSetGPUOnCPUDIterata_Data) {
+  const std::vector<int> shape{3, 4};
+  auto tensor = std::make_shared<my_tensor::Tensor<>>(shape);
+  std::vector<float> data(14);
+  float i = 0;
+  std::ranges::generate(data, [&i]() -> float { return i++; });
+  tensor->SetGPUData(data.begin() + 1, data.end() - 1);
+  for (int j = 0; j < 12; j++) {
+    EXPECT_EQ(tensor->GetCPUData()[j], static_cast<float>(j + 1));
+  }
+}
+
+TEST(TensorSetMethodIteratorTest, TensorSetGPUOnGPUDIterata_Data) {
+  const std::vector<int> shape{3, 4};
+  auto tensor = std::make_shared<my_tensor::Tensor<>>(shape);
+  std::vector<float> data(14);
+  float i = 0;
+  std::ranges::generate(data, [&i]() -> float { return i++; });
+  tensor->SetGPUData(data.begin() + 1, data.end() - 1);
+  for (int j = 0; j < 12; j++) {
+    EXPECT_EQ(tensor->GetGPUData()[j], static_cast<float>(j + 1));
+  }
+}
+
+TEST(TensorSetMethodIteratorTest, TensorSetCPUOnCPUDIterata_Diff) {
+  const std::vector<int> shape{3, 4};
+  auto tensor = std::make_shared<my_tensor::Tensor<>>(shape);
+  std::vector<float> diff(14);
+  float i = 0;
+  std::ranges::generate(diff, [&i]() -> float { return i++; });
+  tensor->SetCPUDiff(diff.begin() + 1, diff.end() - 1);
+  for (int j = 0; j < 12; j++) {
+    EXPECT_EQ(tensor->GetCPUDiff()[j], static_cast<float>(j + 1));
+  }
+}
+
+TEST(TensorSetMethodIteratorTest, TensorSetCPUOnGPUDIterata_Diff) {
+  const std::vector<int> shape{3, 4};
+  auto tensor = std::make_shared<my_tensor::Tensor<>>(shape);
+  std::vector<float> diff(14);
+  float i = 0;
+  std::ranges::generate(diff, [&i]() -> float { return i++; });
+  tensor->SetCPUDiff(diff.begin() + 1, diff.end() - 1);
+  for (int j = 0; j < 12; j++) {
+    EXPECT_EQ(tensor->GetGPUDiff()[j], static_cast<float>(j + 1));
+  }
+}
+
+TEST(TensorSetMethodIteratorTest, TensorSetGPUOnCPUDIterata_Diff) {
+  const std::vector<int> shape{3, 4};
+  auto tensor = std::make_shared<my_tensor::Tensor<>>(shape);
+  std::vector<float> diff(14);
+  float i = 0;
+  std::ranges::generate(diff, [&i]() -> float { return i++; });
+  tensor->SetGPUDiff(diff.begin() + 1, diff.end() - 1);
+  for (int j = 0; j < 12; j++) {
+    EXPECT_EQ(tensor->GetCPUDiff()[j], static_cast<float>(j + 1));
+  }
+}
+
+TEST(TensorSetMethodIteratorTest, TensorSetGPUOnGPUDIterata_Diff) {
+  const std::vector<int> shape{3, 4};
+  auto tensor = std::make_shared<my_tensor::Tensor<>>(shape);
+  std::vector<float> diff(14);
+  float i = 0;
+  std::ranges::generate(diff, [&i]() -> float { return i++; });
+  tensor->SetGPUDiff(diff.begin() + 1, diff.end() - 1);
+  for (int j = 0; j < 12; j++) {
+    EXPECT_EQ(tensor->GetGPUDiff()[j], static_cast<float>(j + 1));
+  }
 }
 
 #define TENSOR_COPY_CONSTRUCT_CLASS(device)                          \

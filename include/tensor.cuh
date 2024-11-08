@@ -35,6 +35,24 @@ class Tensor {
   void SetGPUData(const std::vector<T>& data) { data_->SetGPUData(data); }
   void SetGPUDiff(const std::vector<T>& diff) { diff_->SetGPUData(diff); }
 
+  // Set by intetor
+  template <typename Iter>
+  void SetCPUData(const Iter begin, const Iter end) {
+    data_->SetCPUData(begin, end);
+  }
+  template <typename Iter>
+  void SetCPUDiff(const Iter begin, const Iter end) {
+    diff_->SetCPUData(begin, end);
+  }
+  template <typename Iter>
+  void SetGPUData(const Iter begin, const Iter end) {
+    data_->SetGPUData(begin, end);
+  }
+  template <typename Iter>
+  void SetGPUDiff(const Iter begin, const Iter end) {
+    diff_->SetGPUData(begin, end);
+  }
+
   // Get methods.
   // CPU
   const thrust::host_vector<T>& GetCPUData() const {

@@ -2,6 +2,7 @@
 
 #include <thrust/copy.h>
 
+#include <iterator>
 #include <utility>
 #include <vector>
 

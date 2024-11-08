@@ -38,6 +38,22 @@ class SyncedVector {
   const T* GetGPUPtr();
   T* GetMutableGPUPtr();
 
+  template <typename Iter>
+  inline void SetCPUData(const Iter begin, const Iter end) {
+    cpu_data_.resize(std::distance(begin, end));
+    cpu_data_.assign(begin, end);
+    size_ = cpu_data_.size();
+    state_ = kHeadAtCPU;
+  }
+
+  template <typename Iter>
+  inline void SetGPUData(const Iter begin, const Iter end) {
+    gpu_data_.resize(std::distance(begin, end));
+    gpu_data_.assign(begin, end);
+    size_ = gpu_data_.size();
+    state_ = kHeadAtGPU;
+  }
+
   void ClearCPUData();
   void ClearGPUData();
 
