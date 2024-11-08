@@ -17,7 +17,7 @@
 | CMake        | 3.28.3            |
 | Make         | 4.3               |
 
-一般地，使用其他 Linux 发行版或者使用 WSL2 ，CMake 版本高于3.20，gcc/g++ 和 nvcc 版本支持 C++20及以上，是可以完成项目的编译构建的。如果使用 Windows 操作系统，一般使用 MinGW 也可以，MSVC 不确定能否编译构建本项目。
+一般地，使用其他 Linux 发行版或者使用 WSL2 ，CMake 版本高于3.20，gcc/g++ 和 nvcc 版本支持 C++20或以上，是可以完成项目的编译构建的。如果使用 Windows 操作系统，一般使用 MinGW 也可以，MSVC 不确定能否编译构建本项目。
 
 ## 编译运行
 
@@ -27,7 +27,6 @@
 mkdir build && cd build
 cmake .. # 默认 Debug 模式，如果需要使用 Release 模式，可以执行 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j4 # 如果CPU核心数小于4,应该修改-j选项
-# make 命令将会生成三个可执行文件，my_tensor, tensor_test, layer_test，后面两个是测试
 ./my_tensor # 将会打印 Hello, from my_tensor!
 ./tensor_test # 将会测试 Tensor 类的方法
 ./relu_test # 将会测试 Relu 类的正向传播和反向传播
@@ -63,7 +62,7 @@ make -j4 # 如果CPU核心数小于4,应该修改-j选项
 
 #### 基于 `cuBLAS` 实现的一些数学方法
 
-为了实现全连接层的正向和方向传播的方便，我们对一些数学方法进行了封装，具体实现基于 `cuBLAS` 库。
+为了实现全连接层的正向和方向传播的方便，我们对一些数学方法进行了封装，具体实现基于 `cuBLAS` 库，代码在 `include/blas.cuh` 和 `src/blas.cu` 。
 
 1. 首先我们封装了矩阵乘法，主要是 `matmul` , `transpose_matmul` , `matmul_transpose` , `transpose_matmul_transpose` ，分别表示两个矩阵相乘，左矩阵的转置乘以右矩阵，左矩阵乘以右矩阵的转置，左矩阵的转置乘以右矩阵的转置。在本项目中，我们只实现了单精度浮点数的相关方法，如果你使用其他模板参数，将会抛出异常。考虑到在卷积层的时候我们需要使用批量的矩阵乘法，并可能有广播机制的需要，我们在这里封装的是 `cuBLAS` 中的 `cublasSgemmBatched` 方法，用 `batch_count` 参数控制批量，默认为 1 ，也就是跟普通的矩阵乘法一样；同时用 `broadcast` 控制广播，为 1 的时候对第一个变量进行广播，为 2 的时候对第二个变量进行广播。
 
