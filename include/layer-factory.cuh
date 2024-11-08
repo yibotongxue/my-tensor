@@ -7,6 +7,7 @@
 
 #include "conv.cuh"
 #include "error.h"
+#include "flatten.cuh"
 #include "layer-parameter.h"
 #include "layer.cuh"
 #include "linear.cuh"
@@ -24,6 +25,8 @@ inline LayerPtr<T> CreateLayer(const LayerParameterPtr param) {
       return std::make_shared<Relu<T>>(param);
     case ParamType::kSigmoid:
       return std::make_shared<Sigmoid<T>>(param);
+    case ParamType::kFlatten:
+      return std::make_shared<Flatten<T>>(param);
     case ParamType::kLinear:
       return std::make_shared<Linear<T>>(param);
     case ParamType::kConvolution:

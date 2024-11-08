@@ -41,6 +41,11 @@ class SigmoidError : public std::runtime_error {
   using runtime_error::runtime_error;
 };  // class SigmoidError
 
+class FlattenError : public std::runtime_error {
+ public:
+  using runtime_error::runtime_error;
+};  // class FlattenError
+
 class LinearError : public std::runtime_error {
  public:
   using runtime_error::runtime_error;

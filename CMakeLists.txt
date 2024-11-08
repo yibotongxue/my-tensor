@@ -59,7 +59,7 @@ enable_testing()
 # Define source files
 set(TENSOR_SRC src/synced-vector.cu src/tensor.cu)
 set(LAYER_SRC src/layer.cu src/json-loader.cc src/layer-parameter.cc src/filler.cu
-src/relu.cu src/sigmoid.cu src/linear.cu src/conv.cu
+src/relu.cu src/sigmoid.cu src/flatten.cu src/linear.cu src/conv.cu
 src/pooling.cu src/softmax.cu src/loss-with-softmax.cu)
 set(BLAS_SRC src/blas.cu)
 set(IM2COL_SRC src/im2col.cu)

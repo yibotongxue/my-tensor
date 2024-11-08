@@ -14,6 +14,7 @@ namespace my_tensor {
 enum class ParamType {
   kRelu,
   kSigmoid,
+  kFlatten,
   kLinear,
   kConvolution,
   kPooling,
@@ -63,6 +64,18 @@ class SigmoidParameter : public LayerParameter {
 
   virtual ~SigmoidParameter() = default;
 };  // class SigmoidParameter
+
+class FlattenParameter : public LayerParameter {
+ public:
+  explicit FlattenParameter() : LayerParameter(ParamType::kFlatten) {}
+
+  bool inplace_;
+
+  virtual ~FlattenParameter() = default;
+
+ private:
+  void ParseSettingParameter(const nlohmann::json& js) override;
+};  // class FlattenParameter
 
 class LinearParameter final : public LayerParameter {
  public:
@@ -133,6 +146,8 @@ inline LayerParameterPtr CreateLayerParameter(const std::string& type) {
     return std::make_shared<ReluParamter>();
   } else if (type == "Sigmoid") {
     return std::make_shared<SigmoidParameter>();
+  } else if (type == "Flatten") {
+    return std::make_shared<FlattenParameter>();
   } else if (type == "Linear") {
     return std::make_shared<LinearParameter>();
   } else if (type == "Convolution") {

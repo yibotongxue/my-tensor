@@ -10,6 +10,13 @@
 
 namespace my_tensor {
 
+void FlattenParameter::ParseSettingParameter(const nlohmann::json& js) {
+  if (!js.contains("inplace") || !js["inplace"].is_boolean()) {
+    throw FileError("Flatten layer should have an boolean value as inplace.");
+  }
+  inplace_ = js["inplace"].get<bool>();
+}
+
 void LinearParameter::ParseSettingParameter(const nlohmann::json& js) {
   if (!js.contains("input_feature") ||
       !js["input_feature"].is_number_integer()) {
