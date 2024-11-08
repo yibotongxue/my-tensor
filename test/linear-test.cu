@@ -28,7 +28,7 @@
    protected:                                                             \
     void SetUp() override {                                               \
       my_tensor::JsonLoader loader("../test/json-test/linear.json");      \
-      auto&& layer_parameters = loader.Load();                            \
+      auto&& layer_parameters = loader.LoadLayers();                      \
       weight_data.resize(80000);                                          \
       x_data.resize(60000);                                               \
       bias_data.resize(400);                                              \

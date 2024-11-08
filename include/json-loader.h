@@ -18,7 +18,7 @@ class JsonLoader {
  public:
   explicit JsonLoader(const std::string& json_file_path);
 
-  std::vector<LayerParameterPtr> Load();
+  std::vector<LayerParameterPtr> LoadLayers();
 
  private:
   nlohmann::json layers_;

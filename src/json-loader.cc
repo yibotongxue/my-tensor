@@ -35,7 +35,7 @@ JsonLoader::JsonLoader(const std::string& json_file_path) {
   }
 }
 
-std::vector<LayerParameterPtr> JsonLoader::Load() {
+std::vector<LayerParameterPtr> JsonLoader::LoadLayers() {
   std::vector<LayerParameterPtr> result;
   for (auto&& layer : layers_) {
     result.push_back(LoadLayerParam(layer));

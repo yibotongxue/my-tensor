@@ -27,7 +27,7 @@
    protected:                                                          \
     void SetUp() override {                                            \
       my_tensor::JsonLoader loader("../test/json-test/pooling.json");  \
-      auto&& layer_parameters = loader.Load();                         \
+      auto&& layer_parameters = loader.LoadLayers();                   \
       bottom_data.resize(59520);                                       \
       top_diff.resize(14400);                                          \
       std::random_device rd;                                           \

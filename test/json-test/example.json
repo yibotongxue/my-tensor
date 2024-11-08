@@ -63,6 +63,11 @@
       "type": "Sigmoid"
     },
     {
+      "name": "flatten",
+      "type": "Flatten",
+      "inplace": true
+    },
+    {
       "name": "linear1",
       "type": "Linear",
       "input_feature": 490,

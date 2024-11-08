@@ -26,7 +26,7 @@
    protected:                                                      \
     void SetUp() override {                                        \
       my_tensor::JsonLoader loader("../test/json-test/relu.json"); \
-      auto&& layer_parameters = loader.Load();                     \
+      auto&& layer_parameters = loader.LoadLayers();               \
       data.resize(30000);                                          \
       diff.resize(30000);                                          \
       std::random_device rd;                                       \

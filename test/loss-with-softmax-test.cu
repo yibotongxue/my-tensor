@@ -21,45 +21,45 @@
 //   EXPECT_TRUE(false);
 // }
 
-#define LOSS_WITH_SOFTMAX_TEST_CLASS(device)                           \
-  class LossWithSoftmax##device##Test : public ::testing::Test {       \
-   protected:                                                          \
-    void SetUp() override {                                            \
-      my_tensor::JsonLoader loader(                                    \
-          "../test/json-test/loss-with-softmax.json");                 \
-      loss_with_softmax.reset();                                       \
-      loss_with_softmax = my_tensor::CreateLayer<>(loader.Load()[0]);  \
-      const std::vector<int> input_shape{1024, 10};                    \
-      const std::vector<int> label_shape{1024};                        \
-      const std::vector<int> loss_shape{1};                            \
-      input_data.resize(10240);                                        \
-      label_data.resize(1024);                                         \
-      input.reset();                                                   \
-      label.reset();                                                   \
-      loss.reset();                                                    \
-      std::random_device rd;                                           \
-      std::mt19937 gen(rd());                                          \
-      std::uniform_real_distribution<float> dis(-10.0f, 10.0f);        \
-      auto random_func = [&gen, &dis]() -> float { return dis(gen); }; \
-      std::ranges::generate(input_data, random_func);                  \
-      std::uniform_int_distribution<int> label_dis(0, 9);              \
-      auto label_random = [&gen, &label_dis]() -> int {                \
-        return label_dis(gen);                                         \
-      };                                                               \
-      std::ranges::generate(label_data, label_random);                 \
-      input = std::make_shared<my_tensor::Tensor<>>(input_shape);      \
-      label = std::make_shared<my_tensor::Tensor<>>(label_shape);      \
-      loss = std::make_shared<my_tensor::Tensor<>>(loss_shape);        \
-      input->Set##device##Data(input_data);                            \
-      label->Set##device##Data(label_data);                            \
-      loss_with_softmax->SetUp({input, label}, {loss});                \
-    }                                                                  \
-    std::vector<float> input_data;                                     \
-    std::vector<float> label_data;                                     \
-    my_tensor::TensorPtr<> input;                                      \
-    my_tensor::TensorPtr<> label;                                      \
-    my_tensor::TensorPtr<> loss;                                       \
-    my_tensor::LayerPtr<> loss_with_softmax;                           \
+#define LOSS_WITH_SOFTMAX_TEST_CLASS(device)                                \
+  class LossWithSoftmax##device##Test : public ::testing::Test {            \
+   protected:                                                               \
+    void SetUp() override {                                                 \
+      my_tensor::JsonLoader loader(                                         \
+          "../test/json-test/loss-with-softmax.json");                      \
+      loss_with_softmax.reset();                                            \
+      loss_with_softmax = my_tensor::CreateLayer<>(loader.LoadLayers()[0]); \
+      const std::vector<int> input_shape{1024, 10};                         \
+      const std::vector<int> label_shape{1024};                             \
+      const std::vector<int> loss_shape{1};                                 \
+      input_data.resize(10240);                                             \
+      label_data.resize(1024);                                              \
+      input.reset();                                                        \
+      label.reset();                                                        \
+      loss.reset();                                                         \
+      std::random_device rd;                                                \
+      std::mt19937 gen(rd());                                               \
+      std::uniform_real_distribution<float> dis(-10.0f, 10.0f);             \
+      auto random_func = [&gen, &dis]() -> float { return dis(gen); };      \
+      std::ranges::generate(input_data, random_func);                       \
+      std::uniform_int_distribution<int> label_dis(0, 9);                   \
+      auto label_random = [&gen, &label_dis]() -> int {                     \
+        return label_dis(gen);                                              \
+      };                                                                    \
+      std::ranges::generate(label_data, label_random);                      \
+      input = std::make_shared<my_tensor::Tensor<>>(input_shape);           \
+      label = std::make_shared<my_tensor::Tensor<>>(label_shape);           \
+      loss = std::make_shared<my_tensor::Tensor<>>(loss_shape);             \
+      input->Set##device##Data(input_data);                                 \
+      label->Set##device##Data(label_data);                                 \
+      loss_with_softmax->SetUp({input, label}, {loss});                     \
+    }                                                                       \
+    std::vector<float> input_data;                                          \
+    std::vector<float> label_data;                                          \
+    my_tensor::TensorPtr<> input;                                           \
+    my_tensor::TensorPtr<> label;                                           \
+    my_tensor::TensorPtr<> loss;                                            \
+    my_tensor::LayerPtr<> loss_with_softmax;                                \
   };
 
 LOSS_WITH_SOFTMAX_TEST_CLASS(CPU)

@@ -16,9 +16,9 @@ TEST(JsonTest, NotExistFile) {
 
 TEST(JsonTest, UnimplementedLayer) {
   my_tensor::JsonLoader loader("../test/json-test/unimplemented.json");
-  EXPECT_THROW(auto params = loader.Load(), my_tensor::FileError);
+  EXPECT_THROW(auto params = loader.LoadLayers(), my_tensor::FileError);
   try {
-    auto params = loader.Load();
+    auto params = loader.LoadLayers();
   } catch (my_tensor::FileError& e) {
     std::cerr << e.what() << std::endl;
   }
@@ -26,9 +26,9 @@ TEST(JsonTest, UnimplementedLayer) {
 
 TEST(JsonTest, WithoutName) {
   my_tensor::JsonLoader loader("../test/json-test/without-name.json");
-  EXPECT_THROW(auto params = loader.Load(), my_tensor::FileError);
+  EXPECT_THROW(auto params = loader.LoadLayers(), my_tensor::FileError);
   try {
-    auto params = loader.Load();
+    auto params = loader.LoadLayers();
   } catch (my_tensor::FileError& e) {
     std::cerr << e.what() << std::endl;
   }
@@ -36,9 +36,9 @@ TEST(JsonTest, WithoutName) {
 
 TEST(JsonTest, WithoutType) {
   my_tensor::JsonLoader loader("../test/json-test/without-type.json");
-  EXPECT_THROW(auto params = loader.Load(), my_tensor::FileError);
+  EXPECT_THROW(auto params = loader.LoadLayers(), my_tensor::FileError);
   try {
-    auto params = loader.Load();
+    auto params = loader.LoadLayers();
   } catch (my_tensor::FileError& e) {
     std::cerr << e.what() << std::endl;
   }
@@ -46,8 +46,8 @@ TEST(JsonTest, WithoutType) {
 
 TEST(JsonTest, ReluSuccess) {
   my_tensor::JsonLoader loader("../test/json-test/example.json");
-  ASSERT_NO_THROW(loader.Load());
-  auto params = loader.Load();
+  ASSERT_NO_THROW(loader.LoadLayers());
+  auto params = loader.LoadLayers();
   auto param = params[2];
   ASSERT_EQ(param->name_, "relu1");
   ASSERT_EQ(param->type_, my_tensor::ParamType::kRelu);
@@ -57,8 +57,8 @@ TEST(JsonTest, ReluSuccess) {
 
 TEST(JsonTest, SigmoidSuccess) {
   my_tensor::JsonLoader loader("../test/json-test/example.json");
-  ASSERT_NO_THROW(loader.Load());
-  auto params = loader.Load();
+  ASSERT_NO_THROW(loader.LoadLayers());
+  auto params = loader.LoadLayers();
   auto param = params[5];
   ASSERT_EQ(param->name_, "sigmoid2");
   ASSERT_EQ(param->type_, my_tensor::ParamType::kSigmoid);
@@ -66,11 +66,23 @@ TEST(JsonTest, SigmoidSuccess) {
   ASSERT_NE(dynamic_cast<my_tensor::SigmoidParameter*>(ptr), nullptr);
 }
 
+TEST(JsonTest, FlattenSuccess) {
+  my_tensor::JsonLoader loader("../test/json-test/example.json");
+  ASSERT_NO_THROW(loader.LoadLayers());
+  auto params = loader.LoadLayers();
+  auto param = params[6];
+  ASSERT_EQ(param->name_, "flatten");
+  ASSERT_EQ(param->type_, my_tensor::ParamType::kFlatten);
+  auto* fptr = dynamic_cast<my_tensor::FlattenParameter*>(param.get());
+  ASSERT_NE(fptr, nullptr);
+  ASSERT_TRUE(fptr->inplace_);
+}
+
 TEST(JsonTest, LinearSuccess) {
   my_tensor::JsonLoader loader("../test/json-test/example.json");
-  ASSERT_NO_THROW(loader.Load());
-  auto params = loader.Load();
-  auto param = params[6];
+  ASSERT_NO_THROW(loader.LoadLayers());
+  auto params = loader.LoadLayers();
+  auto param = params[7];
   ASSERT_EQ(param->name_, "linear1");
   ASSERT_EQ(param->type_, my_tensor::ParamType::kLinear);
   auto* lptr = dynamic_cast<my_tensor::LinearParameter*>(param.get());
@@ -89,8 +101,8 @@ TEST(JsonTest, LinearSuccess) {
 
 TEST(JsonTest, ConvolutionSuccess) {
   my_tensor::JsonLoader loader("../test/json-test/example.json");
-  ASSERT_NO_THROW(loader.Load());
-  auto params = loader.Load();
+  ASSERT_NO_THROW(loader.LoadLayers());
+  auto params = loader.LoadLayers();
   auto param = params[0];
   ASSERT_EQ(param->name_, "conv1");
   ASSERT_EQ(param->type_, my_tensor::ParamType::kConvolution);
@@ -107,8 +119,8 @@ TEST(JsonTest, ConvolutionSuccess) {
 
 TEST(JsonTest, PoolingSuccess) {
   my_tensor::JsonLoader loader("../test/json-test/example.json");
-  ASSERT_NO_THROW(loader.Load());
-  auto params = loader.Load();
+  ASSERT_NO_THROW(loader.LoadLayers());
+  auto params = loader.LoadLayers();
   auto param = params[1];
   ASSERT_EQ(param->name_, "pooling1");
   ASSERT_EQ(param->type_, my_tensor::ParamType::kPooling);
@@ -123,9 +135,9 @@ TEST(JsonTest, PoolingSuccess) {
 
 TEST(JsonTest, SoftmaxSuccess) {
   my_tensor::JsonLoader loader("../test/json-test/example.json");
-  ASSERT_NO_THROW(loader.Load());
-  auto params = loader.Load();
-  auto param = params[11];
+  ASSERT_NO_THROW(loader.LoadLayers());
+  auto params = loader.LoadLayers();
+  auto param = params[12];
   ASSERT_EQ(param->name_, "softmax");
   ASSERT_EQ(param->type_, my_tensor::ParamType::kSoftmax);
   auto* sptr = dynamic_cast<my_tensor::SoftmaxParameter*>(param.get());
@@ -135,9 +147,9 @@ TEST(JsonTest, SoftmaxSuccess) {
 
 TEST(JsonTest, LossWithSoftmaxSuccess) {
   my_tensor::JsonLoader loader("../test/json-test/example.json");
-  ASSERT_NO_THROW(loader.Load());
-  auto params = loader.Load();
-  auto param = params[12];
+  ASSERT_NO_THROW(loader.LoadLayers());
+  auto params = loader.LoadLayers();
+  auto param = params[13];
   ASSERT_EQ(param->name_, "loss_with_softmax");
   ASSERT_EQ(param->type_, my_tensor::ParamType::kLossWithSoftmax);
   auto* lptr = dynamic_cast<my_tensor::LossWithSoftmaxParameter*>(param.get());

@@ -26,7 +26,7 @@
    protected:                                                                \
     void SetUp() override {                                                  \
       my_tensor::JsonLoader loader("../test/json-test/conv.json");           \
-      auto&& layer_parameters = loader.Load();                               \
+      auto&& layer_parameters = loader.LoadLayers();                         \
       input_data.resize(102400);                                             \
       output_diff.resize(184320);                                            \
       kernels_data.resize(405);                                              \
