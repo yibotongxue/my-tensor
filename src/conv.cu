@@ -62,6 +62,18 @@ void Convolution<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
 }
 
 template <typename T>
+void Convolution<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
+                             const std::vector<TensorPtr<T>>& top) const {
+  int expect_size = batch_size_ * output_channels_ * height_ * width_;
+  if (top[0]->GetSize() != expect_size) {
+    throw ConvError("The top size not match of convolution layer.");
+  }
+  const std::vector<int> top_shape = {batch_size_, output_channels_, height_,
+                                      width_};
+  top[0]->Reshape(top_shape);
+}
+
+template <typename T>
 void Convolution<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                                 const std::vector<TensorPtr<T>>& top) {
   CheckShape(bottom[0], top[0]);
@@ -200,6 +212,7 @@ void Convolution<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
 template <typename T>
 void Convolution<T>::CheckShape(const TensorPtr<T> bottom,
                                 const TensorPtr<T> top) const {
+#ifdef DEBUG
   const std::vector<int>& kernel_shape = kernel_->GetShape();
   const std::vector<int>& bottom_shape = bottom->GetShape();
   const std::vector<int>& top_shape = top->GetShape();
@@ -224,6 +237,7 @@ void Convolution<T>::CheckShape(const TensorPtr<T> bottom,
   if (top_shape[1] != kernel_shape[0]) {
     throw ConvError("The output channels_ not match kernel.");
   }
+#endif  // DEBUG
 }
 
 template class Convolution<>;

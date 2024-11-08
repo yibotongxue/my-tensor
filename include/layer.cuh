@@ -22,12 +22,15 @@ class Layer {
              const std::vector<TensorPtr<T>>& top) {
     CheckTensorCount(bottom, top);
     LayerSetUp(bottom, top);
+    Reshape(bottom, top);
   }
 
   virtual void CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
                                 const std::vector<TensorPtr<T>>& top) const = 0;
   virtual void LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
                           const std::vector<TensorPtr<T>>& top) {}
+  virtual void Reshape(const std::vector<TensorPtr<T>>& bottom,
+                       const std::vector<TensorPtr<T>>& top) const = 0;
 
   // The layer can not be copied or moved.
   DISABLE_LAYER_COPY(Layer)

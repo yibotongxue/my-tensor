@@ -28,6 +28,17 @@ void LossWithSoftmax<T>::CheckTensorCount(
 }
 
 template <typename T>
+void LossWithSoftmax<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
+                                 const std::vector<TensorPtr<T>>& top) const {
+  int expect_size = 1;
+  if (top[0]->GetSize() != expect_size) {
+    throw LossWithSoftmaxError(
+        "The top size not match loss with softmax layer.");
+  }
+  top[0]->Reshape({1});
+}
+
+template <typename T>
 void LossWithSoftmax<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
                                     const std::vector<TensorPtr<T>>& top) {
   if (bottom[0]->GetShape().size() != 2) {
@@ -130,6 +141,7 @@ template <typename T>
 void LossWithSoftmax<T>::CheckShape(const TensorPtr<T> input,
                                     const TensorPtr<T> label,
                                     const TensorPtr<T> output) const {
+#ifdef DEBUG
   if (input->GetShape().size() != 2) {
     throw LossWithSoftmaxError(
         "The input of loss with softmax layer should be a two dimension "
@@ -157,6 +169,7 @@ void LossWithSoftmax<T>::CheckShape(const TensorPtr<T> input,
         "The output of loss with softmax layer should be a one dimension "
         "contains only one element.");
   }
+#endif  // DEBUG
 }
 
 template class LossWithSoftmax<>;

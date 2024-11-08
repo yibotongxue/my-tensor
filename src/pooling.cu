@@ -28,6 +28,18 @@ void Pooling<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
 }
 
 template <typename T>
+void Pooling<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
+                         const std::vector<TensorPtr<T>>& top) const {
+  int expect_size =
+      batch_size_ * input_channels_ * output_height_ * output_width_;
+  if (top[0]->GetSize() != expect_size) {
+    throw PoolingError("The top size not match pooling layer.");
+  }
+  top[0]->Reshape(
+      {batch_size_, input_channels_, output_height_, output_width_});
+}
+
+template <typename T>
 void Pooling<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
                             const std::vector<TensorPtr<T>>& top) {
   std::shared_ptr<PoolingParameter> param =
@@ -163,6 +175,7 @@ void Pooling<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
 template <typename T>
 void Pooling<T>::CheckShape(const TensorPtr<T> bottom,
                             const TensorPtr<T> top) const {
+#ifdef DEBUG
   const auto& bottom_shape = bottom->GetShape();
   const auto& top_shape = top->GetShape();
   if (bottom_shape.size() != 4) {
@@ -188,6 +201,7 @@ void Pooling<T>::CheckShape(const TensorPtr<T> bottom,
   if (top_shape[2] != output_height_ || top_shape[3] != output_width_) {
     throw PoolingError("The output shape not match the pooling layer.");
   }
+#endif  // DEBUG
 }
 
 template class Pooling<>;

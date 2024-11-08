@@ -79,6 +79,7 @@
         "codecvt": "cpp",
         "forward_list": "cpp",
         "valarray": "cpp",
-        "fstream": "cpp"
+        "fstream": "cpp",
+        "filesystem": "cpp"
     }
 }

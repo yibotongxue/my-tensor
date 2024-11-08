@@ -31,6 +31,16 @@ void Softmax<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
 }
 
 template <typename T>
+void Softmax<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
+                         const std::vector<TensorPtr<T>>& top) const {
+  int expect_size = batch_size_ * channels_;
+  if (top[0]->GetSize() != expect_size) {
+    throw SoftmaxError("The top size not match softmax layer.");
+  }
+  top[0]->Reshape({batch_size_, channels_});
+}
+
+template <typename T>
 void Softmax<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
                             const std::vector<TensorPtr<T>>& top) {
   if (bottom[0]->GetShape().size() != 2) {
@@ -111,6 +121,7 @@ void Softmax<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
 template <typename T>
 void Softmax<T>::CheckShape(const TensorPtr<T> bottom,
                             const TensorPtr<T> top) const {
+#ifdef DEBUG
   if (bottom->GetShape().size() != 2) {
     throw SoftmaxError(
         "The bottom of softmax layer should be a two dimension tensor.");
@@ -128,6 +139,7 @@ void Softmax<T>::CheckShape(const TensorPtr<T> bottom,
     throw SoftmaxError(
         "The channels size of bottom of softmax layer not match layer.");
   }
+#endif  // DEBUG
 }
 
 template class Softmax<>;

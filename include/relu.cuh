@@ -21,6 +21,8 @@ class Relu final : public Layer<T> {
 
   void CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
                         const std::vector<TensorPtr<T>>& top) const override;
+  void Reshape(const std::vector<TensorPtr<T>>& bottom,
+               const std::vector<TensorPtr<T>>& top) const override;
 
   virtual ~Relu() = default;
 

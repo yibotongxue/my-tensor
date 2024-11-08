@@ -19,6 +19,8 @@ class Convolution final : public Layer<T> {
 
   void CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
                         const std::vector<TensorPtr<T>>& top) const override;
+  void Reshape(const std::vector<TensorPtr<T>>& bottom,
+               const std::vector<TensorPtr<T>>& top) const override;
 
   void LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
                   const std::vector<TensorPtr<T>>& top) override;

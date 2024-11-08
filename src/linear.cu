@@ -25,6 +25,16 @@ void Linear<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
 }
 
 template <typename T>
+void Linear<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
+                        const std::vector<TensorPtr<T>>& top) const {
+  int expect_size = m * n;
+  if (top[0]->GetSize() != expect_size) {
+    throw LinearError("The top size not match linear layer.");
+  }
+  top[0]->Reshape({m, n});
+}
+
+template <typename T>
 void Linear<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
                            const std::vector<TensorPtr<T>>& top) {
   if (bottom[0]->GetShape().size() != 2) {
@@ -154,6 +164,7 @@ void Linear<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
 template <typename T>
 void Linear<T>::CheckShape(const TensorPtr<T> bottom,
                            const TensorPtr<T> top) const {
+#ifdef DEBUG
   const std::vector<int>& bottom_shape = bottom->GetShape();
   const std::vector<int>& top_shape = top->GetShape();
   if (bottom_shape[0] != m) {
@@ -168,6 +179,7 @@ void Linear<T>::CheckShape(const TensorPtr<T> bottom,
   if (bottom_shape[0] != top_shape[0]) {
     throw LinearError("Matmul bottom and top shapes not match.");
   }
+#endif  // DEBUG
 }
 
 template class Linear<>;

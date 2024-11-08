@@ -21,6 +21,16 @@ void Relu<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
   }
 }
 
+template <typename T>
+void Relu<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
+                      const std::vector<TensorPtr<T>>& top) const {
+  int expect_size = bottom[0]->GetSize();
+  if (top[0]->GetSize() != expect_size) {
+    throw ReluError("The top size not match relu layer.");
+  }
+  top[0]->Reshape(bottom[0]->GetShape());
+}
+
 namespace {
 template <typename T>
 struct ReluOperator {
