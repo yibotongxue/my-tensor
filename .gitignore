@@ -61,3 +61,6 @@ CMakePresets.json
 add-copyright.sh
 
 assets
+
+data/*
+!data/.gitkeep
