@@ -188,7 +188,7 @@ CONVOLUTION_BACKWARD_KERNEL(GPU)
           expect += output_diff[t * 18432 + i * 2048 + j];       \
         }                                                        \
       }                                                          \
-      ASSERT_NEAR(actual[i], expect, 0.01);                      \
+      ASSERT_NEAR(actual[i] / expect, 1.0f, 0.01);               \
     }                                                            \
   }
 

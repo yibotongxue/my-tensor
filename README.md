@@ -40,6 +40,7 @@ make -j4 # 如果CPU核心数小于4,应该修改-j选项
 ./pooling_test # 将会测试池化层的正向传播和反向传播
 ./softmax_test # 将会测试 Softmax 类的正向传播和反向传播方法
 ./loss_with_softmax_test # 将会测试带有损失函数的 Softmax 层的正向传播和反向传播
+./mnist # 将会在 mnist 数据集上进行集成测试，你需要先下载 mnist 数据集到 data 目录下
 ```
 
 ## 项目代码解析
@@ -185,7 +186,39 @@ __global__ static void XavierFillerKernel(float *data, float limit, int n) {
 
 #### 正向传播
 
-对每一个池化窗口，我们启动一个线程计算其最大值，输出到输出数据中，并记录其在输入数据的索引到 `mask` 张量中。
+对每一个池化窗口，我们启动一个线程计算其最大值，输出到输出数据中，并记录其在输入数据的索引到 `mask` 张量中。核函数如下所示：
+
+```c++
+template <typename T>
+__global__ void PoolingKernel(const int nthreads, const T* const bottom_data,
+                              const int n, const int input_w,
+                              const int input_size, const int output_w,
+                              const int output_size, const int kernel_h,
+                              const int kernel_w, const int stride_h,
+                              const int stride_w, T* top_data, int* mask_data) {
+  CUDA_KERNEL_LOOP(index, nthreads) {
+    int t = index / output_size;
+    int h_start = (index % output_size) / output_w * stride_h;
+    int w_start = (index % output_w) * stride_w;
+    T val = static_cast<T>(-__FLT_MAX__);
+    int idx = -1;
+    int row_idx = t * input_size + h_start * input_w + w_start;
+    for (int i = 0; i < kernel_h; i++) {
+      int col_idx = row_idx;
+      for (int j = 0; j < kernel_w; j++) {
+        if (val < bottom_data[col_idx]) {
+          val = bottom_data[col_idx];
+          idx = col_idx;
+        }
+        col_idx += 1;
+      }
+      row_idx += input_w;
+    }
+    top_data[index] = val;
+    mask_data[index] = idx;
+  }
+}
+```
 
 #### 反向传播
 
@@ -199,7 +232,7 @@ thrust::scatter(top_diff.begin(), top_diff.end(), mask_data.begin(),
 
 ### `Softmax` 层的正向传播
 
-按照作业的要求，我们只实现了正向传播，主要的代码思路与讲义的一致。首先，我们使用 `thrust::reduce_by_key` 进行分段归约，求出每一行的最大值，然后用 `thrust::transform` 将每一行减去最大值，并取对数，再进行一次分段归约，求出每一行的和，再对每一行除以这一行的和，得到最终结果。代码如下
+按照作业的要求，我们只实现了正向传播，主要的代码思路与讲义的一致。首先，我们使用启动核函数求每一行的最大值，并储存其索引（主要是考虑到预测的时候需要），然后用 `thrust::transform` 将每一行减去最大值，并取对数，使用 `thrust::reduce_by_key`进行分段归约，求出每一行的和，再对每一行除以这一行的和，得到最终结果。代码如下
 
 ```c++
 thrust::device_vector<int> keys(batch_size_ * channels_);
@@ -213,9 +246,8 @@ thrust::transform(
   thrust::device_vector<T> max_values(batch_size_);
 T* max_ptr = RAW_PTR(max_values);
 // compute row max element
-thrust::reduce_by_key(keys.begin(), keys.end(), bottom_data.begin(),
-                      output_keys.begin(), max_values.begin(),
-                      thrust::equal_to<int>(), thrust::maximum<T>());
+GetMaxPerRow<T><<<CudaGetBlocks(batch_size_), kCudaThreadNum>>>(
+    bottom_ptr, batch_size_, channels_, predict_ptr, max_ptr);
 // substract the max element
 thrust::transform(
     thrust::counting_iterator(0),
@@ -272,6 +304,8 @@ thrust::for_each(
 
 ## 测试
 
+### 单元测试
+
 本项目使用 `GoogleTest` 框架进行单元测试，暂时未进行集成测试。测试代码在 `test` 目录下。跟本次作业相关的测试主要在 `test/linear-test.cu` ， `test/conv-test.cu` ， `test/pooling-test.cu` ， `test/softmax-test.cu` 和 `test/loss-with-softmax-test.cu` 中，目录下还有其他与作业不相关的测试文件，主要是开发过程中的单元测试以及上一次作业的测试代码，考虑项目的完整性，一并提交，亦可作为整体作业要求完成正确性的测试。
 
 本次作业相关的测试方法，基本的思路是一致的，就是通过 CPU 上未经过优化的串行运算直接求得结果，与我们项目经过优化的方法或者 GPU 上的方法求得的结果进行比较，以检验正确性。测试的数据通过随机数生成，考虑到我们需要在 CPU 上进行检验运算，我们直接在 CPU 上生成随机数据，而没有使用 `cuRAND` 。测试样例的网络定义在 `test/json-test` 目录下。
@@ -286,18 +320,28 @@ thrust::for_each(
 ./loss_with_softmax_test # 将会测试带有损失函数的 Softmax 层的正向传播和反向传播
 ```
 
-测试结果全部通过。 ~~（这是自然的，否则我也不会提交上去）~~
+测试结果为所有测试用例全部通过。
 
-需要注意的是，浮点数运算可能会有误差，所以一些地方我设置的允许的偏差比较大，但还是有可能出现不匹配的可能。考虑到我们输入的数据量比较大，即使测试报错，显示误差超过了一定范围，但如果观察到真实值和期待值是接近的，应该认为还是正确的，因为错误的方法导致相近的结果的概率是较小的。以下是我运行相关测试的结果
+### 集成测试
 
-![linear-test-result](./assets/image-20241107221238956.png)
+我们在 `mnist` 对我们实现的神经网络层进行集成测试，相关代码在 `src/mnist.cu` 中，网络配置在 `test/json-test/mnist.json` 中。
 
-![convolution-test-result](./assets/image-20241107221302005.png)
+首先，我们需要先下载 `mnist` 数据集。我尝试了直接从官网下载，但并没有成功。这里提供一个通过 `pytorch` 提供的下载渠道下载的方法。执行下面的命令：
 
-![pooling-test-result](./assets/image-20241107221322959.png)
+```bash
+# 回到项目根目录，比如如果你现在 build 目录，那么你需要先执行 cd ..
+mkdir data && cd data  # 不要改变数据集的位置
+wget https://ossci-datasets.s3.amazonaws.com/mnist/train-images-idx3-ubyte.gz
+wget https://ossci-datasets.s3.amazonaws.com/mnist/train-labels-idx1-ubyte.gz
+wget https://ossci-datasets.s3.amazonaws.com/mnist/t10k-images-idx3-ubyte.gz
+wget https://ossci-datasets.s3.amazonaws.com/mnist/t10k-labels-idx1-ubyte.gz
+gunzip *
+```
 
-![softmax-test-result](./assets/image-20241107221346395.png)
+然后进入 `build` 目录，执行下面命令：
 
-![loss-with-softmax-test-result](./assets/image-20241107221409517.png)
+```bash
+./mnist
+```
 
-确实是全部通过了测试。
+我的实验结果，测试集上的最高的准确率为 0.982964 。
