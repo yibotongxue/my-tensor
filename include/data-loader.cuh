@@ -3,6 +3,7 @@
 #ifndef INCLUDE_DATA_LOADER_CUH_
 #define INCLUDE_DATA_LOADER_CUH_
 
+#include <array>
 #include <vector>
 
 #include "dataset.h"
@@ -16,7 +17,7 @@ class DataLoader {
 
   bool HasNext() const { return index_ + batch_size_ <= dataset_->GetSize(); }
 
-  std::vector<TensorPtr<>> GetNext();
+  std::array<TensorPtr<>, 2> GetNext();
 
   void Reset() { index_ = 0; }
 

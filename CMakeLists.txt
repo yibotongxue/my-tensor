@@ -139,9 +139,9 @@ add_executable(json_test test/json-loader-test.cc src/json-loader.cc src/layer-p
 link_googletest(json_test)
 add_test(NAMD json_test COMMAND json_test)
 
-add_executable(my_tensor src/mnist.cu)
-set_cuda_properties(my_tensor)
-target_link_libraries(my_tensor PRIVATE layer_lib data_lib)
+add_executable(mnist src/mnist.cu)
+set_cuda_properties(mnist)
+target_link_libraries(mnist PRIVATE layer_lib data_lib)
 
 # Add the main target
-# add_executable(my_tensor main.cpp)
+add_executable(my_tensor main.cpp)

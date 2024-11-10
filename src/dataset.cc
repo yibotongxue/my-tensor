@@ -40,7 +40,8 @@ void MnistDataset::ReadImageFile() {
   image_.resize(header.num_images * header.num_rows * header.num_cols);
   std::vector<uint8_t> uimg_data(header.num_images * header.num_rows *
                                  header.num_cols);
-  file.read(reinterpret_cast<char*>(uimg_data.data()), image_.size());
+  file.read(reinterpret_cast<char*>(uimg_data.data()),
+            image_.size() * sizeof(char));
   std::ranges::transform(uimg_data, image_.begin(), [](uint8_t val) -> float {
     return static_cast<float>(val) / 255.0f - 0.5;
   });
@@ -56,6 +57,6 @@ void MnistDataset::ReadLabelFile() {
   magic_number = ReverseInt(magic_number);
   num_labels = ReverseInt(num_labels);
   label_.resize(num_labels);
-  file.read(reinterpret_cast<char*>(label_.data()), num_labels);
+  file.read(reinterpret_cast<char*>(label_.data()), num_labels * sizeof(char));
 }
 }  // namespace my_tensor

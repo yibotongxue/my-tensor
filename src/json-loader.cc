@@ -51,6 +51,15 @@ JsonLoader::JsonLoader(const std::string& json_file_path) {
     throw FileError("The learning_rate should be a float.");
   }
   learning_rate_ = js["learning_rate"].get<float>();
+  if (!js.contains("l2")) {
+    throw FileError(
+        "The input json file is invalid. Valid json should contain key "
+        "l2.");
+  }
+  if (!js["l2"].is_number_float()) {
+    throw FileError("The l2 should be a float.");
+  }
+  l2_ = js["l2"].get<float>();
 }
 
 std::vector<LayerParameterPtr> JsonLoader::LoadLayers() {

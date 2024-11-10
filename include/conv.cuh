@@ -26,7 +26,7 @@ class Convolution final : public Layer<T> {
                   const std::vector<TensorPtr<T>>& top) override;
 
   std::vector<TensorPtr<T>> GetLearnableParameters() override {
-    return {kernel_};
+    return {kernel_, bias_};
   }
 
   DISABLE_LAYER_COPY(Convolution)

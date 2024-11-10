@@ -1,6 +1,7 @@
 {
-  "batch_size": 128,
-  "learning_rate": 1e-3,
+  "batch_size": 1024,
+  "learning_rate": 0.0006,
+  "l2": 1e-4,
   "layers": [
     {
       "name": "pooling-test",

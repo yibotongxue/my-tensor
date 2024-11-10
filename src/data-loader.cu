@@ -1,5 +1,6 @@
 // Copyright 2024 yibotongxue
 
+#include <array>
 #include <memory>
 #include <vector>
 
@@ -7,8 +8,8 @@
 #include "tensor.cuh"
 
 namespace my_tensor {
-std::vector<TensorPtr<>> DataLoader::GetNext() {
-  std::vector<TensorPtr<>> top(2, nullptr);
+std::array<TensorPtr<>, 2> DataLoader::GetNext() {
+  std::array<TensorPtr<>, 2> top;
   const auto& image_data = dataset_->GetImage();
   const auto& label_data = dataset_->GetLabel();
   const int im_size = dataset_->GetHeight() * dataset_->GetWidth();

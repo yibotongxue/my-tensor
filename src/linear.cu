@@ -126,7 +126,7 @@ void Linear<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
     for (int j = 0; j < m; j++) {
       temp += top_diff[j * n + i];
     }
-    bias_diff[i] = temp / m;
+    bias_diff[i] = temp;
   }
 }
 
@@ -141,10 +141,6 @@ void Linear<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
   matmul(bottom[0]->GetGPUDataPtr(), weight_->GetGPUDataPtr(),
          top[0]->GetGPUDataPtr(), m, k, n);
   add_col_vector(top[0]->GetGPUDataPtr(), bias_->GetGPUDataPtr(), m, n);
-  int temp = m;
-  thrust::transform(bias_->GetGPUData().begin(), bias_->GetGPUData().end(),
-                    bias_->GetGPUData().begin(),
-                    [temp] __device__(T val) -> T { return val / temp; });
 }
 
 template <typename T>
