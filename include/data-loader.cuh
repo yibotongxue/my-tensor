@@ -18,6 +18,8 @@ class DataLoader {
 
   std::vector<TensorPtr<>> GetNext();
 
+  void Reset() { index_ = 0; }
+
  private:
   DatasetPtr dataset_;
   int batch_size_;

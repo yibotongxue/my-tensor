@@ -26,7 +26,7 @@ class Dataset {
   int GetWidth() const { return width_; }
   const std::vector<float>& GetImage() const { return image_; }
   const std::vector<uint8_t>& GetLabel() const { return label_; }
-  int GetSize() const { return image_.size(); }
+  int GetSize() const { return label_.size(); }
 
  protected:
   std::vector<float> image_;
@@ -41,6 +41,11 @@ class Dataset {
 };  // class Dataset
 
 class MnistDataset : public Dataset {
+ public:
+  explicit MnistDataset(const std::string& image_file_path,
+                        const std::string& label_file_path)
+      : Dataset(image_file_path, label_file_path) {}
+
  private:
   void ReadImageFile() override;
   void ReadLabelFile() override;

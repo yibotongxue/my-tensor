@@ -1,5 +1,8 @@
 // Copyright 2024 yibotongxue
 
+#include <thrust/count.h>
+#include <thrust/execution_policy.h>
+
 #include <algorithm>
 #include <memory>
 #include <ranges>
@@ -66,6 +69,19 @@ void LossWithSoftmax<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
   softmax_.reset();
   softmax_ = CreateLayer<T>(temp_param);
   softmax_->SetUp(softmax_bottom_, softmax_top_);
+}
+
+template <typename T>
+float LossWithSoftmax<T>::GetAccuracy(const TensorPtr<T> label) const {
+  const TensorPtr<T> predict =
+      std::dynamic_pointer_cast<Softmax<T>>(softmax_)->GetPredict();
+  thrust::device_vector<int> temp(batch_size_, 0);
+  thrust::transform(
+      predict->GetGPUData().begin(), predict->GetGPUData().end(),
+      label->GetGPUData().begin(), temp.begin(),
+      [] __device__(T val1, T val2) -> int { return val1 == val2 ? 1 : 0; });
+  int same_count = thrust::reduce(temp.begin(), temp.end());
+  return static_cast<float>(same_count) / static_cast<float>(batch_size_);
 }
 
 template <typename T>

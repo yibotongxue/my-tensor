@@ -32,6 +32,8 @@ class Layer {
   virtual void Reshape(const std::vector<TensorPtr<T>>& bottom,
                        const std::vector<TensorPtr<T>>& top) const = 0;
 
+  virtual std::vector<TensorPtr<T>> GetLearnableParameters() { return {}; }
+
   // The layer can not be copied or moved.
   DISABLE_LAYER_COPY(Layer)
 

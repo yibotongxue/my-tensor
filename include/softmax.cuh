@@ -25,6 +25,8 @@ class Softmax final : public Layer<T> {
   void LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
                   const std::vector<TensorPtr<T>>& top) override;
 
+  const TensorPtr<T> GetPredict() const { return predict_; }
+
   DISABLE_LAYER_COPY(Softmax)
 
   void ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
@@ -50,6 +52,7 @@ class Softmax final : public Layer<T> {
  private:
   int batch_size_;
   int channels_;
+  TensorPtr<T> predict_;
 
   void CheckShape(const TensorPtr<T> bottom, const TensorPtr<T> top) const;
 };  // class Softmax

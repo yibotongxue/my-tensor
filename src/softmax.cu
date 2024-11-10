@@ -54,6 +54,9 @@ void Softmax<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
         "The channels of bottom of softmax not match the layer.");
   }
   batch_size_ = bottom[0]->GetShape()[0];
+  const std::vector<int> predict_shape{batch_size_};
+  predict_.reset();
+  predict_ = std::make_shared<Tensor<T>>(predict_shape);
 }
 
 template <typename T>
@@ -62,11 +65,14 @@ void Softmax<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
   CheckShape(bottom[0], top[0]);
   const auto& bottom_data = bottom[0]->GetCPUData();
   auto& top_data = top[0]->GetCPUData();
+  auto& predict_data = predict_->GetCPUData();
   auto bottom_view = std::views::all(bottom_data);
   for (int i = 0; i < batch_size_; i++) {  // for each row
     auto sub_view = bottom_view | std::views::drop(i * channels_) |
                     std::views::take(channels_);
-    T max_value = *std::ranges::max_element(sub_view);
+    auto max_postion = std::ranges::max_element(sub_view);
+    predict_data[i] = std::distance(sub_view.begin(), max_postion);
+    T max_value = *max_postion;
     auto exp_view = sub_view | std::views::transform([max_value](T val) -> T {
                       return static_cast<T>(std::exp(val - max_value));
                     });
@@ -79,11 +85,33 @@ void Softmax<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
   }
 }
 
+namespace {
+template <typename T>
+__global__ void GetMaxPerRow(const T* data, const int n, const int c,
+                             T* postions, T* output) {
+  CUDA_KERNEL_LOOP(i, n) {
+    data = data + i * c;
+    T max_val = static_cast<T>(-__FLT_MAX__);
+    T max_pos = -1;
+    for (int j = 0; j < c; j++) {
+      if (data[j] >= max_val) {
+        max_val = data[j];
+        max_pos = j;
+      }
+    }
+    postions[i] = max_pos;
+    output[i] = max_val;
+  }
+}
+}  // namespace
+
 template <typename T>
 void Softmax<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                             const std::vector<TensorPtr<T>>& top) {
   const auto& bottom_data = bottom[0]->GetGPUData();
+  const T* bottom_ptr = bottom[0]->GetGPUDataPtr();
   auto& top_data = top[0]->GetGPUData();
+  T* predict_ptr = predict_->GetGPUDataPtr();
   thrust::device_vector<int> keys(batch_size_ * channels_);
   int channels = channels_;
   // generate key
@@ -94,10 +122,8 @@ void Softmax<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
   thrust::device_vector<int> output_keys(batch_size_);
   thrust::device_vector<T> max_values(batch_size_);
   T* max_ptr = RAW_PTR(max_values);
-  // compute row max element
-  thrust::reduce_by_key(keys.begin(), keys.end(), bottom_data.begin(),
-                        output_keys.begin(), max_values.begin(),
-                        thrust::equal_to<int>(), thrust::maximum<T>());
+  GetMaxPerRow<T><<<CudaGetBlocks(batch_size_), kCudaThreadNum>>>(
+      bottom_ptr, batch_size_, channels_, predict_ptr, max_ptr);
   // substract the max element
   thrust::transform(
       thrust::counting_iterator(0),

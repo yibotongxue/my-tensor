@@ -24,6 +24,10 @@ class Linear final : public Layer<T> {
   void LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
                   const std::vector<TensorPtr<T>>& top) override;
 
+  std::vector<TensorPtr<T>> GetLearnableParameters() override {
+    return {weight_, bias_};
+  }
+
   DISABLE_LAYER_COPY(Linear)
 
   virtual ~Linear() = default;

@@ -1,18 +1,17 @@
 {
-  "batch_size": 128,
-  "learning_rate": 1e-3,
+  "batch_size": 1024,
+  "learning_rate": 1e-5,
   "layers": [
     {
       "name": "conv1",
       "type": "Convolution",
       "input_channels": 1,
       "output_channels": 3,
-      "kernel_size": 3,
+      "kernel_size": 5,
       "params": [
         {
           "name": "conv_kernel",
-          "init": "he",
-          "conval": 2
+          "init": "he"
         },
         {
           "name": "conv_bias",
@@ -38,16 +37,15 @@
       "type": "Convolution",
       "input_channels": 3,
       "output_channels": 10,
-      "kernel_size": 3,
+      "kernel_size": 5,
       "params": [
         {
           "name": "conv_kernel",
-          "init": "xavier"
+          "init": "he"
         },
         {
           "name": "conv_bias",
-          "init": "constant",
-          "conval": 0
+          "init": "zero"
         }
       ]
     },
@@ -61,13 +59,13 @@
       "input_channels": 10
     },
     {
-      "name": "sigmoid2",
-      "type": "Sigmoid"
+      "name": "relu",
+      "type": "Relu"
     },
     {
       "name": "flatten",
       "type": "Flatten",
-      "inplace": true
+      "inplace": false
     },
     {
       "name": "linear1",
@@ -102,8 +100,7 @@
         },
         {
           "name": "linear_bias",
-          "init": "constant",
-          "conval": 0
+          "init": "zero"
         }
       ]
     },
@@ -123,15 +120,9 @@
         },
         {
           "name": "linear_bias",
-          "init": "constant",
-          "conval": 0
+          "init": "zero"
         }
       ]
-    },
-    {
-      "name": "softmax",
-      "type": "Softmax",
-      "channels": 10
     },
     {
       "name": "loss_with_softmax",

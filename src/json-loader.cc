@@ -33,6 +33,24 @@ JsonLoader::JsonLoader(const std::string& json_file_path) {
   if (!layers_.is_array()) {
     throw FileError("Json object layers should be an array.");
   }
+  if (!js.contains("batch_size")) {
+    throw FileError(
+        "The input json file is invalid. Valid json should contain key "
+        "batch_size.");
+  }
+  if (!js["batch_size"].is_number_integer()) {
+    throw FileError("The batch_size should be an integer.");
+  }
+  batch_size_ = js["batch_size"].get<int>();
+  if (!js.contains("learning_rate")) {
+    throw FileError(
+        "The input json file is invalid. Valid json should contain key "
+        "learning_rate.");
+  }
+  if (!js["learning_rate"].is_number_float()) {
+    throw FileError("The learning_rate should be a float.");
+  }
+  learning_rate_ = js["learning_rate"].get<float>();
 }
 
 std::vector<LayerParameterPtr> JsonLoader::LoadLayers() {
