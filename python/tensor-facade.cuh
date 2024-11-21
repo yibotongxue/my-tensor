@@ -20,7 +20,19 @@ class TensorFacade {
   }
 
   void SetData(const std::vector<float>& data) {
-    tensor_->SetCPUData(data);
+    if (OnCPU()) {
+      tensor_->SetCPUData(data);
+    } else {
+      tensor_->SetGPUData(data);
+    }
+  }
+
+  void SetGrad(const std::vector<float>& diff) {
+    if (OnCPU()) {
+      tensor_->SetCPUDiff(diff);
+    } else {
+      tensor_->SetGPUDiff(diff);
+    }
   }
 
   static TensorFacade FromNumpy(const py::array_t<float>& data);
