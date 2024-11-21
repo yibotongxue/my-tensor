@@ -5,6 +5,7 @@
 #include "relu.cuh"
 #include "sigmoid.cuh"
 #include "linear.cuh"
+#include "conv.cuh"
 #include "tensor-facade.cuh"
 #include "layer-parameter.h"
 #include <pybind11/pybind11.h>
@@ -69,7 +70,6 @@ class LinearFacade {
   void SetWeight(const TensorFacade& weight) {
     weight_cache_ = weight;
     param_set_ = true;
-    // linear_->GetWeight()->SetCPUData(weight.GetTensor()->GetCPUData().begin(), weight.GetTensor()->GetCPUData().end());
   }
 
   const TensorFacade& GetBias() const {
@@ -78,13 +78,55 @@ class LinearFacade {
   void SetBias(const TensorFacade& bias) {
     bias_cache_ = bias;
     param_set_ = true;
-    // linear_->GetBias()->SetCPUData(bias.GetTensor()->GetCPUData().begin(), bias.GetTensor()->GetCPUData().end());
   }
 
  private:
   std::shared_ptr<my_tensor::Linear<float>> linear_;
   TensorFacade input_cache_;
   TensorFacade weight_cache_;
+  TensorFacade bias_cache_;
+  bool param_set_;
+};
+
+class ConvolutionFacade {
+ public:
+  ConvolutionFacade(int input_channel, int output_channel, int kernel_size) : conv_(nullptr), param_set_(false) {
+    auto param = std::make_shared<my_tensor::ConvolutionParameter>();
+    param->input_channels_ = input_channel;
+    param->output_channels_ = output_channel;
+    param->kernel_size_ = kernel_size;
+    auto kernel_param = std::make_shared<my_tensor::HeFillerParameter>();
+    auto bias_param = std::make_shared<my_tensor::ZeroFillerParameter>();
+    kernel_param->n_ = input_channel * kernel_size * kernel_size;
+    param->kernel_filler_parameter_ = kernel_param;
+    param->bias_filler_parameter_ = bias_param;
+    conv_.reset(new my_tensor::Convolution<float>(param));
+  }
+
+  TensorFacade Forward(TensorFacade input);
+
+  TensorFacade Backward(TensorFacade output);
+
+  const TensorFacade& GetKernel() const {
+    return kernel_cache_;
+  }
+  void SetKernel(const TensorFacade& kernel) {
+    kernel_cache_ = kernel;
+    param_set_ = true;
+  }
+
+  const TensorFacade& GetBias() const {
+    return bias_cache_;
+  }
+  void SetBias(const TensorFacade& bias) {
+    bias_cache_ = bias;
+    param_set_ = true;
+  }
+
+ private:
+  std::shared_ptr<my_tensor::Convolution<float>> conv_;
+  TensorFacade input_cache_;
+  TensorFacade kernel_cache_;
   TensorFacade bias_cache_;
   bool param_set_;
 };

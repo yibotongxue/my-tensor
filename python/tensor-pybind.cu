@@ -48,4 +48,12 @@ PYBIND11_MODULE(mytensor, m) {
         .def("bias", &LinearFacade::GetBias)
         .def("set_weight", &LinearFacade::SetWeight, py::arg("weight"))
         .def("set_bias", &LinearFacade::SetBias, py::arg("bias"));
+    py::class_<ConvolutionFacade>(m, "Conv")
+        .def(py::init<int, int, int>())
+        .def("forward", &ConvolutionFacade::Forward, py::arg("input"), "Perform forward propagation with Convolutionolution")
+        .def("backward", &ConvolutionFacade::Backward, py::arg("output"), "Perform backward propagation with Convolutionolution")
+        .def("kernel", &ConvolutionFacade::GetKernel)
+        .def("bias", &ConvolutionFacade::GetBias)
+        .def("set_kernel", &ConvolutionFacade::SetKernel, py::arg("kernel"))
+        .def("set_bias", &ConvolutionFacade::SetBias, py::arg("bias"));
 }
