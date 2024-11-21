@@ -60,4 +60,8 @@ PYBIND11_MODULE(mytensor, m) {
         .def(py::init<int, int, int>())
         .def("forward", &PoolingFacade::Forward, py::arg("input"), "Perform forward propagation with Pooling")
         .def("backward", &PoolingFacade::Backward, py::arg("output"), "Perform backward propagation with Pooling");
+    py::class_<SoftmaxFacade>(m, "Softmax")
+        .def(py::init<int>())
+        .def("forward", &SoftmaxFacade::Forward, py::arg("input"), "Perform forward propagation with Softmax")
+        .def("backward", &SoftmaxFacade::Backward, py::arg("output"), "Perform backward propagation with Softmax");
 }

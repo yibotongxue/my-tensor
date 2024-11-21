@@ -126,3 +126,24 @@ TensorFacade PoolingFacade::Backward(TensorFacade output) {
   }
   return input_cache_;
 }
+
+TensorFacade SoftmaxFacade::Forward(TensorFacade input) {
+  input_cache_ = input;
+  TensorFacade output;
+  softmax_->SetUp({input.GetTensor()}, {output.GetTensor()});
+  if (input.OnCPU()) {
+    softmax_->ForwardCPU({input.GetTensor()}, {output.GetTensor()});
+  } else {
+    softmax_->ForwardGPU({input.GetTensor()}, {output.GetTensor()});
+  }
+  return output;
+}
+
+TensorFacade SoftmaxFacade::Backward(TensorFacade output) {
+  if (output.OnCPU()) {
+    softmax_->BackwardGPU({output.GetTensor()}, {input_cache_.GetTensor()});
+  } else {
+    softmax_->BackwardGPU({output.GetTensor()}, {input_cache_.GetTensor()});
+  }
+  return input_cache_;
+}

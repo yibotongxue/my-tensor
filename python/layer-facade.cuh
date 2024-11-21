@@ -7,6 +7,7 @@
 #include "linear.cuh"
 #include "conv.cuh"
 #include "pooling.cuh"
+#include "softmax.cuh"
 #include "tensor-facade.cuh"
 #include "layer-parameter.h"
 #include <pybind11/pybind11.h>
@@ -150,6 +151,23 @@ class PoolingFacade {
 
  private:
   std::shared_ptr<my_tensor::Pooling<float>> pooling_;
+  TensorFacade input_cache_;
+};
+
+class SoftmaxFacade {
+ public:
+  SoftmaxFacade(int channel) : softmax_(nullptr) {
+    auto param = std::make_shared<my_tensor::SoftmaxParameter>();
+    param->channels_ = channel;
+    softmax_.reset(new my_tensor::Softmax<float>(param));
+  }
+
+  TensorFacade Forward(TensorFacade input);
+
+  TensorFacade Backward(TensorFacade output);
+
+ private:
+  std::shared_ptr<my_tensor::Softmax<float>> softmax_;
   TensorFacade input_cache_;
 };
 
