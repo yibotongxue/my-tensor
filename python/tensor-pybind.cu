@@ -3,24 +3,35 @@
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
 #include <algorithm>
+#include <numeric>
+#include <stdexcept>
 
 namespace py = pybind11;
 
 class TensorFacade {
  public:
-  explicit TensorFacade(const std::vector<int>& shape) : tensor_(std::make_shared<my_tensor::Tensor<float>>(shape)) {}
+  explicit TensorFacade(const std::vector<int>& shape) 
+      : tensor_(std::make_shared<my_tensor::Tensor<float>>(shape)) {}
 
-  void Reshape(const std::vector<int>& shape) { tensor_->Reshape(shape); }
+  void Reshape(const std::vector<int>& shape) {
+      tensor_->Reshape(shape); 
+  }
 
-  // void SetData(const std::vector<float>& data) {
-  //   tensor_->SetCPUData(data);
-  // }
+  void SetData(const std::vector<float>& data) {
+    tensor_->SetCPUData(data);
+  }
 
-  void SetData(const py::array_t<float>& data) {
+  static TensorFacade FromNumpy(const py::array_t<float>& data) {
     py::buffer_info info = data.request();
-    // Flatten the NumPy array and copy the data
-    tensor_->SetCPUData(static_cast<float*>(info.ptr), 
-                        static_cast<float*>(info.ptr) + info.size);
+    std::vector<int> shape(info.shape.begin(), info.shape.end());
+
+    // 创建并初始化 Tensor
+    TensorFacade tensor(shape);
+
+    // 设置数据
+    tensor.tensor_->SetCPUData(static_cast<float*>(info.ptr), 
+                       static_cast<float*>(info.ptr) + info.size);
+    return tensor;
   }
 
   float* data() {
@@ -32,16 +43,12 @@ class TensorFacade {
   }
 
   std::vector<int> GetByteStride() const {
-    const std::vector<int> shape = GetShape();
-    std::vector<int> result(shape.size(), 1);
-    for (int i = 1; i < shape.size(); i++) {
-      result[i] = result[i - 1] * shape[shape.size() - i];
+    const auto& shape = GetShape();
+    std::vector<int> stride(shape.size(), sizeof(float));
+    for (int i = shape.size() - 2; i >= 0; --i) {
+        stride[i] = stride[i + 1] * shape[i + 1];
     }
-    std::reverse(result.begin(), result.end());
-    for (int i = 0; i < result.size(); i++) {
-      result[i] *= sizeof(float);
-    }
-    return result;
+    return stride;
   }
 
  private:
@@ -53,15 +60,16 @@ PYBIND11_MODULE(mytensor, m) {
         .def(py::init<const std::vector<int>&>(), py::arg("shape"))
         .def("reshape", &TensorFacade::Reshape, py::arg("shape"))
         .def("set_data", &TensorFacade::SetData, py::arg("data"))
+        .def_static("from_numpy", &TensorFacade::FromNumpy, py::arg("data"))
         .def("shape", &TensorFacade::GetShape)
         .def_buffer([](TensorFacade &m) -> py::buffer_info {
-          return py::buffer_info(
-            m.data(),                               /* Pointer to buffer */
-            sizeof(float),                          /* Size of one scalar */
-            py::format_descriptor<float>::format(), /* Python struct-style format descriptor */
-            m.GetShape().size(),                                      /* Number of dimensions */
-            m.GetShape(),                 /* Buffer dimensions */
-            m.GetByteStride()
-          );
+            return py::buffer_info(
+                m.data(),                              /* Pointer to buffer */
+                sizeof(float),                         /* Size of one scalar */
+                py::format_descriptor<float>::format(),/* Python struct-style format descriptor */
+                m.GetShape().size(),                   /* Number of dimensions */
+                m.GetShape(),                          /* Buffer dimensions */
+                m.GetByteStride()                      /* Strides (in bytes) */
+            );
         });
 }

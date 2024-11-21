@@ -80,6 +80,8 @@
         "forward_list": "cpp",
         "valarray": "cpp",
         "fstream": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "list": "cpp",
+        "unordered_set": "cpp"
     }
 }
