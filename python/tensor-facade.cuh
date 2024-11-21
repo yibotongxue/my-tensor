@@ -10,9 +10,10 @@ namespace py = pybind11;
 
 class TensorFacade {
  public:
-  TensorFacade() : tensor_(std::make_shared<my_tensor::Tensor<float>>()) {}
+  enum DeviceType { CPU, GPU };
+  TensorFacade() : tensor_(std::make_shared<my_tensor::Tensor<float>>()), type_(DeviceType::CPU) {}
   explicit TensorFacade(const std::vector<int>& shape) 
-      : tensor_(std::make_shared<my_tensor::Tensor<float>>(shape)) {}
+      : tensor_(std::make_shared<my_tensor::Tensor<float>>(shape)), type_(DeviceType::CPU) {}
 
   void Reshape(const std::vector<int>& shape) {
       tensor_->Reshape(shape); 
@@ -37,10 +38,16 @@ class TensorFacade {
 
   std::vector<int> GetByteStride() const;
 
-  my_tensor::TensorPtr<float> GetTensor() { return tensor_; }
+  my_tensor::TensorPtr<float> GetTensor() noexcept { return tensor_; }
+
+  void ToCPU() noexcept { type_ = DeviceType::CPU; }
+  void ToGPU() noexcept { type_ = DeviceType::GPU; }
+  bool OnCPU() const noexcept { return type_ == DeviceType::CPU; }
+  bool OnGPU() const noexcept { return type_ == DeviceType::GPU; }
 
  private:
   my_tensor::TensorPtr<float> tensor_;
+  DeviceType type_;
 };
 
 #endif  // PYTHON_TENSOR_FACADE_CUH_

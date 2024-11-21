@@ -20,12 +20,20 @@ class ReluFacade {
     input_cache_ = input;
     TensorFacade output;
     relu_->SetUp({input.GetTensor()}, {output.GetTensor()});
-    relu_->ForwardGPU({input.GetTensor()}, {output.GetTensor()});
+    if (input.OnCPU()) {
+      relu_->ForwardCPU({input.GetTensor()}, {output.GetTensor()});
+    } else {
+      relu_->ForwardGPU({input.GetTensor()}, {output.GetTensor()});
+    }
     return output;
   }
 
   TensorFacade Backward(TensorFacade output) {
-    relu_->BackwardGPU({output.GetTensor()}, {input_cache_.GetTensor()});
+    if (output.OnCPU()) {
+      relu_->BackwardGPU({output.GetTensor()}, {input_cache_.GetTensor()});
+    } else {
+      relu_->BackwardGPU({output.GetTensor()}, {input_cache_.GetTensor()});
+    }
     return input_cache_;
   }
 
