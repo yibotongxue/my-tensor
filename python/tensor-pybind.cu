@@ -40,4 +40,12 @@ PYBIND11_MODULE(mytensor, m) {
         .def(py::init<>())
         .def("forward", &SigmoidFacade::Forward, py::arg("input"), "Perform forward propagation with Sigmoid")
         .def("backward", &SigmoidFacade::Backward, py::arg("output"), "Perform backward propagation with Sigmoid");
+    py::class_<LinearFacade>(m, "Linear")
+        .def(py::init<int, int>())
+        .def("forward", &LinearFacade::Forward, py::arg("input"), "Perform forward propagation with Linear")
+        .def("backward", &LinearFacade::Backward, py::arg("output"), "Perform backward propagation with Linear")
+        .def("weight", &LinearFacade::GetWeight)
+        .def("bias", &LinearFacade::GetBias)
+        .def("set_weight", &LinearFacade::SetWeight, py::arg("weight"))
+        .def("set_bias", &LinearFacade::SetBias, py::arg("bias"));
 }

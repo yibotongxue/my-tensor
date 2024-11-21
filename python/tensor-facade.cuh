@@ -8,9 +8,10 @@
 
 namespace py = pybind11;
 
+enum DeviceType { CPU, GPU };
+
 class TensorFacade {
  public:
-  enum DeviceType { CPU, GPU };
   TensorFacade() : tensor_(std::make_shared<my_tensor::Tensor<float>>()), type_(DeviceType::CPU) {}
   explicit TensorFacade(const std::vector<int>& shape) 
       : tensor_(std::make_shared<my_tensor::Tensor<float>>(shape)), type_(DeviceType::CPU) {}
@@ -35,6 +36,10 @@ class TensorFacade {
     }
   }
 
+  void SetTensor(const my_tensor::TensorPtr<float>& tensor) {
+    tensor_ = tensor;
+  }
+
   static TensorFacade FromNumpy(const py::array_t<float>& data);
 
   py::array_t<float> GetData() const;
@@ -48,9 +53,13 @@ class TensorFacade {
     return tensor_->GetShape();
   }
 
+  // const int GetSize() const {
+  //   return tensor_->GetSize();
+  // }
+
   std::vector<int> GetByteStride() const;
 
-  my_tensor::TensorPtr<float> GetTensor() noexcept { return tensor_; }
+  const my_tensor::TensorPtr<float>& GetTensor() const noexcept { return tensor_; }
 
   void ToCPU() noexcept { type_ = DeviceType::CPU; }
   void ToGPU() noexcept { type_ = DeviceType::GPU; }
