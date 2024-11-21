@@ -45,29 +45,10 @@ int main() {
   for (int i = 0; i < layer_parameters.size(); i++) {
     layers[i] = my_tensor::CreateLayer<>(layer_parameters[i]);
   }
-  const std::vector<int> conv_top_shape1{batch_size, 3, 28, 28};     // 0
-  const std::vector<int> pooling_top_shape1{batch_size, 3, 14, 14};  // 1
-  const std::vector<int> relu_top_shape1{batch_size, 3, 14, 14};     // 2
-  const std::vector<int> conv_top_shape2{batch_size, 10, 14, 14};    // 3
-  const std::vector<int> pooling_top_shape2{batch_size, 10, 7, 7};   // 4
-  const std::vector<int> sigmoid_top_shape{batch_size, 10, 7, 7};    // 5
-  const std::vector<int> flatten_top_shape{batch_size, 490};         // 6
-  const std::vector<int> linear_top_shape1{batch_size, 120};         // 7
-  const std::vector<int> relu_top_shape2{batch_size, 120};           // 8
-  const std::vector<int> linear_top_shape2{batch_size, 64};          // 9
-  const std::vector<int> relu_top_shape3{batch_size, 64};            // 10
-  const std::vector<int> linear_top_shape3{batch_size, 10};          // 11
-  const std::vector<int> loss_top_shape{1};                          // 12
-  const std::vector<std::vector<int>> shapes{
-      conv_top_shape1,   pooling_top_shape1, relu_top_shape1,
-      conv_top_shape2,   pooling_top_shape2, sigmoid_top_shape,
-      flatten_top_shape, linear_top_shape1,  relu_top_shape2,
-      linear_top_shape2, relu_top_shape3,    linear_top_shape3,
-      loss_top_shape};
   std::vector<std::vector<my_tensor::TensorPtr<>>> inputs;
   inputs.push_back({train_image_vec[0]});
   for (int i = 0; i < layers.size(); i++) {
-    inputs.push_back({std::make_shared<my_tensor::Tensor<>>(shapes[i])});
+    inputs.push_back({std::make_shared<my_tensor::Tensor<>>()});
   }
   for (int i = 0; i < layers.size() - 1; i++) {
     layers[i]->SetUp(inputs[i], inputs[i + 1]);

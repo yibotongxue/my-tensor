@@ -23,11 +23,7 @@ void Sigmoid<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
 template <typename T>
 void Sigmoid<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
                          const std::vector<TensorPtr<T>>& top) const {
-  int expect_size = bottom[0]->GetSize();
-  if (top[0]->GetSize() != expect_size) {
-    throw SigmoidError("The top size not match relu layer.");
-  }
-  top[0]->Reshape(bottom[0]->GetShape());
+  top[0]->Resize(bottom[0]->GetShape());
 }
 
 namespace {

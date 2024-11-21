@@ -33,11 +33,7 @@ void Softmax<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
 template <typename T>
 void Softmax<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
                          const std::vector<TensorPtr<T>>& top) const {
-  int expect_size = batch_size_ * channels_;
-  if (top[0]->GetSize() != expect_size) {
-    throw SoftmaxError("The top size not match softmax layer.");
-  }
-  top[0]->Reshape({batch_size_, channels_});
+  top[0]->Resize({batch_size_, channels_});
 }
 
 template <typename T>

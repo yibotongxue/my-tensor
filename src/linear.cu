@@ -27,11 +27,7 @@ void Linear<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
 template <typename T>
 void Linear<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
                         const std::vector<TensorPtr<T>>& top) const {
-  int expect_size = m * n;
-  if (top[0]->GetSize() != expect_size) {
-    throw LinearError("The top size not match linear layer.");
-  }
-  top[0]->Reshape({m, n});
+  top[0]->Resize({m, n});
 }
 
 template <typename T>

@@ -13,6 +13,15 @@
 
 namespace my_tensor {
 template <typename T>
+Tensor<T>::Tensor()
+    : shape_({0}),
+      size_(0),
+      data_(std::make_shared<SyncedVector<T>>()),
+      diff_(std::make_shared<SyncedVector<T>>()) {
+  CheckShape();
+}
+
+template <typename T>
 Tensor<T>::Tensor(const std::vector<int>& shape) : shape_(shape) {
   size_ =
       std::accumulate(shape_.begin(), shape_.end(), 1, std::multiplies<int>());
@@ -65,6 +74,16 @@ Tensor<T>& Tensor<T>::operator=(Tensor<T>&& tensor) {
 template <typename T>
 void Tensor<T>::Reshape(const std::vector<int>& shape) {
   shape_ = shape;
+  CheckShape();
+}
+
+template <typename T>
+void Tensor<T>::Resize(const std::vector<int>& shape) {
+  shape_ = shape;
+  size_ =
+      std::accumulate(shape_.begin(), shape_.end(), 1, std::multiplies<int>());
+  data_->Resize(size_);
+  diff_->Resize(size_);
   CheckShape();
 }
 

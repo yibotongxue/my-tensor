@@ -64,13 +64,9 @@ void Convolution<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
 template <typename T>
 void Convolution<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
                              const std::vector<TensorPtr<T>>& top) const {
-  int expect_size = batch_size_ * output_channels_ * height_ * width_;
-  if (top[0]->GetSize() != expect_size) {
-    throw ConvError("The top size not match of convolution layer.");
-  }
   const std::vector<int> top_shape = {batch_size_, output_channels_, height_,
                                       width_};
-  top[0]->Reshape(top_shape);
+  top[0]->Resize(top_shape);
 }
 
 template <typename T>

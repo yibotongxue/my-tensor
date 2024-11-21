@@ -173,7 +173,7 @@ inline void SyncedVector<T>::ToCPU() {
       state_ = kHeadAtCPU;
       break;
     case kHeadAtGPU:
-      cpu_data_.resize(gpu_data_.size());
+      cpu_data_.resize(size_);
       thrust::copy(gpu_data_.begin(), gpu_data_.end(), cpu_data_.begin());
       state_ = kSynced;
       break;
@@ -193,7 +193,7 @@ void SyncedVector<T>::ToGPU() {
       state_ = kHeadAtGPU;
       break;
     case kHeadAtCPU:
-      gpu_data_.resize(cpu_data_.size());
+      gpu_data_.resize(size_);
       thrust::copy(cpu_data_.begin(), cpu_data_.end(), gpu_data_.begin());
       state_ = kSynced;
       break;

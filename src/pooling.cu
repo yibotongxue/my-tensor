@@ -30,12 +30,7 @@ void Pooling<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
 template <typename T>
 void Pooling<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
                          const std::vector<TensorPtr<T>>& top) const {
-  int expect_size =
-      batch_size_ * input_channels_ * output_height_ * output_width_;
-  if (top[0]->GetSize() != expect_size) {
-    throw PoolingError("The top size not match pooling layer.");
-  }
-  top[0]->Reshape(
+  top[0]->Resize(
       {batch_size_, input_channels_, output_height_, output_width_});
 }
 

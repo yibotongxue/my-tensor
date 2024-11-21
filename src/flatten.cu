@@ -41,14 +41,10 @@ void Flatten<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
 template <typename T>
 void Flatten<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
                          const std::vector<TensorPtr<T>>& top) const {
-  int expect_size = bottom[0]->GetSize();
-  if (top[0]->GetSize() != expect_size) {
-    throw FlattenError("The top size not match flatten layer.");
-  }
   if (inplace_) {
     assert(bottom[0].get() == top[0].get());
   } else {
-    top[0]->Reshape(top_shape_);
+    top[0]->Resize(top_shape_);
   }
 }
 

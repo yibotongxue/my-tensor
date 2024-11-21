@@ -33,12 +33,7 @@ void LossWithSoftmax<T>::CheckTensorCount(
 template <typename T>
 void LossWithSoftmax<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
                                  const std::vector<TensorPtr<T>>& top) const {
-  int expect_size = 1;
-  if (top[0]->GetSize() != expect_size) {
-    throw LossWithSoftmaxError(
-        "The top size not match loss with softmax layer.");
-  }
-  top[0]->Reshape({1});
+  top[0]->Resize({1});
 }
 
 template <typename T>

@@ -57,9 +57,9 @@ class SyncedVector {
   void ClearCPUData();
   void ClearGPUData();
 
-  inline size_t size() const { return size_; }
+  inline size_t size() const noexcept { return size_; }
 
-  // void Resize(size_t size);
+  void Resize(size_t size) noexcept { size_ = size; }
 
  private:
   VectorState state_;

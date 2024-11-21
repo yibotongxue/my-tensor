@@ -17,6 +17,8 @@ namespace my_tensor {
 template <typename T = float>
 class Tensor {
  public:
+  explicit Tensor();
+
   // The explicit constructors.
   explicit Tensor(const std::vector<int>& shape);
 
@@ -88,6 +90,8 @@ class Tensor {
   int GetSize() const { return size_; }
 
   void Reshape(const std::vector<int>& shape);
+
+  void Resize(const std::vector<int>& shape);
 
  private:
   std::vector<int> shape_;
