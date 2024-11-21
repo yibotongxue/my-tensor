@@ -54,10 +54,9 @@ TensorFacade LinearFacade::Forward(TensorFacade input) {
       linear_->GetWeight()->SetGPUData(weight_cache_.GetTensor()->GetCPUData().begin(), weight_cache_.GetTensor()->GetCPUData().end());
       linear_->GetBias()->SetGPUData(bias_cache_.GetTensor()->GetCPUData().begin(), bias_cache_.GetTensor()->GetCPUData().end());
     }
-  } else {
-    weight_cache_.SetTensor(linear_->GetWeight());
-    bias_cache_.SetTensor(linear_->GetBias());
   }
+  weight_cache_.SetTensor(linear_->GetWeight());
+  bias_cache_.SetTensor(linear_->GetBias());
   if (input.OnCPU()) {
     linear_->ForwardCPU({input.GetTensor()}, {output.GetTensor()});
   } else {
