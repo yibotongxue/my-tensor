@@ -6,6 +6,7 @@
 #include <numeric>
 #include <stdexcept>
 #include "tensor-facade.cuh"
+#include "layer-facade.cuh"
 
 namespace py = pybind11;
 
@@ -28,4 +29,8 @@ PYBIND11_MODULE(mytensor, m) {
                 m.GetByteStride()                      /* Strides (in bytes) */
             );
         });
+    py::class_<ReluFacade>(m, "Relu")
+        .def(py::init<>())
+        .def("forward", &ReluFacade::Forward, py::arg("input"), "Perform forward propagation with ReLU")
+        .def("backward", &ReluFacade::Backward, py::arg("output"), "Perform backward propagation with ReLU");
 }

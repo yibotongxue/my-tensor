@@ -1,3 +1,6 @@
+#ifndef PYTHON_TENSOR_FACADE_CUH_
+#define PYTHON_TENSOR_FACADE_CUH_
+
 #include "tensor.cuh"
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -34,6 +37,10 @@ class TensorFacade {
 
   std::vector<int> GetByteStride() const;
 
+  my_tensor::TensorPtr<float> GetTensor() { return tensor_; }
+
  private:
   my_tensor::TensorPtr<float> tensor_;
 };
+
+#endif  // PYTHON_TENSOR_FACADE_CUH_
