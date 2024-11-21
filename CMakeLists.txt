@@ -15,6 +15,8 @@ endif()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set (CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 # Find CUDA Toolkit package
 find_package(CUDAToolkit REQUIRED)
 
@@ -22,7 +24,7 @@ find_package(CUDAToolkit REQUIRED)
 include_directories(${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
 
 # Set NVCC compile flags
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -g -G --extended-lambda")
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -g -G --extended-lambda -Xcompiler -fPIC")
 
 # Define a function to find gtest/gmock libraries
 
@@ -68,7 +70,7 @@ include(FetchContent)
 
 FetchContent_Declare(
   pybind11_sources
-  GIT_REPOSITORY https://github.com/pybind/pybind11.git
+  GIT_REPOSITORY git@github.com:pybind/pybind11.git
   GIT_TAG        v2.13
 )
 
@@ -82,12 +84,22 @@ if(NOT pybind11_sources_POPULATED)
 endif()
 
 set(PYBIND11_NEWPYTHON ON)
-# find_package(pybind11 CONFIG REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
-add_library(tensor_facade_lib python/tensor-facade.cu)
-target_link_libraries(tensor_facade_lib PUBLIC tensor_lib)
+# 获取当前虚拟环境的 site-packages 目录
+execute_process(
+    COMMAND "${Python3_EXECUTABLE}" -c "import site; print(site.getsitepackages()[0])"
+    OUTPUT_VARIABLE PYTHON_SITE_PACKAGES
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
+# 使用 pybind11 创建 Python 模块 mytensor
 pybind11_add_module(mytensor python/tensor-pybind.cu)
 set_cuda_properties(mytensor)
-target_link_libraries(mytensor PUBLIC  tensor_facade_lib)
-install(TARGETS mytensor LIBRARY DESTINATION ${CMAKE_SOURCE_DIR}/my_tensor)
+target_link_libraries(mytensor PUBLIC tensor_lib)
+
+# 安装目标到虚拟环境的 site-packages
+install(TARGETS mytensor
+    LIBRARY DESTINATION "${PYTHON_SITE_PACKAGES}"  # 动态库的路径
+)
+
