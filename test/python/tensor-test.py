@@ -18,3 +18,6 @@ print(numpy_tensor)
 
 tensor = ts.Tensor.from_numpy(np.array([1, 2, 3]))
 print(tensor.shape())
+print(np.array(tensor))
+
+print(tensor.data())

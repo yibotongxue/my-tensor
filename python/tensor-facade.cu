@@ -18,6 +18,30 @@ TensorFacade TensorFacade::FromNumpy(const py::array_t<float>& data) {
   return tensor;
 }
 
+py::array_t<float> TensorFacade::GetData() const {
+  const auto& shape = GetShape();
+  const auto& stride = GetByteStride();
+
+  return py::array_t<float>(
+    shape,                           // Shape of the array
+    stride,                 // Strides in terms of elements
+    tensor_->GetCPUDataPtr(),        // Data pointer
+    py::cast(this)                   // Ownership: keep Python object alive
+  );
+}
+
+py::array_t<float> TensorFacade::GetGrad() const {
+  const auto& shape = GetShape();
+  const auto& stride = GetByteStride();
+
+  return py::array_t<float>(
+    shape,                           // Shape of the array
+    stride,                 // Strides in terms of elements
+    tensor_->GetCPUDiffPtr(),        // Data pointer
+    py::cast(this)                   // Ownership: keep Python object alive
+  );
+}
+
 std::vector<int> TensorFacade::GetByteStride() const {
   const auto& shape = GetShape();
   std::vector<int> stride(shape.size(), sizeof(float));

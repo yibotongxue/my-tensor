@@ -14,6 +14,8 @@ PYBIND11_MODULE(mytensor, m) {
         .def(py::init<const std::vector<int>&>(), py::arg("shape"))
         .def("reshape", &TensorFacade::Reshape, py::arg("shape"))
         .def("set_data", &TensorFacade::SetData, py::arg("data"))
+        .def("data", &TensorFacade::GetData)
+        .def("grad", &TensorFacade::GetGrad)
         .def_static("from_numpy", &TensorFacade::FromNumpy, py::arg("data"))
         .def("shape", &TensorFacade::GetShape)
         .def_buffer([](TensorFacade &m) -> py::buffer_info {

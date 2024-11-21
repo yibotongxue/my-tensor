@@ -7,6 +7,7 @@ namespace py = pybind11;
 
 class TensorFacade {
  public:
+  TensorFacade() : tensor_(std::make_shared<my_tensor::Tensor<float>>()) {}
   explicit TensorFacade(const std::vector<int>& shape) 
       : tensor_(std::make_shared<my_tensor::Tensor<float>>(shape)) {}
 
@@ -19,6 +20,9 @@ class TensorFacade {
   }
 
   static TensorFacade FromNumpy(const py::array_t<float>& data);
+
+  py::array_t<float> GetData() const;
+  py::array_t<float> GetGrad() const;
 
   float* data() {
     return tensor_->GetCPUDataPtr();
