@@ -36,4 +36,8 @@ PYBIND11_MODULE(mytensor, m) {
         .def(py::init<>())
         .def("forward", &ReluFacade::Forward, py::arg("input"), "Perform forward propagation with ReLU")
         .def("backward", &ReluFacade::Backward, py::arg("output"), "Perform backward propagation with ReLU");
+    py::class_<SigmoidFacade>(m, "Sigmoid")
+        .def(py::init<>())
+        .def("forward", &SigmoidFacade::Forward, py::arg("input"), "Perform forward propagation with Sigmoid")
+        .def("backward", &SigmoidFacade::Backward, py::arg("output"), "Perform backward propagation with Sigmoid");
 }
