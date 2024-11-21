@@ -64,4 +64,8 @@ PYBIND11_MODULE(mytensor, m) {
         .def(py::init<int>())
         .def("forward", &SoftmaxFacade::Forward, py::arg("input"), "Perform forward propagation with Softmax")
         .def("backward", &SoftmaxFacade::Backward, py::arg("output"), "Perform backward propagation with Softmax");
+    py::class_<CrossEntropyLossFacade>(m, "CrossEntropyLoss")
+        .def(py::init<int>())
+        .def("forward", &CrossEntropyLossFacade::Forward, py::arg("input"), py::arg("label"), "Perform forward propagation with CrossEntropyLoss")
+        .def("backward", &CrossEntropyLossFacade::Backward, py::arg("output"), "Perform backward propagation with CrossEntropyLoss");
 }

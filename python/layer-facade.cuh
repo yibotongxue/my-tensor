@@ -8,6 +8,7 @@
 #include "conv.cuh"
 #include "pooling.cuh"
 #include "softmax.cuh"
+#include "loss-with-softmax.cuh"
 #include "tensor-facade.cuh"
 #include "layer-parameter.h"
 #include <pybind11/pybind11.h>
@@ -169,6 +170,24 @@ class SoftmaxFacade {
  private:
   std::shared_ptr<my_tensor::Softmax<float>> softmax_;
   TensorFacade input_cache_;
+};
+
+class CrossEntropyLossFacade {
+ public:
+  CrossEntropyLossFacade(int channel) : loss_(nullptr) {
+    auto param = std::make_shared<my_tensor::LossWithSoftmaxParameter>();
+    param->channels_ = channel;
+    loss_.reset(new my_tensor::LossWithSoftmax<float>(param));
+  }
+
+  TensorFacade Forward(TensorFacade input, TensorFacade label);
+
+  TensorFacade Backward(TensorFacade output);
+
+ private:
+  std::shared_ptr<my_tensor::LossWithSoftmax<float>> loss_;
+  TensorFacade input_cache_;
+  TensorFacade label_cache_;
 };
 
 #endif  // PYTHON_LAYER_FACADE_CUH_

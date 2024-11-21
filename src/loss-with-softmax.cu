@@ -101,11 +101,12 @@ void LossWithSoftmax<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
   const auto& softmax_top_data = softmax_top_[0]->GetCPUData();
   const auto& label_data = bottom[1]->GetCPUData();
   auto& bottom_diff = bottom[0]->GetCPUDiff();
-  thrust::copy(softmax_top_data.begin(), softmax_top_data.end(),
-               bottom_diff.begin());
+  float batch_size = static_cast<float>(batch_size_);
+  thrust::transform(softmax_top_data.begin(), softmax_top_data.end(),
+               bottom_diff.begin(), [batch_size](float val) -> float { return val / batch_size; });
   for (int i = 0; i < batch_size_; i++) {
     int idx = i * channels_ + label_data[i];
-    bottom_diff[idx] -= 1;
+    bottom_diff[idx] -= 1.0f / batch_size;
   }
 }
 
@@ -137,14 +138,15 @@ void LossWithSoftmax<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
   const auto& softmax_top_data = softmax_top_[0]->GetGPUData();
   const T* label_ptr = bottom[1]->GetGPUDataPtr();
   auto& bottom_diff = bottom[0]->GetGPUDiff();
-  thrust::copy(softmax_top_data.begin(), softmax_top_data.end(),
-               bottom_diff.begin());
+  float batch_size = static_cast<float>(batch_size_);
+  thrust::transform(softmax_top_data.begin(), softmax_top_data.end(),
+               bottom_diff.begin(), [batch_size] __device__(float val) -> float { return val / batch_size; });
   T* bottom_ptr = RAW_PTR(bottom_diff);
   int channels = channels_;
   thrust::for_each(
       thrust::counting_iterator(0), thrust::counting_iterator(batch_size_),
-      [label_ptr, bottom_ptr, channels] __device__(int i) -> void {
-        bottom_ptr[i * channels + static_cast<int>(label_ptr[i])] -= 1;
+      [label_ptr, bottom_ptr, channels, batch_size] __device__(int i) -> void {
+        bottom_ptr[i * channels + static_cast<int>(label_ptr[i])] -= 1.0f / batch_size;
       });
 }
 

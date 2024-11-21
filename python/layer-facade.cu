@@ -147,3 +147,25 @@ TensorFacade SoftmaxFacade::Backward(TensorFacade output) {
   }
   return input_cache_;
 }
+
+TensorFacade CrossEntropyLossFacade::Forward(TensorFacade input, TensorFacade label) {
+  input_cache_ = input;
+  label_cache_ = label;
+  TensorFacade output;
+  loss_->SetUp({input.GetTensor(), label.GetTensor()}, {output.GetTensor()});
+  if (input.OnCPU()) {
+    loss_->ForwardCPU({input.GetTensor(), label.GetTensor()}, {output.GetTensor()});
+  } else {
+    loss_->ForwardGPU({input.GetTensor(), label.GetTensor()}, {output.GetTensor()});
+  }
+  return output;
+}
+
+TensorFacade CrossEntropyLossFacade::Backward(TensorFacade output) {
+  if (output.OnCPU()) {
+    loss_->BackwardGPU({output.GetTensor()}, {input_cache_.GetTensor(), label_cache_.GetTensor()});
+  } else {
+    loss_->BackwardGPU({output.GetTensor()}, {input_cache_.GetTensor(), label_cache_.GetTensor()});
+  }
+  return input_cache_;
+}

@@ -99,7 +99,7 @@ LOSS_WITH_SOFTMAX_TEST_CLASS(GPU)
 LOSS_WITH_SOFTMAX_TEST_FORWARD_LOSS(CPU)
 LOSS_WITH_SOFTMAX_TEST_FORWARD_LOSS(GPU)
 
-#define LOSS_WITH_SOFTMAX_TEST_BACKQARD_BOTTOM(device)                   \
+#define LOSS_WITH_SOFTMAX_TEST_BACKWARD_BOTTOM(device)                   \
   TEST_F(LossWithSoftmax##device##Test, BackwardBottom) {                \
     loss_with_softmax->Forward##device({input, label}, {loss});          \
     loss_with_softmax->Backward##device({loss}, {input, label});         \
@@ -130,13 +130,14 @@ LOSS_WITH_SOFTMAX_TEST_FORWARD_LOSS(GPU)
         if (label_data[i] == j) {                                        \
           expect -= 1;                                                   \
         }                                                                \
+        expect /= 1024;\
         ASSERT_NEAR(actual[i * 10 + j], expect, 0.01);                   \
       }                                                                  \
     }                                                                    \
   }
 
-LOSS_WITH_SOFTMAX_TEST_BACKQARD_BOTTOM(CPU)
-LOSS_WITH_SOFTMAX_TEST_BACKQARD_BOTTOM(GPU)
+LOSS_WITH_SOFTMAX_TEST_BACKWARD_BOTTOM(CPU)
+LOSS_WITH_SOFTMAX_TEST_BACKWARD_BOTTOM(GPU)
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
