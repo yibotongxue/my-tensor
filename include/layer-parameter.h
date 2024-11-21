@@ -42,10 +42,10 @@ class LayerParameter {
 
  protected:
   void ParseName(const nlohmann::json& js) {
-    if (!js.contains("name") || !js["name"].is_string()) {
-      throw FileError("Layer object in layers object should contain key name");
-    }
-    name_ = js["name"].get<std::string>();
+    // if (!js.contains("name") || !js["name"].is_string()) {
+    //   throw FileError("Layer object in layers object should contain key name");
+    // }
+    // name_ = js["name"].get<std::string>();
   }
 
   virtual void ParseSettingParameter(const nlohmann::json& js) {}
@@ -53,9 +53,9 @@ class LayerParameter {
   virtual void ParseFillingParameter(const nlohmann::json& js) {}
 };  // class LayerParameter
 
-class ReluParamter final : public LayerParameter {
+class ReluParameter final : public LayerParameter {
  public:
-  explicit ReluParamter() : LayerParameter(ParamType::kRelu) {}
+  explicit ReluParameter() : LayerParameter(ParamType::kRelu) {}
 };  // class ReluParameter
 
 class SigmoidParameter : public LayerParameter {
@@ -143,7 +143,7 @@ class LossWithSoftmaxParameter final : public LayerParameter {
 
 inline LayerParameterPtr CreateLayerParameter(const std::string& type) {
   if (type == "Relu") {
-    return std::make_shared<ReluParamter>();
+    return std::make_shared<ReluParameter>();
   } else if (type == "Sigmoid") {
     return std::make_shared<SigmoidParameter>();
   } else if (type == "Flatten") {

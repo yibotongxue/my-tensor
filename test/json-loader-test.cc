@@ -52,7 +52,7 @@ TEST(JsonTest, ReluSuccess) {
   ASSERT_EQ(param->name_, "relu1");
   ASSERT_EQ(param->type_, my_tensor::ParamType::kRelu);
   auto* ptr = param.get();
-  ASSERT_NE(dynamic_cast<my_tensor::ReluParamter*>(ptr), nullptr);
+  ASSERT_NE(dynamic_cast<my_tensor::ReluParameter*>(ptr), nullptr);
 }
 
 TEST(JsonTest, SigmoidSuccess) {
