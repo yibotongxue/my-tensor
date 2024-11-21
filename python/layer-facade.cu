@@ -105,3 +105,24 @@ TensorFacade ConvolutionFacade::Backward(TensorFacade output) {
   }
   return input_cache_;
 }
+
+TensorFacade PoolingFacade::Forward(TensorFacade input) {
+  input_cache_ = input;
+  TensorFacade output;
+  pooling_->SetUp({input.GetTensor()}, {output.GetTensor()});
+  if (input.OnCPU()) {
+    pooling_->ForwardCPU({input.GetTensor()}, {output.GetTensor()});
+  } else {
+    pooling_->ForwardGPU({input.GetTensor()}, {output.GetTensor()});
+  }
+  return output;
+}
+
+TensorFacade PoolingFacade::Backward(TensorFacade output) {
+  if (output.OnCPU()) {
+    pooling_->BackwardGPU({output.GetTensor()}, {input_cache_.GetTensor()});
+  } else {
+    pooling_->BackwardGPU({output.GetTensor()}, {input_cache_.GetTensor()});
+  }
+  return input_cache_;
+}

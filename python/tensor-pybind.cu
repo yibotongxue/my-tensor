@@ -56,4 +56,8 @@ PYBIND11_MODULE(mytensor, m) {
         .def("bias", &ConvolutionFacade::GetBias)
         .def("set_kernel", &ConvolutionFacade::SetKernel, py::arg("kernel"))
         .def("set_bias", &ConvolutionFacade::SetBias, py::arg("bias"));
+    py::class_<PoolingFacade>(m, "Pooling")
+        .def(py::init<int, int, int>())
+        .def("forward", &PoolingFacade::Forward, py::arg("input"), "Perform forward propagation with Pooling")
+        .def("backward", &PoolingFacade::Backward, py::arg("output"), "Perform backward propagation with Pooling");
 }

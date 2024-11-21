@@ -6,6 +6,7 @@
 #include "sigmoid.cuh"
 #include "linear.cuh"
 #include "conv.cuh"
+#include "pooling.cuh"
 #include "tensor-facade.cuh"
 #include "layer-parameter.h"
 #include <pybind11/pybind11.h>
@@ -129,6 +130,27 @@ class ConvolutionFacade {
   TensorFacade kernel_cache_;
   TensorFacade bias_cache_;
   bool param_set_;
+};
+
+class PoolingFacade {
+ public:
+  PoolingFacade(int input_channel, int kernel_size, int stride) : pooling_(nullptr) {
+    auto param = std::make_shared<my_tensor::PoolingParameter>();
+    param->input_channels_ = input_channel;
+    param->kernel_h_ = kernel_size;
+    param->kernel_w_ = kernel_size;
+    param->stride_h_ = stride;
+    param->stride_w_ = stride;
+    pooling_.reset(new my_tensor::Pooling<float>(param));
+  }
+
+  TensorFacade Forward(TensorFacade input);
+
+  TensorFacade Backward(TensorFacade output);
+
+ private:
+  std::shared_ptr<my_tensor::Pooling<float>> pooling_;
+  TensorFacade input_cache_;
 };
 
 #endif  // PYTHON_LAYER_FACADE_CUH_
