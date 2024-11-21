@@ -45,6 +45,36 @@ class LinearTest(unittest.TestCase):
     torchoutput_data = torchoutput.cpu().detach().numpy()
     self.assertTrue(np.allclose(tsoutput_data, torchoutput_data, atol=1e-3))
 
+  def test_cpu_backward_input(self):
+    tsoutput = self.linear.forward(self.tsinput)
+    torchoutput = self.torch_linear.forward(self.torchinput)
+    grad_output = np.random.uniform(-10.0, 10.0, 800).astype(np.float32)
+    tsoutput.set_grad(grad_output)
+    grad_output = grad_output.reshape((100, 8))
+    torch_grad_output = torch.from_numpy(grad_output)
+    self.tsinput = self.linear.backward(tsoutput)
+    tsinput_grad = self.tsinput.grad()
+    torchoutput.backward(torch_grad_output)
+    torchinput_grad = self.torchinput.grad.numpy()
+    self.assertTrue(np.allclose(tsinput_grad, torchinput_grad, 1e-3))
+
+  def test_gpu_backward_input(self):
+    self.tsinput.to_gpu()
+    self.torchinput = self.torchinput.cuda()
+    self.torchinput.retain_grad()
+    self.torch_linear = self.torch_linear.cuda()
+    tsoutput = self.linear.forward(self.tsinput)
+    torchoutput = self.torch_linear.forward(self.torchinput)
+    grad_output = np.random.uniform(-10.0, 10.0, 800).astype(np.float32)
+    tsoutput.set_grad(grad_output)
+    grad_output = grad_output.reshape((100, 8))
+    torch_grad_output = torch.from_numpy(grad_output).cuda()
+    self.tsinput = self.linear.backward(tsoutput)
+    tsinput_grad = self.tsinput.grad()
+    torchoutput.backward(torch_grad_output)
+    torchinput_grad = self.torchinput.grad.cpu().numpy()
+    self.assertTrue(np.allclose(tsinput_grad, torchinput_grad, 1e-3))
+
   def tearDown(self):
     pass
 
