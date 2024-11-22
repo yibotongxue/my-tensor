@@ -1,4 +1,5 @@
 #include "tensor.cuh"
+#include "dataset.h"
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
@@ -68,4 +69,12 @@ PYBIND11_MODULE(mytensor, m) {
         .def(py::init<int>())
         .def("forward", &CrossEntropyLossFacade::Forward, py::arg("input"), py::arg("label"), "Perform forward propagation with CrossEntropyLoss")
         .def("backward", &CrossEntropyLossFacade::Backward, py::arg("output"), "Perform backward propagation with CrossEntropyLoss");
+    py::class_<my_tensor::MnistDataset, std::shared_ptr<my_tensor::MnistDataset>>(m, "MnistDataset")
+        .def(py::init<const std::string&, const std::string&>())
+        .def("load_data", &my_tensor::MnistDataset::LoadData)
+        .def("get_height", &my_tensor::MnistDataset::GetHeight)
+        .def("get_width", &my_tensor::MnistDataset::GetWidth)
+        .def("get_image", &my_tensor::MnistDataset::GetImage)
+        .def("get_label", &my_tensor::MnistDataset::GetLabel)
+        .def("get_size", &my_tensor::MnistDataset::GetSize);
 }

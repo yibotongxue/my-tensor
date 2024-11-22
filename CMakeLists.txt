@@ -178,7 +178,7 @@ execute_process(
 # 使用 pybind11 创建 Python 模块 mytensor
 pybind11_add_module(mytensor python/tensor-facade.cu python/layer-facade.cu python/tensor-pybind.cu)
 set_cuda_properties(mytensor)
-target_link_libraries(mytensor PUBLIC tensor_lib layer_lib)
+target_link_libraries(mytensor PUBLIC tensor_lib layer_lib data_lib)
 
 # 安装目标到虚拟环境的 site-packages
 install(TARGETS mytensor
