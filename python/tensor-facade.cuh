@@ -15,6 +15,14 @@ class TensorFacade {
   TensorFacade() : tensor_(std::make_shared<my_tensor::Tensor<float>>()), type_(DeviceType::CPU) {}
   explicit TensorFacade(const std::vector<int>& shape) 
       : tensor_(std::make_shared<my_tensor::Tensor<float>>(shape)), type_(DeviceType::CPU) {}
+  explicit TensorFacade(const my_tensor::TensorPtr<float>& tensor, const DeviceType type) : tensor_(std::make_shared<my_tensor::Tensor<float>>(*tensor)), type_(type) {}
+
+  TensorFacade(const TensorFacade& tensor) : tensor_(tensor.tensor_), type_(tensor.type_) {}
+  TensorFacade& operator=(const TensorFacade& tensor) {
+    tensor_ = tensor.tensor_;
+    type_ = tensor.type_;
+    return *this;
+  }
 
   void Reshape(const std::vector<int>& shape) {
       tensor_->Reshape(shape); 
@@ -65,6 +73,10 @@ class TensorFacade {
   void ToGPU() noexcept { type_ = DeviceType::GPU; }
   bool OnCPU() const noexcept { return type_ == DeviceType::CPU; }
   bool OnGPU() const noexcept { return type_ == DeviceType::GPU; }
+
+  TensorFacade Copy() const {
+    return TensorFacade(std::make_shared<my_tensor::Tensor<float>>(*tensor_), type_);
+  }
 
  private:
   my_tensor::TensorPtr<float> tensor_;

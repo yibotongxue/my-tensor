@@ -21,6 +21,7 @@ PYBIND11_MODULE(mytensor, m) {
         .def("grad", &TensorFacade::GetGrad)
         .def("to_cpu", &TensorFacade::ToCPU)
         .def("to_gpu", &TensorFacade::ToGPU)
+        .def("copy", &TensorFacade::Copy)
         .def_static("from_numpy", &TensorFacade::FromNumpy, py::arg("data"))
         .def("shape", &TensorFacade::GetShape)
         .def_buffer([](TensorFacade &m) -> py::buffer_info {
