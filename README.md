@@ -2,11 +2,11 @@
 
 # 作业说明
 
-这是人工智能中的编程第二次作业的代码。
+这是人工智能中的编程第三次作业的代码。
 
 ## 项目结构
 
-项目有四个目录，一个 `main.cpp` 文件，一个 `CMakeLists.txt` ，和一个 `README.md` 。 `include` 目录下包含项目需要的头文件， `src` 目录下包含源文件， `test` 目录下包含测试文件， `third_patrs` 包含第三方库。项目使用 `GoogleTest` 框架编写单元测试， `GoogleTest` 静态连接库和头文件在 `third_parts` 目录下，可以直接使用。项目使用 `cmake` 进行编译构建， `CMakeListst.txt` 在项目根目录下。
+项目有五个目录，一个 `main.cpp` 文件，一个 `CMakeLists.txt` ，和一个 `README.md` 。 `include` 目录下包含项目需要的头文件， `src` 目录下包含源文件， `test` 目录下包含测试文件， `third_patrs` 包含第三方库，`python` 目录下包括将代码绑定到 `python` 的相关代码。项目使用 `cmake` 进行编译构建， `CMakeListst.txt` 在项目根目录下。
 
 ## 环境
 
@@ -19,318 +19,280 @@
 | CMake        | 3.28.3            |
 | Make         | 4.3               |
 
-一般地，使用其他 Linux 发行版或者使用 WSL2 ，CMake 版本高于3.20，gcc/g++ 和 nvcc 版本支持 C++20或以上，是可以完成项目的编译构建的。如果使用 Windows 操作系统，一般使用 MinGW 也可以，MSVC 不确定能否编译构建本项目。
+一般地，使用其他 Linux 发行版或者使用 WSL2 ，CMake 版本高于3.20，gcc/g++ 和 nvcc 版本支持 C++20或以上，是可以完成项目的编译构建的。如果使用 Windows 操作系统，一般使用 MinGW 也可以（这没有经过实验，不推荐这样做），MSVC 不确定能否编译构建本项目。
+
+对于 `python` 的使用，本项目还需要 `numpy` 和 `pytorch` 包。
 
 ## 编译运行
 
-进入项目根目录，依次执行下面的命令：
+### 编译项目
+
+进入项目根目录，如果你希望在后面的 `python` 部分使用虚拟环境，请先激活虚拟环境，然后再依次执行下面的命令：
 
 ```bash
 mkdir build && cd build
-cmake .. # 默认 Debug 模式，如果需要使用 Release 模式，可以执行 cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j4 # 如果CPU核心数小于4,应该修改-j选项
-./my_tensor # 将会打印 Hello, from my_tensor!
-./tensor_test # 将会测试 Tensor 类的方法
-./relu_test # 将会测试 Relu 类的正向传播和反向传播
-./sigmoid_test # 将会测试 Sigmoid 类的正向传播和反响传播
-./blas_test # 将会定义的若干个数学函数
-./linear_test # 将会测试全连接层的正向传播和反向传播
-./im2col_test # 将会测试 im2col 和 col2im 方法
-./conv_test # 将会测试卷积层的正向传播和反向传播
-./pooling_test # 将会测试池化层的正向传播和反向传播
-./softmax_test # 将会测试 Softmax 类的正向传播和反向传播方法
-./loss_with_softmax_test # 将会测试带有损失函数的 Softmax 层的正向传播和反向传播
-./mnist # 将会在 mnist 数据集上进行集成测试，你需要先下载 mnist 数据集到 data 目录下
+```
+
+### 安装包
+
+可以直接在 `build` 目录执行这条命令：
+
+```bash
+make install
+```
+
+这会将上面生成的 `mytensor.YOUR_PLATFORM_INFO.so` 安装到你的 `python` 环境的 `site-packages` 中。建议创建一个虚拟环境，否则会安装到系统的 `python` 环境。如果你确定要安装到系统的环境中，上面的命令需要改为
+
+```bash
+sudo make install
+```
+
+如果你使用虚拟环境，你应该在执行 `cmake` 命令的时候就已经进入虚拟环境，否则还是会安装到系统的 `python` 环境。如果在执行 `cmake` 的时候没有进入虚拟环境，又希望使用虚拟环境，可以进入 `build` 目录，执行
+
+```bash
+rm CMakeCache.txt
+```
+
+然后重新执行 `cmake` 命令。
+
+### 运行测试
+
+如果你已经安装了 `mytensor` 包和 `pytorch` 和 `numpy` ，并下载了 `mnist` 数据集，那么可以进入 `build` 目录，执行
+
+```bash
+ctest
+```
+
+即可运行测试。如果没有安装，则需要在 `build` 目录手动运行 `python` 命令进行测试，直接运行上面的命令不能成功。
+
+注意你可能需要修改 `dataset-test.py` 中 `Mnist` 数据集的相对路径。
+
+### 可能的环境问题
+
+#### libstdc++.so.6: version `GLIBCXX_3.4.29' not found
+
+如果你使用的是 `conda` 虚拟环境，可能会在 `make` 的时候遇到这样的报错：
+
+```bash
+libstdc++.so.6: version `GLIBCXX_3.4.29' not found
+```
+
+类似的问题，根据[这个issue](https://github.com/pybind/pybind11/discussions/3453)，可以按照[这个评论](https://github.com/pybind/pybind11/discussions/3453#discussioncomment-8010023)的方法删除 `conda` 环境中 `libstdc++.so.6` 的符号链接以解决。
+
+#### 安装的时候权限不够
+
+很可能是因为安装路径设置为系统的 `python` 环境了，如果你确信要安装到安装到系统环境，请使用 `sudo` 权限，如果这不是你的本意，很可能是在 `cmake` 的时候忘记先激活虚拟环境了，删除缓存重新构建即可。
+
+#### 提示找不到 `Python.h` 文件
+
+如果是在 `Linux` 平台批阅，可能是需要安装 `python3-dev` 包，以 `Ubuntu` 系统为例，执行下面的命令：
+
+```bash
+sudo apt install python3-dev
+```
+
+#### 编译出错
+
+请检查编译器是否支持 `C++20` ，也就是应该使用 `g++11` 以上和 `Cuda Toolkit 12` 以上。
+
+#### 其他环境问题
+
+如果有需要，可以使用我打包的 `Docker` 镜像，里面包含了项目运行需要的环境。考虑 `DockerHub` 不好访问，我把镜像放在了学校的服务器上，执行下面的命令拉取镜像：
+
+```bash
+docker pull 10.129.81.243:5000/mytensor:latest # 可能需要 sudo 权限
+```
+
+然后执行下面的命令可以创建并进入容器，检查代码运行结果
+
+```bash
+docker run -it -v /dev/shm:/dev/shm --name mytensor --gpus all 10.129.81.243:5000/mytensor:latest /bin/bash
+```
+
+镜像里的工作目录就是项目的目录，文件跟上传教学网的差不多，仅仅是少了 `README.pdf` ，并为了批阅的方便，将 `Mnist` 数据集下载到了 `data` 目录，可以直接使用。如果你需要验证容器没有提前安装 `mytensor` ，可以执行下面的命令以验证：
+
+```bash
+python -c "import mytensor"
+```
+
+可以发现并没有事先安装 `mytensor` 。如果你希望用教学网下载的文件进行测试，可以进入工作目录，删除所有文件，然后将本地从教学网下载的作业文件拷贝到容器，也就是在教学网下载的文件所在的根目录执行下面的命令：
+
+```bash
+docker cp ./* mytensor:/workspace/
 ```
 
 ## 项目代码解析
 
-下面简单介绍一下项目的代码。
+### C++ 和 CUDA 部分
 
-### `Tensor` 类
+#### `Tensor` 类
 
 `Tensor` 类定义在 `include/tensor.cuh` 文件中，在命名空间 `my_tensor` 下，包含属性 `data_` , `diff_` , `shape_` 和 `size_` 。 `Tensor` 类的对象可以从 `const std::vector<int>& shape` 构造，也可以进行复制构造和移动构造。可以进行拷贝和移动，其中 `data_` 和 `diff_` 是 `SyncedVector` 类型，用来同步 CPU 和 GPU 上的数据。
 
-### `Layer` 类
+#### `Layer` 类
 
 `Layer` 类是一个抽象类，不能拷贝和移动，有 `Forward` 和 `Backward` 两个纯虚函数。 `Layer` 从 `LayerParameter` 对象构造，在 `SetUp` 方法中设置一些相关的参数。其他的网络层都是继承这个抽象类。在本项目中，我们定义了 `Relu` 和 `Sigmoid` 作为激活层， `Linear` 作为全连接层， `Convolution` 作为卷积层， `Pooling` 作为池化层， `Softmax` 作为分类层， `LossWithSoftmax` 作为损失层。
 
-## 作业相关函数的实现思路
+### python 和 pybind11 部分
 
-下面来介绍作业相关函数的实现思路。
+主要包括 `python` 目录下的文件和 `test/python` 目录下的文件， `python/tensor-facade.cuh` 定义了 `TensorFacade` 类，对 `Tensor` 进行了简单的封装，主要是为了给 `python` 提供更友好的接口。注意尽管这个类命名为 `TensorFacade` ，但这不是外观设计模式。同样的，我们在 `python/layer-facade.cuh` 定义了第二次作业实现的若干个类的封装。在 `python/tensor-pybind.cu` 中我们将我们的封装再进行封装，以向 `python` 提供接口。我们实现的包为 `mytensor` 。
 
-### 全连接层的正向和反向传播函数
+## 作业相关要求的实现
 
-参照讲义和课堂讲授的内容，我们在 `include/linear.cuh` 声明了全连接层的正向和反向传播函数，实现了 CPU 和 GPU 两个版本，这里我们主要介绍 GPU 上的实现，实现的细节在 `src/linear.cu` 中。在介绍这两个函数之前，我们先来看 `include/blas.cuh` 中声明的数学方法。
+### `Tensor` 类的封装
 
-#### 基于 `cuBLAS` 实现的一些数学方法
-
-为了实现全连接层的正向和方向传播的方便，我们对一些数学方法进行了封装，具体实现基于 `cuBLAS` 库，代码在 `include/blas.cuh` 和 `src/blas.cu` 。
-
-1. 首先我们封装了矩阵乘法，主要是 `matmul` , `transpose_matmul` , `matmul_transpose` , `transpose_matmul_transpose` ，分别表示两个矩阵相乘，左矩阵的转置乘以右矩阵，左矩阵乘以右矩阵的转置，左矩阵的转置乘以右矩阵的转置。在本项目中，我们只实现了单精度浮点数的相关方法，如果你使用其他模板参数，将会抛出异常。考虑到在卷积层的时候我们需要使用批量的矩阵乘法，并可能有广播机制的需要，我们在这里封装的是 `cuBLAS` 中的 `cublasSgemmBatched` 方法，用 `batch_count` 参数控制批量，默认为 1 ，也就是跟普通的矩阵乘法一样；同时用 `broadcast` 控制广播，为 1 的时候对第一个变量进行广播，为 2 的时候对第二个变量进行广播。
-
-2. 然后我们封装了矩阵加向量的方法，这主要是为了全连接层中添加偏置的方便，主要的函数是 `add_row_vector` , `add_col_vector` 。
-
-3. 我们还封装了矩阵和向量的求和方法，这主要是为了全连接层中偏置的梯度求解的方便，主要的函数是 `tensor_sum` , `row_sum` , `row_sum` 。
-
-#### 正向传播
-
-全连接层的正向传播方法定义为 `Linear<T>::ForwardGPU` ，输入两个 `Tensor` 指针的数组，一个作为全连接层的输入，一个作为输出。由于我们已经封装了数学方法，正向传播的实现是比较简单的，我们首先用输入左乘权重矩阵，然后加上偏置向量，也就是如下的代码：
+封装的代码如下
 
 ```c++
-matmul(bottom[0]->GetGPUDataPtr(), weight_->GetGPUDataPtr(),
-       top[0]->GetGPUDataPtr(), m, k, n);
-add_col_vector(top[0]->GetGPUDataPtr(), bias_->GetGPUDataPtr(), m, n);
-```
-
-#### 反向传播
-
-全连接层的反向传播方法定义为 `Linear<T>::BackwardGPU` ，输入两个 `Tensor` 指针的数组，一个作为全连接层的输出，另一个作为输入。我们需要分别求解输入的梯度，权重矩阵的梯度和偏置的梯度。
-
-对于输入的梯度，我们用输出梯度乘以权重矩阵的梯度，代码如下
-
-```c++
-matmul_transpose(top[0]->GetGPUDiffPtr(), this->GetWeight()->GetGPUDataPtr(),
-                 bottom[0]->GetGPUDiffPtr(), m, n, k);
-```
-
-对于权重矩阵的梯度，我们用输入矩阵的转置乘以输出梯度，代码如下
-
-```c++
-transpose_matmul(bottom[0]->GetGPUDataPtr(), top[0]->GetGPUDiffPtr(),
-                 this->GetWeight()->GetGPUDiffPtr(), k, m, n);
-```
-
-对于偏置的梯度，我们对输出梯度每一列求和，代码如下
-
-```c++
-col_sum(top[0]->GetGPUDiffPtr(), this->GetBias()->GetGPUDiffPtr(), m, n);
-```
-
-### 卷积层的正向和反向传播
-
-参照讲义和课堂讲授的内容，我们在 `include/conv.cuh` 声明了全连接层的正向和反向传播函数，实现了 CPU 和 GPU 两个版本，这里我们主要介绍 GPU 上的实现，实现的细节在 `src/conv.cu` 中。这里我们使用 `im2col` 方法来实现卷积层。
-
-#### `im2col` 和 `col2im` 的实现
-
-为了加速卷积层的正向和反向传播，我们使用 `im2col` 和 `col2im` ，相关函数的声明在 `include/im2col.cuh` 中，实现在 `src/im2col.cu` 中。我们实现了 CPU 和 GPU 两个版本，同样地，这里我们只介绍 GPU 上的实现。
-
-首先是 `im2col` 方法的实现，相关的函数为 `Im2col_GPU` ，我们定义了核函数 `Im2col_kernel` ，对于每一个卷积窗口进行转换，在 `Im2col_GPU` 中启动 `n * channels * width * height` 个核进行运算。
-
-然后是 `col2im` 方法的实现，相关的函数为 `Col2im_GPU` ，我们定义了核函数 `Col2im_kernel` ，每一个线程负责输出的一个元素的修改，从而避免了原子操作，我们在 `Col2im_GPU` 中启动 `n * channels * im_size` 个核进行运算。
-
-#### 正向传播
-
-卷积层的正向传播定义为 `Convolution<T>::ForwardGPU` 函数，我们首先调用 `Im2col_GPU` 方法将输入转换并写入 `col_cache_` ，然后用核左乘之，并注意设置批量为 `N` ，以及对第一个参数，也就是核进行广播，然后添加偏置。具体的代码如下
-
-```c++
-Im2col_GPU(batch_size_, bottom[0]->GetGPUDataPtr(), input_channels_, height_,
-           width_, kernel_height_, kernel_width_,
-           col_cache_->GetGPUDataPtr());
-matmul(kernel_->GetGPUDataPtr(), col_cache_->GetGPUDataPtr(),
-       top[0]->GetGPUDataPtr(), output_channels_,
-       input_channels_ * kernel_size, im_size, batch_size_, 1);
-add_row_vector(top[0]->GetGPUDataPtr(), bias_->GetGPUDataPtr(),
-               output_channels_, im_size, batch_size_);
-```
-
-#### 反向传播
-
-卷积层的反向传播定义为 `Convolution<T>::BackwardGPU` 函数， 我们需要求解输入的梯度、核的梯度和偏置的梯度。
-
-对于输入的梯度，我们先求 `col_cache_` 的梯度。我们用核的转置左乘输出的梯度，结果作为，注意设置批量为 `N` ，并对核进行广播，得到 `col_cache_` 的梯度。然后我们调用 `Col2im_GPU` 方法得到输入的梯度。主要的代码如下
-
-```c++
-transpose_matmul(kernel_->GetGPUDataPtr(), top[0]->GetGPUDiffPtr(),
-                 col_cache_->GetGPUDiffPtr(), input_channels_ * kernel_size,
-                 output_channels_, im_size, batch_size_, 1);
-Col2im_GPU(batch_size_, col_cache_->GetGPUDiffPtr(), input_channels_, height_,
-           width_, kernel_height_, kernel_width_, bottom[0]->GetGPUDiffPtr());
-```
-
-对于核的梯度，我们用输出梯度左乘 `col_cache_` 的转置，然后对列求和。主要的代码如下
-
-```c++
-matmul_transpose(top[0]->GetGPUDiffPtr(), col_cache_->GetGPUDataPtr(),
-                 batch_kernel->GetGPUDiffPtr(), output_channels_, im_size,
-                 input_channels_ * kernel_size, batch_size_);
-col_sum(batch_kernel->GetGPUDiffPtr(), kernel_->GetGPUDiffPtr(), batch_size_,
-        output_channels_ * input_channels_ * kernel_height_ * kernel_width_);
-```
-
-偏置的梯度求解有些复杂，我们首先对输出梯度批量按行求和，然后整体按列求和，得到偏置的梯度。主要的代码如下
-
-```c++
-row_sum(top[0]->GetGPUDiffPtr(), temp_diff, output_channels_, im_size,
-        batch_size_);
-col_sum(temp_diff, bias_->GetGPUDiffPtr(), batch_size_, output_channels_);
-```
-
-### 全连接层和卷积层的参数初始化
-
-按照作业的要求和课堂的讲授，我们定义一个类 `Filler` ，负责全连接层和卷积层的参数初始化。项目只支持 GPU 上的初始化，随机数使用 `cuRAND` 生成。项目支持四种初始化方式，零初始化，常数初始化， `xavier` 初始化和 `He` 初始化。具体的代码在 `include/filler.cuh` 和 `src/filler.cu` 中。具体地，每一个 `Filler` 的子类定义一种初始化方式，重载 `Filler` 方法进行初始化。下面是 `cuRAND` 生成 `xavier` 初始化的随机数的核函数
-
-```c++
-__global__ static void XavierFillerKernel(float *data, float limit, int n) {
-  CUDA_KERNEL_LOOP(i, n) {
-    curandState state;
-    curand_init(1234 + i, i, 0, &state);
-    data[i] = curand_uniform(&state) * 2 * limit - limit;
-  }
+PYBIND11_MODULE(mytensor, m) {
+    py::class_<TensorFacade>(m, "Tensor", py::buffer_protocol())
+        .def(py::init<const std::vector<int>&>(), py::arg("shape"))
+        .def("reshape", &TensorFacade::Reshape, py::arg("shape"))
+        .def("set_data", &TensorFacade::SetData, py::arg("data"))
+        .def("set_grad", &TensorFacade::SetGrad, py::arg("grad"))
+        .def("data", &TensorFacade::GetData)
+        .def("grad", &TensorFacade::GetGrad)
+        .def("to_cpu", &TensorFacade::ToCPU)
+        .def("to_gpu", &TensorFacade::ToGPU)
+        .def_static("from_numpy", &TensorFacade::FromNumpy, py::arg("data"))
+        .def("shape", &TensorFacade::GetShape)
+        .def_buffer([](TensorFacade &m) -> py::buffer_info {
+            return py::buffer_info(
+                m.data(),
+                sizeof(float),
+                py::format_descriptor<float>::format(),
+                m.GetShape().size(),
+                m.GetShape(),
+                m.GetByteStride()
+            );
+        });
 }
 ```
 
-### 池化层的正向和反向传播
+对 `TensorFacade` 类进行封装，其中 `TensorFacade` 包括了一个 `Tensor` 类的指针作为成员变量，对 `python` 端提供了从形状数组进行构造的构造方法，和修改形状、数据和梯度的方法，获取形状、数据和梯度的方法，改变设备位置的方法，从 `numpy` 构造的方法，以及转换为 `numpy` 数组的方法。
 
-参照讲义和课堂讲授的内容，我们在 `include/pooling.cuh` 声明了全连接层的正向和反向传播函数，实现了 CPU 和 GPU 两个版本，这里我们主要介绍 GPU 上的实现，实现的细节在 `src/pooling.cu` 中。
+在 `python` 段可以这样使用
 
-#### 正向传播
+```python
+# 导入包
+import mytensor as ts
+import numpy as np
 
-对每一个池化窗口，我们启动一个线程计算其最大值，输出到输出数据中，并记录其在输入数据的索引到 `mask` 张量中。核函数如下所示：
+# 从形状构造
+tensor = ts.Tensor((1, 2))
+# 从 numpy 数组构造
+tensor = ts.Tensor.from_numpy(np.array([1, 2, 3]))
+#获取形状
+print(tensor.shape())
+# 修改形状
+tensor.reshape((1, 3))
+# 设置数据
+tensor.set_data([2, 3])
+# 转换为 numpy 数组
+numpy_tensor = np.array(tensor)
+# 获取数据
+print(tensor.data())
+```
+
+### 神经网络层的封装
+
+我们首先对若干个神经网络层的类进行了封装，具体的代码在 `python/layer-facade.cuh` 和 `python/layer-facade.cu` 中。在 `python/tensor-pybind` 我们对这些封装好的类再次封装，以提供 `python` 接口。普遍的，我们提供从若干个网络层的配置数据构造的构造方法，获取和设置内部参数的方法，前向传播和反向传播的方法的接口，以全连接层为例，其封装代码如下
 
 ```c++
-template <typename T>
-__global__ void PoolingKernel(const int nthreads, const T* const bottom_data,
-                              const int n, const int input_w,
-                              const int input_size, const int output_w,
-                              const int output_size, const int kernel_h,
-                              const int kernel_w, const int stride_h,
-                              const int stride_w, T* top_data, int* mask_data) {
-  CUDA_KERNEL_LOOP(index, nthreads) {
-    int t = index / output_size;
-    int h_start = (index % output_size) / output_w * stride_h;
-    int w_start = (index % output_w) * stride_w;
-    T val = static_cast<T>(-__FLT_MAX__);
-    int idx = -1;
-    int row_idx = t * input_size + h_start * input_w + w_start;
-    for (int i = 0; i < kernel_h; i++) {
-      int col_idx = row_idx;
-      for (int j = 0; j < kernel_w; j++) {
-        if (val < bottom_data[col_idx]) {
-          val = bottom_data[col_idx];
-          idx = col_idx;
-        }
-        col_idx += 1;
-      }
-      row_idx += input_w;
-    }
-    top_data[index] = val;
-    mask_data[index] = idx;
-  }
+PYBIND11_MODULE(mytensor, m) {
+    py::class_<LinearFacade>(m, "Linear")
+        .def(py::init<int, int>())
+        .def("forward", &LinearFacade::Forward, py::arg("input"), "Perform forward propagation with Linear")
+        .def("backward", &LinearFacade::Backward, py::arg("output"), "Perform backward propagation with Linear")
+        .def("weight", &LinearFacade::GetWeight)
+        .def("bias", &LinearFacade::GetBias)
+        .def("set_weight", &LinearFacade::SetWeight, py::arg("weight"))
+        .def("set_bias", &LinearFacade::SetBias, py::arg("bias"));
 }
 ```
 
-#### 反向传播
+以 `Relu` 为例，在 `python` 端可以这样使用
 
-先将输出梯度全部置为 0 ，然后根据 `mask` 数组的索引将对应位置的梯度置为 1 。这里我们直接调用 `thrust` 库的 `scatter` 方法，代码如下：
-
-```c++
-thrust::fill(bottom_diff.begin(), bottom_diff.end(), 0);
-thrust::scatter(top_diff.begin(), top_diff.end(), mask_data.begin(),
-                  bottom_diff.begin());
+```python
+import mytensor as ts
+relu = ts.Relu()
+input = ts.Tensor.from_numpy(np.array([[1, 2, -1], [-1, -2, 1]]))
+output = relu.forward(input)
+print(output.data())
+output.set_grad([1, 2, 3, -2, -3, -4])
+input = relu.backward(output)
+print(input.grad())
 ```
 
-### `Softmax` 层的正向传播
+### `Mnist` 数据的读取
 
-按照作业的要求，我们只实现了正向传播，主要的代码思路与讲义的一致。首先，我们使用启动核函数求每一行的最大值，并储存其索引（主要是考虑到预测的时候需要），然后用 `thrust::transform` 将每一行减去最大值，并取对数，使用 `thrust::reduce_by_key`进行分段归约，求出每一行的和，再对每一行除以这一行的和，得到最终结果。代码如下
-
-```c++
-thrust::device_vector<int> keys(batch_size_ * channels_);
-int channels = channels_;
-// generate key
-thrust::transform(
-    thrust::counting_iterator(0),
-    thrust::counting_iterator(batch_size_ * channels_), keys.begin(),
-    [channels] __device__(int i) -> int { return (i / channels) + 1; });
-  thrust::device_vector<int> output_keys(batch_size_);
-  thrust::device_vector<T> max_values(batch_size_);
-T* max_ptr = RAW_PTR(max_values);
-// compute row max element
-GetMaxPerRow<T><<<CudaGetBlocks(batch_size_), kCudaThreadNum>>>(
-    bottom_ptr, batch_size_, channels_, predict_ptr, max_ptr);
-// substract the max element
-thrust::transform(
-    thrust::counting_iterator(0),
-    thrust::counting_iterator(batch_size_ * channels_), bottom_data.begin(),
-    top_data.begin(), [max_ptr, channels] __device__(int i, T val) -> T {
-      return static_cast<T>(std::exp(val - max_ptr[i / channels]));
-    });
-// compute normalization factor
-thrust::reduce_by_key(keys.begin(), keys.end(), top_data.begin(),
-                      output_keys.begin(), max_values.begin(),
-                      thrust::equal_to<int>(), thrust::plus<T>());
-// noramlization
-thrust::transform(thrust::counting_iterator(0),
-                  thrust::counting_iterator(batch_size_ * channels_),
-                  top_data.begin(), top_data.begin(),
-                  [max_ptr, channels] __device__(int i, T val) -> T {
-                    return static_cast<T>(val / max_ptr[i / channels]);
-                  });
-```
-
-### `Cross Entropy Loss` 的正向传播和反向传播
-
-我们定义了一个类 `LossWithSoftmax` 实现基于 `Softmax` 的交叉熵损失。类 `LossWithSoftmax` 继承自 `Layer` ，重载了正向传播和反向传播，有一个 `Softmax` 实例。
-
-#### 正向传播
-
-实现 `Cross Entropy Loss` 的函数是 `LossWithSoftmax<T>::ForwardGPU` ，输入是两个数组，第一个数组包括输入数据和标签，另一个数组为损失。首先调用 `LossWithSoftmax` 中 `Softmax` 实例的正向传播函数，得到 `softmax_top_` ，然后对每一个 `label` 对应的概率取对数再取相反数，得到一个数组，再进行 `reduce` 并取平均，得到损失。代码如下
+由于第二次作业我们已经实现了 `Dataset` 类，这里直接对其进行封装， `Dataset` 类的定义在 `include/dataset.h` 中，封装代码如下
 
 ```c++
-thrust::transform(
-    thrust::counting_iterator(0), thrust::counting_iterator(batch_size_),
-    temp_data.begin(),
-    [softmax_top_data, label_data, channels] __device__(int i) -> T {
-      return -std::log(
-          softmax_top_data[i * channels + static_cast<int>(label_data[i])]);
-    });
-top_data[0] =
-    thrust::reduce(temp_data.begin(), temp_data.end()) / batch_size_;
+PYBIND11_MODULE(mytensor, m) {
+    py::class_<my_tensor::MnistDataset, std::shared_ptr<my_tensor::MnistDataset>>(m, "MnistDataset")
+        .def(py::init<const std::string&, const std::string&>())
+        .def("load_data", &my_tensor::MnistDataset::LoadData)
+        .def("get_height", &my_tensor::MnistDataset::GetHeight)
+        .def("get_width", &my_tensor::MnistDataset::GetWidth)
+        .def("get_image", &my_tensor::MnistDataset::GetImage)
+        .def("get_label", &my_tensor::MnistDataset::GetLabel)
+        .def("get_size", &my_tensor::MnistDataset::GetSize);
+}
 ```
 
-#### 反向传播
+在 `python` 端可以这样使用
 
-根据讲义和课堂的讲授，我们将输入数据的梯度设置为概率值，也就是上面求出的 `softmax_top_` ，然后每一行对应 `label` 的元素减去 1 ，得到输入数据的梯度值。代码如下
-
-```c++
-thrust::copy(softmax_top_data.begin(), softmax_top_data.end(),
-             bottom_diff.begin());
-thrust::for_each(
-    thrust::counting_iterator(0), thrust::counting_iterator(batch_size_),
-    [label_ptr, bottom_ptr, channels] __device__(int i) -> void {
-      bottom_ptr[i * channels + static_cast<int>(label_ptr[i])] -= 1;
-    });
+```python
+import mytensor as ts
+import numpy as np
+# 定义数据集
+dataset = ts.MnistDataset("path/to/images", "path/to/labels")
+# 加载数据
+dataset.load_data()
+# 获取图片高和宽，以及数据集大小
+print("Height:", dataset.get_height())
+print("Width:", dataset.get_width())
+print("Size:", dataset.get_size())
+# 获取图片数据和标签数据
+images = np.array(dataset.get_image()).reshape((-1, 28, 28))
+labels = np.array(dataset.get_label())
+# 转换为 ts.Tensor 对象
+images, labels = ts.Tensor.from_numpy(images), ts.Tensor.from_numpy(labels)
 ```
-
-## 测试
 
 ### 单元测试
 
-本项目使用 `GoogleTest` 框架进行单元测试，暂时未进行集成测试。测试代码在 `test` 目录下。跟本次作业相关的测试主要在 `test/linear-test.cu` ， `test/conv-test.cu` ， `test/pooling-test.cu` ， `test/softmax-test.cu` 和 `test/loss-with-softmax-test.cu` 中，目录下还有其他与作业不相关的测试文件，主要是开发过程中的单元测试以及上一次作业的测试代码，考虑项目的完整性，一并提交，亦可作为整体作业要求完成正确性的测试。
+我们在 `test/python` 定义了若干个测试文件。运行这些代码，需要安装我们构建的 `mytensor` 包和 `numpy` 和 `pytorch` 包，由于 `dataset-test.py` 涉及到文件路径，所以需要进入 `test/python` 目录以执行。
 
-本次作业相关的测试方法，基本的思路是一致的，就是通过 CPU 上未经过优化的串行运算直接求得结果，与我们项目经过优化的方法或者 GPU 上的方法求得的结果进行比较，以检验正确性。测试的数据通过随机数生成，考虑到我们需要在 CPU 上进行检验运算，我们直接在 CPU 上生成随机数据，而没有使用 `cuRAND` 。测试样例的网络定义在 `test/json-test` 目录下。
+#### `Tensor` 实例化
 
-运行项目与作业相关的测试，可以在构建好项目后，进入 `build` 目录并执行下列命令：
+在 `test/python/tensor-test.py` 中我们尝试对 `mytensor.Tensor` 实例化，如果包的安装成功的话，应该可以正常的得到一些输出。
+
+#### 算子的测试
+
+在 `relu-test.py` ， `sigmoid-test.py` ， `linear-test.py` ， `conv-test.py` ， `pooling-test.py` ， `softmax-tes.py` 和 `cross-entropy-loss-test.py` 中我们定义了对相关算子的测试，主要的测试思路是与 `pytorch` 进行对照，输入为随机生成的数据，将结果都转换为 `numpy` 数组进行比较。使用的框架是 `unittest` ，所以这一部分需要安装 `pytorch` ， `numpy` 和 `unittest` 的相关的包。除了 `softmax-test.py` 只包含了前向传播的测试，其他所有测试都包括了 `CPU` 和 `GPU` 上的前向传播和反向传播测试。进入 `test/python` 目录，然后执行下面的命令，可以进行测试：
 
 ```bash
-./linear_test # 将会测试全连接层的正向传播和反向传播
-./conv_test # 将会测试卷积层的正向传播和反向传播
-./pooling_test # 将会测试池化层的正向传播和反向传播
-./softmax_test # 将会测试 Softmax 类的正向传播和反向传播方法
-./loss_with_softmax_test # 将会测试带有损失函数的 Softmax 层的正向传播和反向传播
+python3 relu-test.py
+python3 sigmoid-test.py
+python3 linear-test.py
+python3 conv-test.py
+python3 pooling-test.py
+python3 softmax-test.py
+python3 cross-entropy-loss-test.py
 ```
 
-测试结果为所有测试用例全部通过。
+测试结果为全部通过。
 
-### 集成测试
+#### 读取 `Mnist` 数据
 
-我们在 `mnist` 对我们实现的神经网络层进行集成测试，相关代码在 `src/mnist.cu` 中，网络配置在 `test/json-test/mnist.json` 中。
-
-首先，我们需要先下载 `mnist` 数据集。我尝试了直接从官网下载，但并没有成功。这里提供一个通过 `pytorch` 提供的下载渠道下载的方法。执行下面的命令：
+相关的示例在 `dataset-test.py` 中，为了运行这个测试，你需要首先在项目根目录下创建一个新目录 `data` ，并下载 `Mnist` 数据到这个新目录。官网的数据似乎无法下载了，这里提供从 `pytorch` 提供的渠道下载的方法，进入项目根目录，然后依次执行下面的命令：
 
 ```bash
-# 回到项目根目录，比如如果你现在 build 目录，那么你需要先执行 cd ..
-mkdir data && cd data  # 不要改变数据集的位置
+mkdir data && cd data
 wget https://ossci-datasets.s3.amazonaws.com/mnist/train-images-idx3-ubyte.gz
 wget https://ossci-datasets.s3.amazonaws.com/mnist/train-labels-idx1-ubyte.gz
 wget https://ossci-datasets.s3.amazonaws.com/mnist/t10k-images-idx3-ubyte.gz
@@ -338,10 +300,28 @@ wget https://ossci-datasets.s3.amazonaws.com/mnist/t10k-labels-idx1-ubyte.gz
 gunzip *
 ```
 
-然后进入 `build` 目录，执行下面命令：
+然后进入 `test/python` 目录，运行 `dataset-test.py` 即可检查是否正确读取了 `Mnist` 数据集，我的运行结果是
 
 ```bash
-./mnist
+Height: 28
+Width: 28
+Size: 60000
+[60000, 28, 28] [60000]
 ```
 
-我的实验结果，测试集上的最高的准确率为 0.982964 。
+注意 `dataset-test.py` 使用了相对路径，所以你需要进入 `test/python` 目录再执行，否则可能会得到类似这样的输出，这时可以选择进入 `test/python` 目录再执行命令，或者修改 `dataset-test` 的相对路径。
+
+```bash
+Height: -1337850181
+Width: 930611200
+Size: 0
+[0, 28, 28] [0]
+```
+
+## 卸载包
+
+如果直接安装了 `mytensor` 包，可以直接找到安装的位置删除其，或者使用下面的命令删除。
+
+```bash
+rm $(python -c "import site; print(site.getsitepackages()[0])")/mytensor*.so
+```

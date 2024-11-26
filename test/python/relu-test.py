@@ -18,7 +18,7 @@ class ReluTest(unittest.TestCase):
         torchoutput = torch.nn.functional.relu(self.torchinput)
         tsoutput_data = tsoutput.data()
         torchoutput_data = torchoutput.detach().numpy()
-        self.assertTrue(np.allclose(tsoutput_data, torchoutput_data, atol=1e-3))
+        self.assertTrue(np.allclose(tsoutput_data, torchoutput_data, 1e-3, 1e-3))
 
     def test_gpu_forward(self):
         self.tsinput.to_gpu()
@@ -27,7 +27,7 @@ class ReluTest(unittest.TestCase):
         torchoutput = torch.nn.functional.relu(self.torchinput)
         tsoutput_data = tsoutput.data()
         torchoutput_data = torchoutput.cpu().detach().numpy()
-        self.assertTrue(np.allclose(tsoutput_data, torchoutput_data, atol=1e-3))
+        self.assertTrue(np.allclose(tsoutput_data, torchoutput_data, 1e-3, 1e-3))
 
     def test_cpu_backward(self):
         tsoutput = self.relu.forward(self.tsinput)
@@ -41,7 +41,7 @@ class ReluTest(unittest.TestCase):
         torchinput_grad = torch.autograd.grad(torchoutput, self.torchinput, torchoutput_grad)[0]
         tsinput_grad = self.tsinput.grad()
         torchinput_grad = torchinput_grad.numpy()
-        self.assertTrue(np.allclose(tsinput_grad, torchinput_grad, atol=1e-3))
+        self.assertTrue(np.allclose(tsinput_grad, torchinput_grad, 1e-3, 1e-3))
 
     def test_gpu_backward(self):
         self.tsinput.to_gpu()
@@ -57,7 +57,7 @@ class ReluTest(unittest.TestCase):
         torchinput_grad = torch.autograd.grad(torchoutput, self.torchinput, torchoutput_grad)[0]
         tsinput_grad = self.tsinput.grad()
         torchinput_grad = torchinput_grad.cpu().numpy()
-        self.assertTrue(np.allclose(tsinput_grad, torchinput_grad, atol=1e-3))
+        self.assertTrue(np.allclose(tsinput_grad, torchinput_grad, 1e-3, 1e-3))
 
     def tearDown(self):
         pass

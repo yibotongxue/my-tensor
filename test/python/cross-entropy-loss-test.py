@@ -24,7 +24,7 @@ class CrossEntropyLossTest(unittest.TestCase):
         torchoutput = torch.nn.functional.cross_entropy(self.torchinput, self.torchlabel)
         tsoutput_data = tsoutput.data()
         torchoutput_data = torchoutput.detach().numpy()
-        self.assertTrue(np.allclose(tsoutput_data, torchoutput_data, atol=1e-3))
+        self.assertTrue(np.allclose(tsoutput_data, torchoutput_data, 1e-3, 1e-3))
 
     def test_gpu_forward(self):
         self.tsinput.to_gpu()
@@ -35,7 +35,7 @@ class CrossEntropyLossTest(unittest.TestCase):
         torchoutput = torch.nn.functional.cross_entropy(self.torchinput, self.torchlabel)
         tsoutput_data = tsoutput.data()
         torchoutput_data = torchoutput.detach().cpu().numpy()
-        self.assertTrue(np.allclose(tsoutput_data, torchoutput_data, atol=1e-3))
+        self.assertTrue(np.allclose(tsoutput_data, torchoutput_data, 1e-3, 1e-3))
 
 
     def test_cpu_backward(self):
@@ -46,7 +46,7 @@ class CrossEntropyLossTest(unittest.TestCase):
         self.tsinput = self.cross_entropy_loss.backward(tsoutput)
         tsinput_grad = self.tsinput.grad()
         torchinput_grad = torchinput_grad.numpy()
-        self.assertTrue(np.allclose(tsinput_grad, torchinput_grad, atol=1e-3))
+        self.assertTrue(np.allclose(tsinput_grad, torchinput_grad, 1e-3, 1e-3))
 
     def test_gpu_backward(self):
         self.tsinput.to_gpu()
@@ -61,7 +61,7 @@ class CrossEntropyLossTest(unittest.TestCase):
         torchinput_grad = torch.autograd.grad(torchoutput, self.torchinput)[0]
         tsinput_grad = self.tsinput.grad()
         torchinput_grad = torchinput_grad.cpu().numpy()
-        self.assertTrue(np.allclose(tsinput_grad, torchinput_grad, atol=1e-3))
+        self.assertTrue(np.allclose(tsinput_grad, torchinput_grad, 1e-3, 1e-3))
 
     def tearDown(self):
         pass

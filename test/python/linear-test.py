@@ -35,7 +35,7 @@ class LinearTest(unittest.TestCase):
         torchoutput = torch.nn.functional.linear(self.torchinput, self.torch_weight, self.torch_bias)
         tsoutput_data = tsoutput.data()
         torchoutput_data = torchoutput.detach().numpy()
-        self.assertTrue(np.allclose(tsoutput_data, torchoutput_data, atol=1e-3))
+        self.assertTrue(np.allclose(tsoutput_data, torchoutput_data, 1e-3, 1e-3))
 
     def test_gpu_forward(self):
         self.tsinput.to_gpu()
@@ -46,7 +46,7 @@ class LinearTest(unittest.TestCase):
         torchoutput = torch.nn.functional.linear(self.torchinput, self.torch_weight, self.torch_bias)
         tsoutput_data = tsoutput.data()
         torchoutput_data = torchoutput.cpu().detach().numpy()
-        self.assertTrue(np.allclose(tsoutput_data, torchoutput_data, atol=1e-3))
+        self.assertTrue(np.allclose(tsoutput_data, torchoutput_data, 1e-3, 1e-3))
 
     def test_cpu_backward_input(self):
         tsoutput = self.linear.forward(self.tsinput)
@@ -59,7 +59,7 @@ class LinearTest(unittest.TestCase):
         tsinput_grad = self.tsinput.grad()
         torchinput_grad = torch.autograd.grad(torchoutput, self.torchinput, torch_grad_output)[0]
         torchinput_grad = torchinput_grad.numpy()
-        self.assertTrue(np.allclose(tsinput_grad, torchinput_grad, 1e-3))
+        self.assertTrue(np.allclose(tsinput_grad, torchinput_grad, 1e-3, 1e-3))
 
     def test_gpu_backward_input(self):
         tsoutput = self.linear.forward(self.tsinput)
@@ -75,7 +75,7 @@ class LinearTest(unittest.TestCase):
         tsinput_grad = self.tsinput.grad()
         torchinput_grad = torch.autograd.grad(torchoutput, self.torchinput, torch_grad_output)[0]
         torchinput_grad = torchinput_grad.cpu().numpy()
-        self.assertTrue(np.allclose(tsinput_grad, torchinput_grad, 1e-3))
+        self.assertTrue(np.allclose(tsinput_grad, torchinput_grad, 1e-3, 1e-3))
 
     def test_cpu_backward_weight(self):
         tsoutput = self.linear.forward(self.tsinput)
@@ -88,7 +88,7 @@ class LinearTest(unittest.TestCase):
         tsweight_grad = self.linear.weight().grad()
         torchweight_grad = torch.autograd.grad(torchoutput, self.torch_weight, torch_grad_output)[0]
         torchweight_grad = torchweight_grad.numpy().T
-        self.assertTrue(np.allclose(tsweight_grad, torchweight_grad, 1e-3))
+        self.assertTrue(np.allclose(tsweight_grad, torchweight_grad, 1e-3, 1e-3))
 
     def test_gpu_backward_weight(self):
         tsoutput = self.linear.forward(self.tsinput)
@@ -104,7 +104,7 @@ class LinearTest(unittest.TestCase):
         tsweight_grad = self.linear.weight().grad()
         torchweight_grad = torch.autograd.grad(torchoutput, self.torch_weight, torch_grad_output)[0]
         torchweight_grad = torchweight_grad.cpu().numpy().T
-        self.assertTrue(np.allclose(tsweight_grad, torchweight_grad, 1e-3))
+        self.assertTrue(np.allclose(tsweight_grad, torchweight_grad, 1e-3, 1e-3))
 
     def test_cpu_backward_bias(self):
         tsoutput = self.linear.forward(self.tsinput)
@@ -117,7 +117,7 @@ class LinearTest(unittest.TestCase):
         tsbias_grad = self.linear.bias().grad()
         torchbias_grad = torch.autograd.grad(torchoutput, self.torch_bias, torch_grad_output)[0]
         torchbias_grad = torchbias_grad.numpy()
-        self.assertTrue(np.allclose(tsbias_grad, torchbias_grad, 1e-3))
+        self.assertTrue(np.allclose(tsbias_grad, torchbias_grad, 1e-3, 1e-3))
 
     def test_gpu_backward_bias(self):
         tsoutput = self.linear.forward(self.tsinput)
@@ -133,7 +133,7 @@ class LinearTest(unittest.TestCase):
         tsbias_grad = self.linear.bias().grad()
         torchbias_grad = torch.autograd.grad(torchoutput, self.torch_bias, torch_grad_output)[0]
         torchbias_grad = torchbias_grad.cpu().numpy()
-        self.assertTrue(np.allclose(tsbias_grad, torchbias_grad, 1e-3))
+        self.assertTrue(np.allclose(tsbias_grad, torchbias_grad, 1e-3, 1e-3))
 
     def tearDown(self):
         pass

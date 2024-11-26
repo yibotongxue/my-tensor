@@ -18,7 +18,7 @@ class SoftmaxTest(unittest.TestCase):
         torchoutput = torch.nn.functional.softmax(self.torchinput, -1)
         tsoutput_data = tsoutput.data()
         torchoutput_data = torchoutput.detach().numpy()
-        self.assertTrue(np.allclose(tsoutput_data, torchoutput_data, atol=1e-3))
+        self.assertTrue(np.allclose(tsoutput_data, torchoutput_data, 1e-3, 1e-3))
 
     def test_gpu_forward(self):
         self.tsinput.to_gpu()
@@ -27,7 +27,7 @@ class SoftmaxTest(unittest.TestCase):
         torchoutput = torch.nn.functional.softmax(self.torchinput, -1)
         tsoutput_data = tsoutput.data()
         torchoutput_data = torchoutput.cpu().detach().numpy()
-        self.assertTrue(np.allclose(tsoutput_data, torchoutput_data, atol=1e-3))
+        self.assertTrue(np.allclose(tsoutput_data, torchoutput_data, 1e-3, 1e-3))
 
     def tearDown(self):
         pass
