@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <fstream>
-#include <ranges>
+#include <ranges>  // NOLINT
 #include <vector>
 
 namespace my_tensor {

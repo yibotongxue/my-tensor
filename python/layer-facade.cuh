@@ -187,7 +187,7 @@ class CrossEntropyLossFacade {
   TensorFacade Backward(TensorFacade output);
 
  private:
-  explicit std::shared_ptr<my_tensor::LossWithSoftmax<float>> loss_;
+  std::shared_ptr<my_tensor::LossWithSoftmax<float>> loss_;
   TensorFacade input_cache_;
   TensorFacade label_cache_;
 };

@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <memory>
 #include <random>
-#include <ranges>
+#include <ranges>  //NOLINT
 #include <vector>
 
 #include "json-loader.h"

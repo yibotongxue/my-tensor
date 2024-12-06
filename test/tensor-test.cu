@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <iostream>
 #include <memory>
-#include <ranges>
+#include <ranges>  //NOLINT
 #include <utility>
 #include <vector>
 

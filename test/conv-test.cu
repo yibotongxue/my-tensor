@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <memory>
 #include <random>
-#include <ranges>
+#include <ranges>  //NOLINT
 #include <vector>
 
 #include "conv.cuh"
