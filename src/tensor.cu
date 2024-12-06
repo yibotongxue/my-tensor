@@ -13,6 +13,7 @@
 
 namespace my_tensor {
 template <typename T>
+  requires std::is_arithmetic_v<T>
 Tensor<T>::Tensor()
     : shape_({0}),
       size_(0),
@@ -22,6 +23,7 @@ Tensor<T>::Tensor()
 }
 
 template <typename T>
+  requires std::is_arithmetic_v<T>
 Tensor<T>::Tensor(const std::vector<int>& shape) : shape_(shape) {
   size_ =
       std::accumulate(shape_.begin(), shape_.end(), 1, std::multiplies<int>());
@@ -31,6 +33,7 @@ Tensor<T>::Tensor(const std::vector<int>& shape) : shape_(shape) {
 }
 
 template <typename T>
+  requires std::is_arithmetic_v<T>
 Tensor<T>::Tensor(const Tensor<T>& tensor)
     : shape_(tensor.shape_),
       size_(tensor.size_),
@@ -40,6 +43,7 @@ Tensor<T>::Tensor(const Tensor<T>& tensor)
 }
 
 template <typename T>
+  requires std::is_arithmetic_v<T>
 Tensor<T>& Tensor<T>::operator=(const Tensor<T>& tensor) {
   if (this == &tensor) {
     return *this;
@@ -53,6 +57,7 @@ Tensor<T>& Tensor<T>::operator=(const Tensor<T>& tensor) {
 }
 
 template <typename T>
+  requires std::is_arithmetic_v<T>
 Tensor<T>::Tensor(Tensor<T>&& tensor)
     : shape_(std::move(tensor.shape_)),
       size_(tensor.size_),
@@ -62,6 +67,7 @@ Tensor<T>::Tensor(Tensor<T>&& tensor)
 }
 
 template <typename T>
+  requires std::is_arithmetic_v<T>
 Tensor<T>& Tensor<T>::operator=(Tensor<T>&& tensor) {
   shape_ = std::move(tensor.shape_);
   size_ = tensor.size_;
@@ -72,12 +78,14 @@ Tensor<T>& Tensor<T>::operator=(Tensor<T>&& tensor) {
 }
 
 template <typename T>
+  requires std::is_arithmetic_v<T>
 void Tensor<T>::Reshape(const std::vector<int>& shape) {
   shape_ = shape;
   CheckShape();
 }
 
 template <typename T>
+  requires std::is_arithmetic_v<T>
 void Tensor<T>::Resize(const std::vector<int>& shape) {
   shape_ = shape;
   size_ =
@@ -88,6 +96,7 @@ void Tensor<T>::Resize(const std::vector<int>& shape) {
 }
 
 template <typename T>
+  requires std::is_arithmetic_v<T>
 void Tensor<T>::CheckShape() const {
   auto shape_size =
       std::accumulate(shape_.begin(), shape_.end(), 1, std::multiplies<int>());

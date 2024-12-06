@@ -15,9 +15,10 @@ namespace my_tensor {
 
 // Tensor class
 template <typename T = float>
+  requires std::is_arithmetic_v<T>
 class Tensor {
  public:
-  explicit Tensor();
+  Tensor();
 
   // The explicit constructors.
   explicit Tensor(const std::vector<int>& shape);

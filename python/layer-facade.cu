@@ -1,3 +1,5 @@
+// Copyright 2024 yibotongxue
+
 #include "layer-facade.cuh"
 
 TensorFacade ReluFacade::Forward(TensorFacade input) {
@@ -48,11 +50,19 @@ TensorFacade LinearFacade::Forward(TensorFacade input) {
   linear_->SetUp({input.GetTensor()}, {output.GetTensor()});
   if (param_set_) {
     if (input.OnCPU()) {
-      linear_->GetWeight()->SetCPUData(weight_cache_.GetTensor()->GetCPUData().begin(), weight_cache_.GetTensor()->GetCPUData().end());
-      linear_->GetBias()->SetCPUData(bias_cache_.GetTensor()->GetCPUData().begin(), bias_cache_.GetTensor()->GetCPUData().end());
+      linear_->GetWeight()->SetCPUData(
+          weight_cache_.GetTensor()->GetCPUData().begin(),
+          weight_cache_.GetTensor()->GetCPUData().end());
+      linear_->GetBias()->SetCPUData(
+          bias_cache_.GetTensor()->GetCPUData().begin(),
+          bias_cache_.GetTensor()->GetCPUData().end());
     } else {
-      linear_->GetWeight()->SetGPUData(weight_cache_.GetTensor()->GetCPUData().begin(), weight_cache_.GetTensor()->GetCPUData().end());
-      linear_->GetBias()->SetGPUData(bias_cache_.GetTensor()->GetCPUData().begin(), bias_cache_.GetTensor()->GetCPUData().end());
+      linear_->GetWeight()->SetGPUData(
+          weight_cache_.GetTensor()->GetCPUData().begin(),
+          weight_cache_.GetTensor()->GetCPUData().end());
+      linear_->GetBias()->SetGPUData(
+          bias_cache_.GetTensor()->GetCPUData().begin(),
+          bias_cache_.GetTensor()->GetCPUData().end());
     }
   }
   weight_cache_.SetTensor(linear_->GetWeight());
@@ -80,11 +90,19 @@ TensorFacade ConvolutionFacade::Forward(TensorFacade input) {
   conv_->SetUp({input.GetTensor()}, {output.GetTensor()});
   if (param_set_) {
     if (input.OnCPU()) {
-      conv_->GetKernel()->SetCPUData(kernel_cache_.GetTensor()->GetCPUData().begin(), kernel_cache_.GetTensor()->GetCPUData().end());
-      conv_->GetBias()->SetCPUData(bias_cache_.GetTensor()->GetCPUData().begin(), bias_cache_.GetTensor()->GetCPUData().end());
+      conv_->GetKernel()->SetCPUData(
+          kernel_cache_.GetTensor()->GetCPUData().begin(),
+          kernel_cache_.GetTensor()->GetCPUData().end());
+      conv_->GetBias()->SetCPUData(
+          bias_cache_.GetTensor()->GetCPUData().begin(),
+          bias_cache_.GetTensor()->GetCPUData().end());
     } else {
-      conv_->GetKernel()->SetGPUData(kernel_cache_.GetTensor()->GetCPUData().begin(), kernel_cache_.GetTensor()->GetCPUData().end());
-      conv_->GetBias()->SetGPUData(bias_cache_.GetTensor()->GetCPUData().begin(), bias_cache_.GetTensor()->GetCPUData().end());
+      conv_->GetKernel()->SetGPUData(
+          kernel_cache_.GetTensor()->GetCPUData().begin(),
+          kernel_cache_.GetTensor()->GetCPUData().end());
+      conv_->GetBias()->SetGPUData(
+          bias_cache_.GetTensor()->GetCPUData().begin(),
+          bias_cache_.GetTensor()->GetCPUData().end());
     }
   }
   kernel_cache_.SetTensor(conv_->GetKernel());
@@ -148,24 +166,29 @@ TensorFacade SoftmaxFacade::Backward(TensorFacade output) {
   return input_cache_;
 }
 
-TensorFacade CrossEntropyLossFacade::Forward(TensorFacade input, TensorFacade label) {
+TensorFacade CrossEntropyLossFacade::Forward(TensorFacade input,
+                                             TensorFacade label) {
   input_cache_ = input;
   label_cache_ = label;
   TensorFacade output;
   loss_->SetUp({input.GetTensor(), label.GetTensor()}, {output.GetTensor()});
   if (input.OnCPU()) {
-    loss_->ForwardCPU({input.GetTensor(), label.GetTensor()}, {output.GetTensor()});
+    loss_->ForwardCPU({input.GetTensor(), label.GetTensor()},
+                      {output.GetTensor()});
   } else {
-    loss_->ForwardGPU({input.GetTensor(), label.GetTensor()}, {output.GetTensor()});
+    loss_->ForwardGPU({input.GetTensor(), label.GetTensor()},
+                      {output.GetTensor()});
   }
   return output;
 }
 
 TensorFacade CrossEntropyLossFacade::Backward(TensorFacade output) {
   if (output.OnCPU()) {
-    loss_->BackwardGPU({output.GetTensor()}, {input_cache_.GetTensor(), label_cache_.GetTensor()});
+    loss_->BackwardGPU({output.GetTensor()},
+                       {input_cache_.GetTensor(), label_cache_.GetTensor()});
   } else {
-    loss_->BackwardGPU({output.GetTensor()}, {input_cache_.GetTensor(), label_cache_.GetTensor()});
+    loss_->BackwardGPU({output.GetTensor()},
+                       {input_cache_.GetTensor(), label_cache_.GetTensor()});
   }
   return input_cache_;
 }

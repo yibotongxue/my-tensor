@@ -43,7 +43,8 @@ class LayerParameter {
  protected:
   void ParseName(const nlohmann::json& js) {
     // if (!js.contains("name") || !js["name"].is_string()) {
-    //   throw FileError("Layer object in layers object should contain key name");
+    //   throw FileError("Layer object in layers object should contain key
+    //   name");
     // }
     // name_ = js["name"].get<std::string>();
   }
@@ -60,14 +61,14 @@ class ReluParameter final : public LayerParameter {
 
 class SigmoidParameter : public LayerParameter {
  public:
-  explicit SigmoidParameter() : LayerParameter(ParamType::kSigmoid) {}
+  SigmoidParameter() : LayerParameter(ParamType::kSigmoid) {}
 
   virtual ~SigmoidParameter() = default;
 };  // class SigmoidParameter
 
 class FlattenParameter : public LayerParameter {
  public:
-  explicit FlattenParameter() : LayerParameter(ParamType::kFlatten) {}
+  FlattenParameter() : LayerParameter(ParamType::kFlatten) {}
 
   bool inplace_;
 

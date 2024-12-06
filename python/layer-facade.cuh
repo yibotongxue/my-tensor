@@ -1,25 +1,31 @@
+// Copyright 2024 yibotongxue
+
 #ifndef PYTHON_LAYER_FACADE_CUH_
 #define PYTHON_LAYER_FACADE_CUH_
 
+#include <pybind11/pybind11.h>
+
+#include <iostream>
+#include <memory>
+
+#include "conv.cuh"
+#include "layer-parameter.h"
 #include "layer.cuh"
+#include "linear.cuh"
+#include "loss-with-softmax.cuh"
+#include "pooling.cuh"
 #include "relu.cuh"
 #include "sigmoid.cuh"
-#include "linear.cuh"
-#include "conv.cuh"
-#include "pooling.cuh"
 #include "softmax.cuh"
-#include "loss-with-softmax.cuh"
 #include "tensor-facade.cuh"
-#include "layer-parameter.h"
-#include <pybind11/pybind11.h>
-#include <iostream>
 
 namespace py = pybind11;
 
 class ReluFacade {
  public:
   ReluFacade() : relu_(nullptr) {
-    my_tensor::LayerParameterPtr param = std::make_shared<my_tensor::ReluParameter>();
+    my_tensor::LayerParameterPtr param =
+        std::make_shared<my_tensor::ReluParameter>();
     relu_.reset(new my_tensor::Relu<float>(param));
   }
 
@@ -35,7 +41,8 @@ class ReluFacade {
 class SigmoidFacade {
  public:
   SigmoidFacade() : sigmoid_(nullptr) {
-    my_tensor::LayerParameterPtr param = std::make_shared<my_tensor::SigmoidParameter>();
+    my_tensor::LayerParameterPtr param =
+        std::make_shared<my_tensor::SigmoidParameter>();
     sigmoid_.reset(new my_tensor::Sigmoid<float>(param));
   }
 
@@ -50,7 +57,8 @@ class SigmoidFacade {
 
 class LinearFacade {
  public:
-  LinearFacade(int input_feature, int output_feature) : linear_(nullptr), param_set_(false) {
+  LinearFacade(int input_feature, int output_feature)
+      : linear_(nullptr), param_set_(false) {
     auto param = std::make_shared<my_tensor::LinearParameter>();
     param->input_feature_ = input_feature;
     param->output_feature_ = output_feature;
@@ -67,17 +75,13 @@ class LinearFacade {
 
   TensorFacade Backward(TensorFacade output);
 
-  const TensorFacade& GetWeight() const {
-    return weight_cache_;
-  }
+  const TensorFacade& GetWeight() const { return weight_cache_; }
   void SetWeight(const TensorFacade& weight) {
     weight_cache_ = weight;
     param_set_ = true;
   }
 
-  const TensorFacade& GetBias() const {
-    return bias_cache_;
-  }
+  const TensorFacade& GetBias() const { return bias_cache_; }
   void SetBias(const TensorFacade& bias) {
     bias_cache_ = bias;
     param_set_ = true;
@@ -93,7 +97,8 @@ class LinearFacade {
 
 class ConvolutionFacade {
  public:
-  ConvolutionFacade(int input_channel, int output_channel, int kernel_size) : conv_(nullptr), param_set_(false) {
+  ConvolutionFacade(int input_channel, int output_channel, int kernel_size)
+      : conv_(nullptr), param_set_(false) {
     auto param = std::make_shared<my_tensor::ConvolutionParameter>();
     param->input_channels_ = input_channel;
     param->output_channels_ = output_channel;
@@ -110,17 +115,13 @@ class ConvolutionFacade {
 
   TensorFacade Backward(TensorFacade output);
 
-  const TensorFacade& GetKernel() const {
-    return kernel_cache_;
-  }
+  const TensorFacade& GetKernel() const { return kernel_cache_; }
   void SetKernel(const TensorFacade& kernel) {
     kernel_cache_ = kernel;
     param_set_ = true;
   }
 
-  const TensorFacade& GetBias() const {
-    return bias_cache_;
-  }
+  const TensorFacade& GetBias() const { return bias_cache_; }
   void SetBias(const TensorFacade& bias) {
     bias_cache_ = bias;
     param_set_ = true;
@@ -136,7 +137,8 @@ class ConvolutionFacade {
 
 class PoolingFacade {
  public:
-  PoolingFacade(int input_channel, int kernel_size, int stride) : pooling_(nullptr) {
+  PoolingFacade(int input_channel, int kernel_size, int stride)
+      : pooling_(nullptr) {
     auto param = std::make_shared<my_tensor::PoolingParameter>();
     param->input_channels_ = input_channel;
     param->kernel_h_ = kernel_size;
@@ -157,7 +159,7 @@ class PoolingFacade {
 
 class SoftmaxFacade {
  public:
-  SoftmaxFacade(int channel) : softmax_(nullptr) {
+  explicit SoftmaxFacade(int channel) : softmax_(nullptr) {
     auto param = std::make_shared<my_tensor::SoftmaxParameter>();
     param->channels_ = channel;
     softmax_.reset(new my_tensor::Softmax<float>(param));
@@ -174,7 +176,7 @@ class SoftmaxFacade {
 
 class CrossEntropyLossFacade {
  public:
-  CrossEntropyLossFacade(int channel) : loss_(nullptr) {
+  explicit CrossEntropyLossFacade(int channel) : loss_(nullptr) {
     auto param = std::make_shared<my_tensor::LossWithSoftmaxParameter>();
     param->channels_ = channel;
     loss_.reset(new my_tensor::LossWithSoftmax<float>(param));
@@ -185,7 +187,7 @@ class CrossEntropyLossFacade {
   TensorFacade Backward(TensorFacade output);
 
  private:
-  std::shared_ptr<my_tensor::LossWithSoftmax<float>> loss_;
+  explicit std::shared_ptr<my_tensor::LossWithSoftmax<float>> loss_;
   TensorFacade input_cache_;
   TensorFacade label_cache_;
 };
