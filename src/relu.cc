@@ -10,6 +10,23 @@
 namespace my_tensor {
 
 template <typename T>
+void Relu<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
+                               const std::vector<TensorPtr<T>>& top) const {
+  if (bottom.size() != 1) {
+    throw ReluError("The bottom of relu layer should have one tensor.");
+  }
+  if (top.size() != 1) {
+    throw ReluError("The top of relu layer should have one tensor.");
+  }
+}
+
+template <typename T>
+void Relu<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
+                      const std::vector<TensorPtr<T>>& top) const {
+  top[0]->Resize(bottom[0]->GetShape());
+}
+
+template <typename T>
 void Relu<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                          const std::vector<TensorPtr<T>>& top) {
   std::ranges::transform(
