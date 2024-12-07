@@ -1,7 +1,7 @@
 // Copyright 2024 yibotongxue
 
-#ifndef INCLUDE_DATASET_H_
-#define INCLUDE_DATASET_H_
+#ifndef INCLUDE_DATASET_HPP_
+#define INCLUDE_DATASET_HPP_
 
 #include <cstdint>
 #include <memory>
@@ -54,4 +54,4 @@ class MnistDataset : public Dataset {
 using DatasetPtr = std::shared_ptr<Dataset>;
 }  // namespace my_tensor
 
-#endif  // INCLUDE_DATASET_H_
+#endif  // INCLUDE_DATASET_HPP_

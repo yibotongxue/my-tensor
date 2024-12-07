@@ -1,6 +1,6 @@
 // Copyright 2024 yibotongxue
 
-#include "layer-facade.cuh"
+#include "layer-facade.hpp"
 
 TensorFacade ReluFacade::Forward(TensorFacade input) {
   input_cache_ = input;

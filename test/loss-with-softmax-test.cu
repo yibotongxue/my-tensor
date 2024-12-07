@@ -7,11 +7,11 @@
 #include <vector>
 
 #include "gtest/gtest.h"
-#include "json-loader.h"
-#include "layer-factory.cuh"
-#include "layer-parameter.h"
-#include "loss-with-softmax.cuh"
-#include "tensor.cuh"
+#include "json-loader.hpp"
+#include "layer-factory.hpp"
+#include "layer-parameter.hpp"
+#include "loss-with-softmax.hpp"
+#include "tensor.hpp"
 
 // TEST(TrivialTest, always_succeed) {
 //   EXPECT_TRUE(true);
@@ -130,7 +130,7 @@ LOSS_WITH_SOFTMAX_TEST_FORWARD_LOSS(GPU)
         if (label_data[i] == j) {                                        \
           expect -= 1;                                                   \
         }                                                                \
-        expect /= 1024;\
+        expect /= 1024;                                                  \
         ASSERT_NEAR(actual[i * 10 + j], expect, 0.01);                   \
       }                                                                  \
     }                                                                    \

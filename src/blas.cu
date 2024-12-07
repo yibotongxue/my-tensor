@@ -5,8 +5,8 @@
 #include <thrust/reduce.h>
 #include <thrust/transform.h>
 
-#include "blas.cuh"
-#include "handle.cuh"
+#include "blas.hpp"
+#include "handle.hpp"
 
 namespace my_tensor {
 extern HandlePtr handle;

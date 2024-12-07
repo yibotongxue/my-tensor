@@ -1,7 +1,7 @@
 // Copyright 2024 yibotongxue
 
-#ifndef PYTHON_TENSOR_FACADE_CUH_
-#define PYTHON_TENSOR_FACADE_CUH_
+#ifndef PYTHON_TENSOR_FACADE_HPP_
+#define PYTHON_TENSOR_FACADE_HPP_
 
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
@@ -10,7 +10,7 @@
 #include <memory>
 #include <vector>
 
-#include "tensor.cuh"
+#include "tensor.hpp"
 
 namespace py = pybind11;
 
@@ -93,4 +93,4 @@ class TensorFacade {
   DeviceType type_;
 };
 
-#endif  // PYTHON_TENSOR_FACADE_CUH_
+#endif  // PYTHON_TENSOR_FACADE_HPP_

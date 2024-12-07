@@ -1,56 +1,45 @@
 // Copyright 2024 yibotongxue
 
-#ifndef INCLUDE_LOSS_WITH_SOFTMAX_CUH_
-#define INCLUDE_LOSS_WITH_SOFTMAX_CUH_
+#ifndef INCLUDE_RELU_HPP_
+#define INCLUDE_RELU_HPP_
 
-#include <iostream>
+#include <memory>
 #include <vector>
 
-#include "layer-parameter.h"
-#include "layer.cuh"
-#include "utils.cuh"
+#include "layer-parameter.hpp"
+#include "layer.hpp"
+#include "tensor.hpp"
 
 namespace my_tensor {
-
+// Relu class, implements Layer.
 template <typename T = float>
-class LossWithSoftmax final : public Layer<T> {
+class Relu final : public Layer<T> {
  public:
-  explicit LossWithSoftmax(LayerParameterPtr param) : Layer<T>(param) {}
+  explicit Relu(LayerParameterPtr param) : Layer<T>(param) {}
+
+  DISABLE_LAYER_COPY(Relu)
 
   void CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
                         const std::vector<TensorPtr<T>>& top) const override;
   void Reshape(const std::vector<TensorPtr<T>>& bottom,
                const std::vector<TensorPtr<T>>& top) const override;
 
-  void LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
-                  const std::vector<TensorPtr<T>>& top) override;
+  virtual ~Relu() = default;
 
-  DISABLE_LAYER_COPY(LossWithSoftmax)
-
+  // Override forward and backward methods of Layer class.
+  // CPU
   void ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                   const std::vector<TensorPtr<T>>& top) override;
   void BackwardCPU(const std::vector<TensorPtr<T>>& top,
                    const std::vector<TensorPtr<T>>& bottom) override;
+  // GPU
   void ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                   const std::vector<TensorPtr<T>>& top) override;
   void BackwardGPU(const std::vector<TensorPtr<T>>& top,
                    const std::vector<TensorPtr<T>>& bottom) override;
+};
 
-  float GetAccuracy(const TensorPtr<T> label) const;
-
- private:
-  LayerPtr<T> softmax_;
-  int channels_;
-  int batch_size_;
-  std::vector<TensorPtr<T>> softmax_bottom_;
-  std::vector<TensorPtr<T>> softmax_top_;
-
-  void CheckShape(const TensorPtr<T> input, const TensorPtr<T> label,
-                  const TensorPtr<T> output) const;
-};  // class LossWithSoftmax
-
-extern template class LossWithSoftmax<>;
-
+extern template class my_tensor::Relu<>;
 }  // namespace my_tensor
 
-#endif  // INCLUDE_LOSS_WITH_SOFTMAX_CUH_
+#endif  // INCLUDE_RELU_HPP_

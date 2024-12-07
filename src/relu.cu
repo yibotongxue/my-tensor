@@ -4,9 +4,9 @@
 
 #include <vector>
 
-#include "error.h"
-#include "relu.cuh"
-#include "utils.cuh"
+#include "error.hpp"
+#include "relu.hpp"
+#include "utils.hpp"
 
 namespace my_tensor {
 

@@ -1,12 +1,12 @@
 // Copyright 2024 yibotongxue
 
-#ifndef INCLUDE_FLATTEN_CUH_
-#define INCLUDE_FLATTEN_CUH_
+#ifndef INCLUDE_FLATTEN_HPP_
+#define INCLUDE_FLATTEN_HPP_
 
 #include <vector>
 
-#include "layer-parameter.h"
-#include "layer.cuh"
+#include "layer-parameter.hpp"
+#include "layer.hpp"
 
 namespace my_tensor {
 
@@ -49,4 +49,4 @@ extern template class Flatten<>;
 
 }  // namespace my_tensor
 
-#endif  // INCLUDE_FLATTEN_CUH_
+#endif  // INCLUDE_FLATTEN_HPP_

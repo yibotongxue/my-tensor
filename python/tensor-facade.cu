@@ -5,8 +5,8 @@
 
 #include <vector>
 
-#include "tensor-facade.cuh"
-#include "tensor.cuh"
+#include "tensor-facade.hpp"
+#include "tensor.hpp"
 
 namespace py = pybind11;
 

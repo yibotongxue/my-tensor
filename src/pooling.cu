@@ -7,11 +7,11 @@
 #include <memory>
 #include <vector>
 
-#include "error.h"
-#include "layer-parameter.h"
-#include "pooling.cuh"
-#include "tensor.cuh"
-#include "utils.cuh"
+#include "error.hpp"
+#include "layer-parameter.hpp"
+#include "pooling.hpp"
+#include "tensor.hpp"
+#include "utils.hpp"
 
 namespace my_tensor {
 

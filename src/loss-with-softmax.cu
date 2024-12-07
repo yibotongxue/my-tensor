@@ -8,10 +8,10 @@
 #include <ranges>  // NOLINT
 #include <vector>
 
-#include "error.h"
-#include "layer-factory.cuh"
-#include "loss-with-softmax.cuh"
-#include "softmax.cuh"
+#include "error.hpp"
+#include "layer-factory.hpp"
+#include "loss-with-softmax.hpp"
+#include "softmax.hpp"
 
 namespace my_tensor {
 

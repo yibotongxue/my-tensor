@@ -9,11 +9,11 @@
 #include <ranges>  //NOLINT
 #include <vector>
 
-#include "json-loader.h"
-#include "layer-factory.cuh"
-#include "layer-parameter.h"
-#include "layer/layer-utils.cuh"
-#include "linear.cuh"
+#include "json-loader.hpp"
+#include "layer-factory.hpp"
+#include "layer-parameter.hpp"
+#include "layer/layer-utils.hpp"
+#include "linear.hpp"
 
 // TEST(TrivialTest, always_succeed) {
 //   EXPECT_TRUE(true);

@@ -4,8 +4,8 @@
 #include <memory>
 #include <vector>
 
-#include "data-loader.cuh"
-#include "tensor.cuh"
+#include "data-loader.hpp"
+#include "tensor.hpp"
 
 namespace my_tensor {
 std::array<TensorPtr<>, 2> DataLoader::GetNext() {

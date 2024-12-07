@@ -1,45 +1,56 @@
 // Copyright 2024 yibotongxue
 
-#ifndef INCLUDE_SIGMOID_CUH_
-#define INCLUDE_SIGMOID_CUH_
+#ifndef INCLUDE_LOSS_WITH_SOFTMAX_HPP_
+#define INCLUDE_LOSS_WITH_SOFTMAX_HPP_
 
-#include <memory>
+#include <iostream>
 #include <vector>
 
-#include "layer-parameter.h"
-#include "layer.cuh"
-#include "tensor.cuh"
+#include "layer-parameter.hpp"
+#include "layer.hpp"
+#include "utils.hpp"
 
 namespace my_tensor {
-// Sigmoid class, implements Layer class.
-template <typename T = float>
-class Sigmoid final : public Layer<T> {
- public:
-  explicit Sigmoid(LayerParameterPtr param) : Layer<T>(param) {}
 
-  DISABLE_LAYER_COPY(Sigmoid)
+template <typename T = float>
+class LossWithSoftmax final : public Layer<T> {
+ public:
+  explicit LossWithSoftmax(LayerParameterPtr param) : Layer<T>(param) {}
 
   void CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
                         const std::vector<TensorPtr<T>>& top) const override;
   void Reshape(const std::vector<TensorPtr<T>>& bottom,
                const std::vector<TensorPtr<T>>& top) const override;
 
-  ~Sigmoid() = default;
+  void LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
+                  const std::vector<TensorPtr<T>>& top) override;
 
-  // Override forward and backward methods of Layer class.
-  // CPU
+  DISABLE_LAYER_COPY(LossWithSoftmax)
+
   void ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                   const std::vector<TensorPtr<T>>& top) override;
   void BackwardCPU(const std::vector<TensorPtr<T>>& top,
                    const std::vector<TensorPtr<T>>& bottom) override;
-  // GPU
   void ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                   const std::vector<TensorPtr<T>>& top) override;
   void BackwardGPU(const std::vector<TensorPtr<T>>& top,
                    const std::vector<TensorPtr<T>>& bottom) override;
-};
 
-extern template class my_tensor::Sigmoid<>;
+  float GetAccuracy(const TensorPtr<T> label) const;
+
+ private:
+  LayerPtr<T> softmax_;
+  int channels_;
+  int batch_size_;
+  std::vector<TensorPtr<T>> softmax_bottom_;
+  std::vector<TensorPtr<T>> softmax_top_;
+
+  void CheckShape(const TensorPtr<T> input, const TensorPtr<T> label,
+                  const TensorPtr<T> output) const;
+};  // class LossWithSoftmax
+
+extern template class LossWithSoftmax<>;
+
 }  // namespace my_tensor
 
-#endif  // INCLUDE_SIGMOID_CUH_
+#endif  // INCLUDE_LOSS_WITH_SOFTMAX_HPP_

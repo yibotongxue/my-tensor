@@ -3,12 +3,12 @@
 #include <memory>
 #include <vector>
 
-#include "blas.cuh"
-#include "conv.cuh"
-#include "error.h"
+#include "blas.hpp"
+#include "conv.hpp"
+#include "error.hpp"
 #include "filler-parameter.hpp"
-#include "filler.cuh"
-#include "im2col.cuh"
+#include "filler.hpp"
+#include "im2col.hpp"
 
 namespace my_tensor {
 

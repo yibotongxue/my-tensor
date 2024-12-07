@@ -9,9 +9,9 @@
 #include <utility>
 #include <vector>
 
-#include "error.h"
-#include "tensor.cuh"
-#include "tensor/tensor-utils.cuh"
+#include "error.hpp"
+#include "tensor.hpp"
+#include "tensor/tensor-utils.hpp"
 
 class TensorConstructNoDataTest : public ::testing::Test {
  protected:

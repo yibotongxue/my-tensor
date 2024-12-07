@@ -1,7 +1,7 @@
 // Copyright 2024 yibotongxue
 
-#ifndef INCLUDE_SYNCED_VECTOR_CUH_
-#define INCLUDE_SYNCED_VECTOR_CUH_
+#ifndef INCLUDE_SYNCED_VECTOR_HPP_
+#define INCLUDE_SYNCED_VECTOR_HPP_
 
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-#include "error.h"
+#include "error.hpp"
 
 namespace my_tensor {
 
@@ -27,14 +27,14 @@ class SyncedVector {
 
   enum VectorState { kUninitialized, kHeadAtCPU, kHeadAtGPU, kSynced };
 
-  const thrust::host_vector<T>& GetCPUData();
-  thrust::host_vector<T>& GetMutableCPUData();
-  const thrust::device_vector<T>& GetGPUData();
-  thrust::device_vector<T>& GetMutableGPUData();
+  const std::vector<T>& GetCPUData();
+  std::vector<T>& GetMutableCPUData();
   void SetCPUData(const std::vector<T>& data);
-  void SetGPUData(const std::vector<T>& data);
   const T* GetCPUPtr();
   T* GetMutableCPUPtr();
+  const thrust::device_vector<T>& GetGPUData();
+  thrust::device_vector<T>& GetMutableGPUData();
+  void SetGPUData(const std::vector<T>& data);
   const T* GetGPUPtr();
   T* GetMutableGPUPtr();
 
@@ -64,7 +64,7 @@ class SyncedVector {
  private:
   VectorState state_;
   size_t size_;
-  thrust::host_vector<T> cpu_data_;
+  std::vector<T> cpu_data_;
   thrust::device_vector<T> gpu_data_;
 
   void ToCPU();
@@ -78,4 +78,4 @@ extern template class SyncedVector<>;
 extern template class SyncedVector<int>;
 }  // namespace my_tensor
 
-#endif  // INCLUDE_SYNCED_VECTOR_CUH_
+#endif  // INCLUDE_SYNCED_VECTOR_HPP_

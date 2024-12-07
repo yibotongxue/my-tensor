@@ -6,12 +6,12 @@
 #include <random>
 #include <vector>
 
-#include "json-loader.h"
-#include "layer-factory.cuh"
-#include "layer-parameter.h"
-#include "layer.cuh"
-#include "layer/layer-utils.cuh"
-#include "relu.cuh"
+#include "json-loader.hpp"
+#include "layer-factory.hpp"
+#include "layer-parameter.hpp"
+#include "layer.hpp"
+#include "layer/layer-utils.hpp"
+#include "relu.hpp"
 
 // TEST(TrivialTest, always_succeed) {
 //   EXPECT_TRUE(true);

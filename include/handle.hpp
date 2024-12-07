@@ -1,7 +1,7 @@
 // Copyright 2024 yibotongxue
 
-#ifndef INCLUDE_HANDLE_CUH_
-#define INCLUDE_HANDLE_CUH_
+#ifndef INCLUDE_HANDLE_HPP_
+#define INCLUDE_HANDLE_HPP_
 
 #include <cublas_v2.h>
 
@@ -38,4 +38,4 @@ class Handle {
 extern HandlePtr handle;
 }  // namespace my_tensor
 
-#endif  // INCLUDE_HANDLE_CUH_
+#endif  // INCLUDE_HANDLE_HPP_

@@ -8,10 +8,10 @@
 #include <numeric>
 #include <stdexcept>
 
-#include "dataset.h"
-#include "layer-facade.cuh"
-#include "tensor-facade.cuh"
-#include "tensor.cuh"
+#include "dataset.hpp"
+#include "layer-facade.hpp"
+#include "tensor-facade.hpp"
+#include "tensor.hpp"
 
 namespace py = pybind11;
 

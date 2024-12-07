@@ -1,23 +1,23 @@
 // Copyright 2024 yibotongxue
 
-#ifndef PYTHON_LAYER_FACADE_CUH_
-#define PYTHON_LAYER_FACADE_CUH_
+#ifndef PYTHON_LAYER_FACADE_HPP_
+#define PYTHON_LAYER_FACADE_HPP_
 
 #include <pybind11/pybind11.h>
 
 #include <iostream>
 #include <memory>
 
-#include "conv.cuh"
-#include "layer-parameter.h"
-#include "layer.cuh"
-#include "linear.cuh"
-#include "loss-with-softmax.cuh"
-#include "pooling.cuh"
-#include "relu.cuh"
-#include "sigmoid.cuh"
-#include "softmax.cuh"
-#include "tensor-facade.cuh"
+#include "conv.hpp"
+#include "layer-parameter.hpp"
+#include "layer.hpp"
+#include "linear.hpp"
+#include "loss-with-softmax.hpp"
+#include "pooling.hpp"
+#include "relu.hpp"
+#include "sigmoid.hpp"
+#include "softmax.hpp"
+#include "tensor-facade.hpp"
 
 namespace py = pybind11;
 
@@ -192,4 +192,4 @@ class CrossEntropyLossFacade {
   TensorFacade label_cache_;
 };
 
-#endif  // PYTHON_LAYER_FACADE_CUH_
+#endif  // PYTHON_LAYER_FACADE_HPP_

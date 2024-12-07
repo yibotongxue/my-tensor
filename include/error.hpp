@@ -1,7 +1,7 @@
 // Copyright 2024 yibotongxue
 
-#ifndef INCLUDE_ERROR_H_
-#define INCLUDE_ERROR_H_
+#ifndef INCLUDE_ERROR_HPP_
+#define INCLUDE_ERROR_HPP_
 
 #include <stdexcept>
 
@@ -82,4 +82,4 @@ class FillerError : public std::runtime_error {
 };  // class FillerError
 }  // namespace my_tensor
 
-#endif  // INCLUDE_ERROR_H_
+#endif  // INCLUDE_ERROR_HPP_

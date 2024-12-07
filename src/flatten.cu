@@ -4,8 +4,8 @@
 
 #include <vector>
 
-#include "error.h"
-#include "flatten.cuh"
+#include "error.hpp"
+#include "flatten.hpp"
 
 namespace my_tensor {
 

@@ -1,11 +1,11 @@
 // Copyright 2024 yibotongxue
 
-#include "layer-parameter.h"
+#include "layer-parameter.hpp"
 
 #include <memory>
 #include <string>
 
-#include "error.h"
+#include "error.hpp"
 #include "nlohmann/json.hpp"
 
 namespace my_tensor {

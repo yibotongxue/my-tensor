@@ -5,11 +5,11 @@
 #include <memory>
 #include <vector>
 
-#include "blas.cuh"
-#include "error.h"
+#include "blas.hpp"
+#include "error.hpp"
 #include "filler-parameter.hpp"
-#include "filler.cuh"
-#include "linear.cuh"
+#include "filler.hpp"
+#include "linear.hpp"
 
 namespace my_tensor {
 

@@ -8,10 +8,10 @@
 #include <ranges>  //NOLINT
 #include <vector>
 
-#include "conv.cuh"
-#include "json-loader.h"
-#include "layer-factory.cuh"
-#include "layer-parameter.h"
+#include "conv.hpp"
+#include "json-loader.hpp"
+#include "layer-factory.hpp"
+#include "layer-parameter.hpp"
 
 // TEST(TrivialTest, always_succeed) {
 //   EXPECT_TRUE(true);

@@ -1,10 +1,10 @@
 // Copyright 2024 yibotongxue
 
-#ifndef INCLUDE_IM2COL_CUH_
-#define INCLUDE_IM2COL_CUH_
+#ifndef INCLUDE_IM2COL_HPP_
+#define INCLUDE_IM2COL_HPP_
 
-#include "error.h"
-#include "utils.cuh"
+#include "error.hpp"
+#include "utils.hpp"
 
 namespace my_tensor {
 
@@ -47,4 +47,4 @@ extern template void Col2im_GPU<float>(const int n, const float *data_col,
 
 }  // namespace my_tensor
 
-#endif  // INCLUDE_IM2COL_CUH_
+#endif  // INCLUDE_IM2COL_HPP_

@@ -8,8 +8,8 @@
 #include <ranges>  //NOLINT
 #include <vector>
 
-#include "im2col.cuh"
-#include "tensor.cuh"
+#include "im2col.hpp"
+#include "tensor.hpp"
 
 // TEST(TrivialTest, always_succeed) {
 //   EXPECT_TRUE(true);

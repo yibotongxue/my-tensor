@@ -1,7 +1,7 @@
 // Copyright 2024 yibotongxue
 
-#ifndef INCLUDE_JSON_LOADER_H_
-#define INCLUDE_JSON_LOADER_H_
+#ifndef INCLUDE_JSON_LOADER_HPP_
+#define INCLUDE_JSON_LOADER_HPP_
 
 #include <memory>
 #include <string>
@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "filler-parameter.hpp"
-#include "layer-parameter.h"
+#include "layer-parameter.hpp"
 #include "nlohmann/json.hpp"
 
 namespace my_tensor {
@@ -34,4 +34,4 @@ class JsonLoader {
 
 }  // namespace my_tensor
 
-#endif  // INCLUDE_JSON_LOADER_H_
+#endif  // INCLUDE_JSON_LOADER_HPP_

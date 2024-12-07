@@ -4,12 +4,12 @@
 #include <memory>
 #include <vector>
 
-#include "data-loader.cuh"
-#include "dataset.h"
-#include "json-loader.h"
-#include "layer-factory.cuh"
-#include "layer-parameter.h"
-#include "tensor.cuh"
+#include "data-loader.hpp"
+#include "dataset.hpp"
+#include "json-loader.hpp"
+#include "layer-factory.hpp"
+#include "layer-parameter.hpp"
+#include "tensor.hpp"
 
 int main() {
   my_tensor::JsonLoader loader("../test/json-test/mnist.json");

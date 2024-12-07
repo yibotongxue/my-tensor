@@ -1,13 +1,13 @@
 // Copyright 2024 yibotongxue
 
-#ifndef INCLUDE_DATA_LOADER_CUH_
-#define INCLUDE_DATA_LOADER_CUH_
+#ifndef INCLUDE_DATA_LOADER_HPP_
+#define INCLUDE_DATA_LOADER_HPP_
 
 #include <array>
 #include <vector>
 
-#include "dataset.h"
-#include "tensor.cuh"
+#include "dataset.hpp"
+#include "tensor.hpp"
 
 namespace my_tensor {
 class DataLoader {
@@ -28,4 +28,4 @@ class DataLoader {
 };  // class DataLoader
 }  // namespace my_tensor
 
-#endif  // INCLUDE_DATA_LOADER_CUH_
+#endif  // INCLUDE_DATA_LOADER_HPP_

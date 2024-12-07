@@ -8,11 +8,11 @@
 #include <ranges>  //NOLINT
 #include <vector>
 
-#include "json-loader.h"
-#include "layer-factory.cuh"
-#include "layer.cuh"
-#include "pooling.cuh"
-#include "tensor.cuh"
+#include "json-loader.hpp"
+#include "layer-factory.hpp"
+#include "layer.hpp"
+#include "pooling.hpp"
+#include "tensor.hpp"
 
 // TEST(TrivialTest, always_succeed) {
 //   EXPECT_TRUE(true);

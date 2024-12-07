@@ -1,13 +1,13 @@
 // Copyright 2024 yibotongxue
 
-#include "json-loader.h"
+#include "json-loader.hpp"
 
 #include <gtest/gtest.h>
 
 #include <iostream>
 #include <utility>
 
-#include "error.h"
+#include "error.hpp"
 
 TEST(JsonTest, NotExistFile) {
   EXPECT_THROW(my_tensor::JsonLoader loader("../test/json-test/not-exist.json"),

@@ -8,12 +8,12 @@
 #include <ranges>  //NOLINT
 #include <vector>
 
-#include "json-loader.h"
-#include "layer-factory.cuh"
-#include "layer-parameter.h"
-#include "layer.cuh"
-#include "layer/layer-utils.cuh"
-#include "sigmoid.cuh"
+#include "json-loader.hpp"
+#include "layer-factory.hpp"
+#include "layer-parameter.hpp"
+#include "layer.hpp"
+#include "layer/layer-utils.hpp"
+#include "sigmoid.hpp"
 
 #define SIGMOID_TEST_CLASS(device)                                    \
   class Sigmoid##device##Test : public ::testing::Test {              \

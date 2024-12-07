@@ -1,7 +1,7 @@
 // Copyright 2024 yibotongxue
 
-#ifndef TEST_INCLUDE_LAYER_LAYER_UTILS_CUH_
-#define TEST_INCLUDE_LAYER_LAYER_UTILS_CUH_
+#ifndef TEST_INCLUDE_LAYER_LAYER_UTILS_HPP_
+#define TEST_INCLUDE_LAYER_LAYER_UTILS_HPP_
 
 #include <algorithm>
 #include <functional>
@@ -41,4 +41,4 @@
     }                                                                          \
   }
 
-#endif  // TEST_INCLUDE_LAYER_LAYER_UTILS_CUH_
+#endif  // TEST_INCLUDE_LAYER_LAYER_UTILS_HPP_

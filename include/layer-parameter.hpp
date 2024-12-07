@@ -1,7 +1,7 @@
 // Copyright 2024 yibotongxue
 
-#ifndef INCLUDE_LAYER_PARAMETER_H_
-#define INCLUDE_LAYER_PARAMETER_H_
+#ifndef INCLUDE_LAYER_PARAMETER_HPP_
+#define INCLUDE_LAYER_PARAMETER_HPP_
 
 #include <memory>
 #include <string>
@@ -166,4 +166,4 @@ inline LayerParameterPtr CreateLayerParameter(const std::string& type) {
 
 }  // namespace my_tensor
 
-#endif  // INCLUDE_LAYER_PARAMETER_H_
+#endif  // INCLUDE_LAYER_PARAMETER_HPP_

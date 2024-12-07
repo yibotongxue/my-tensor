@@ -1,7 +1,7 @@
 // Copyright 2024 yibotongxue
 
-#ifndef INCLUDE_UTILS_CUH_
-#define INCLUDE_UTILS_CUH_
+#ifndef INCLUDE_UTILS_HPP_
+#define INCLUDE_UTILS_HPP_
 
 #include <iostream>
 
@@ -81,4 +81,4 @@ inline int CudaGetBlocks(const int N) {
 
 #define RAW_PTR(vec) thrust::raw_pointer_cast(vec.data())
 
-#endif  // INCLUDE_UTILS_CUH_
+#endif  // INCLUDE_UTILS_HPP_

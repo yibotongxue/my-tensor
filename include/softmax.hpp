@@ -1,21 +1,21 @@
 // Copyright 2024 yibotongxue
 
-#ifndef INCLUDE_POOLING_CUH_
-#define INCLUDE_POOLING_CUH_
+#ifndef INCLUDE_SOFTMAX_HPP_
+#define INCLUDE_SOFTMAX_HPP_
 
 #include <vector>
 
-#include "layer-parameter.h"
-#include "layer.cuh"
-#include "tensor.cuh"
-#include "utils.cuh"
+#include "error.hpp"
+#include "layer-parameter.hpp"
+#include "layer.hpp"
+#include "utils.hpp"
 
 namespace my_tensor {
 
 template <typename T = float>
-class Pooling final : public Layer<T> {
+class Softmax final : public Layer<T> {
  public:
-  explicit Pooling(LayerParameterPtr param) : Layer<T>(param) {}
+  explicit Softmax(LayerParameterPtr param) : Layer<T>(param) {}
 
   void CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
                         const std::vector<TensorPtr<T>>& top) const override;
@@ -25,39 +25,40 @@ class Pooling final : public Layer<T> {
   void LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
                   const std::vector<TensorPtr<T>>& top) override;
 
-  DISABLE_LAYER_COPY(Pooling)
+  const TensorPtr<T> GetPredict() const { return predict_; }
 
-  // Only for test
-  const TensorPtr<int> GetMask() const { return mask_; }
-  TensorPtr<int> GetMask() { return mask_; }
+  DISABLE_LAYER_COPY(Softmax)
 
   void ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                   const std::vector<TensorPtr<T>>& top) override;
+
+  // Don't reference this function. Use the backward in softmax with loss layer
+  // instead.
   void BackwardCPU(const std::vector<TensorPtr<T>>& top,
-                   const std::vector<TensorPtr<T>>& bottom) override;
+                   const std::vector<TensorPtr<T>>& bottom) {
+    throw SoftmaxError("Unimplemention error.");
+  }
+
   void ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                   const std::vector<TensorPtr<T>>& top) override;
+
+  // Don't reference this function. Use the backward in softmax with loss layer
+  // instead.
   void BackwardGPU(const std::vector<TensorPtr<T>>& top,
-                   const std::vector<TensorPtr<T>>& bottom) override;
+                   const std::vector<TensorPtr<T>>& bottom) {
+    throw SoftmaxError("Unimplemention error.");
+  }
 
  private:
   int batch_size_;
-  int input_channels_;
-  int input_height_;
-  int input_width_;
-  int kernel_w_;
-  int kernel_h_;
-  int stride_w_;
-  int stride_h_;
-  int output_height_;
-  int output_width_;
-  TensorPtr<int> mask_;
+  int channels_;
+  TensorPtr<T> predict_;
 
   void CheckShape(const TensorPtr<T> bottom, const TensorPtr<T> top) const;
-};  // class PoolingLayer
+};  // class Softmax
 
-extern template class Pooling<>;
+extern template class Softmax<>;
 
 }  // namespace my_tensor
 
-#endif  // INCLUDE_POOLING_CUH_
+#endif  // INCLUDE_SOFTMAX_HPP_

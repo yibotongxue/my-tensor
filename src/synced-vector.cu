@@ -6,9 +6,9 @@
 #include <utility>
 #include <vector>
 
-#include "error.h"
-#include "synced-vector.cuh"
-#include "utils.cuh"
+#include "error.hpp"
+#include "synced-vector.hpp"
+#include "utils.hpp"
 
 namespace my_tensor {
 
@@ -60,13 +60,13 @@ SyncedVector<T>& SyncedVector<T>::operator=(SyncedVector<T>&& vec) {
 }
 
 template <typename T>
-inline const thrust::host_vector<T>& SyncedVector<T>::GetCPUData() {
+inline const std::vector<T>& SyncedVector<T>::GetCPUData() {
   ToCPU();
   return cpu_data_;
 }
 
 template <typename T>
-inline thrust::host_vector<T>& SyncedVector<T>::GetMutableCPUData() {
+inline std::vector<T>& SyncedVector<T>::GetMutableCPUData() {
   ToCPU();
   state_ = kHeadAtCPU;
   return cpu_data_;

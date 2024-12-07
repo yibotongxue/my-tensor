@@ -1,7 +1,7 @@
 // Copyright 2024 yibotongxue
 
-#ifndef INCLUDE_TENSOR_CUH_
-#define INCLUDE_TENSOR_CUH_
+#ifndef INCLUDE_TENSOR_HPP_
+#define INCLUDE_TENSOR_HPP_
 
 #include <thrust/device_vector.h>
 
@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "synced-vector.cuh"
+#include "synced-vector.hpp"
 
 namespace my_tensor {
 
@@ -58,14 +58,14 @@ class Tensor {
 
   // Get methods.
   // CPU
-  const thrust::host_vector<T>& GetCPUData() const {
+  const std::vector<T>& GetCPUData() const {
     return data_->GetCPUData();
   }
-  thrust::host_vector<T>& GetCPUData() { return data_->GetMutableCPUData(); }
-  const thrust::host_vector<T>& GetCPUDiff() const {
+  std::vector<T>& GetCPUData() { return data_->GetMutableCPUData(); }
+  const std::vector<T>& GetCPUDiff() const {
     return diff_->GetCPUData();
   }
-  thrust::host_vector<T>& GetCPUDiff() { return diff_->GetMutableCPUData(); }
+  std::vector<T>& GetCPUDiff() { return diff_->GetMutableCPUData(); }
   // GPU
   const thrust::device_vector<T>& GetGPUData() const {
     return data_->GetGPUData();
@@ -110,4 +110,4 @@ extern template class my_tensor::Tensor<>;
 extern template class my_tensor::Tensor<int>;
 }  // namespace my_tensor
 
-#endif  // INCLUDE_TENSOR_CUH_
+#endif  // INCLUDE_TENSOR_HPP_

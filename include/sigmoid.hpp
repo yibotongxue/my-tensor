@@ -1,30 +1,30 @@
 // Copyright 2024 yibotongxue
 
-#ifndef INCLUDE_RELU_CUH_
-#define INCLUDE_RELU_CUH_
+#ifndef INCLUDE_SIGMOID_HPP_
+#define INCLUDE_SIGMOID_HPP_
 
 #include <memory>
 #include <vector>
 
-#include "layer-parameter.h"
-#include "layer.cuh"
-#include "tensor.cuh"
+#include "layer-parameter.hpp"
+#include "layer.hpp"
+#include "tensor.hpp"
 
 namespace my_tensor {
-// Relu class, implements Layer.
+// Sigmoid class, implements Layer class.
 template <typename T = float>
-class Relu final : public Layer<T> {
+class Sigmoid final : public Layer<T> {
  public:
-  explicit Relu(LayerParameterPtr param) : Layer<T>(param) {}
+  explicit Sigmoid(LayerParameterPtr param) : Layer<T>(param) {}
 
-  DISABLE_LAYER_COPY(Relu)
+  DISABLE_LAYER_COPY(Sigmoid)
 
   void CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
                         const std::vector<TensorPtr<T>>& top) const override;
   void Reshape(const std::vector<TensorPtr<T>>& bottom,
                const std::vector<TensorPtr<T>>& top) const override;
 
-  virtual ~Relu() = default;
+  ~Sigmoid() = default;
 
   // Override forward and backward methods of Layer class.
   // CPU
@@ -39,7 +39,7 @@ class Relu final : public Layer<T> {
                    const std::vector<TensorPtr<T>>& bottom) override;
 };
 
-extern template class my_tensor::Relu<>;
+extern template class my_tensor::Sigmoid<>;
 }  // namespace my_tensor
 
-#endif  // INCLUDE_RELU_CUH_
+#endif  // INCLUDE_SIGMOID_HPP_

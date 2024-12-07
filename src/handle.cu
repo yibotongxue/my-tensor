@@ -1,6 +1,6 @@
 // Copyright 2024 yibotongxue
 
-#include "handle.cuh"
+#include "handle.hpp"
 
 namespace my_tensor {
 HandlePtr Handle::handle_ = nullptr;

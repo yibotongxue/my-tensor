@@ -1,7 +1,7 @@
 // Copyright 2024 yibotongxue
 
-#ifndef INCLUDE_FILLER_CUH_
-#define INCLUDE_FILLER_CUH_
+#ifndef INCLUDE_FILLER_HPP_
+#define INCLUDE_FILLER_HPP_
 
 #include <curand_kernel.h>
 #include <thrust/fill.h>
@@ -9,10 +9,10 @@
 #include <cmath>
 #include <memory>
 
-#include "error.h"
+#include "error.hpp"
 #include "filler-parameter.hpp"
-#include "tensor.cuh"
-#include "utils.cuh"
+#include "tensor.hpp"
+#include "utils.hpp"
 
 namespace my_tensor {
 
@@ -119,4 +119,4 @@ inline FillerPtr<T> CreateFiller(FillerParameterPtr param) {
 
 }  // namespace my_tensor
 
-#endif  // INCLUDE_FILLER_CUH_
+#endif  // INCLUDE_FILLER_HPP_

@@ -9,8 +9,8 @@
 #include <ranges>  //NOLINT
 #include <vector>
 
-#include "blas.cuh"
-#include "tensor.cuh"
+#include "blas.hpp"
+#include "tensor.hpp"
 
 // TEST(TrivialTest, always_succeed) {
 //   EXPECT_TRUE(true);

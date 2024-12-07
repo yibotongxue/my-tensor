@@ -1,14 +1,14 @@
 // Copyright 2024 yibotongxue
 
-#ifndef INCLUDE_LAYER_CUH_
-#define INCLUDE_LAYER_CUH_
+#ifndef INCLUDE_LAYER_HPP_
+#define INCLUDE_LAYER_HPP_
 
 #include <memory>
 #include <vector>
 
-#include "layer-parameter.h"
-#include "tensor.cuh"
-#include "utils.cuh"
+#include "layer-parameter.hpp"
+#include "tensor.hpp"
+#include "utils.hpp"
 
 namespace my_tensor {
 // Layer abstract class.
@@ -62,4 +62,4 @@ using LayerPtr = std::shared_ptr<my_tensor::Layer<T>>;
 extern template class my_tensor::Layer<>;
 }  // namespace my_tensor
 
-#endif  // INCLUDE_LAYER_CUH_
+#endif  // INCLUDE_LAYER_HPP_

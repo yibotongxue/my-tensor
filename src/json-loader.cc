@@ -1,6 +1,6 @@
 // Copyright 2024 yibotongxue
 
-#include "json-loader.h"
+#include "json-loader.hpp"
 
 #include <fstream>
 #include <memory>
@@ -9,9 +9,9 @@
 #include <utility>
 #include <vector>
 
-#include "error.h"
+#include "error.hpp"
 #include "filler-parameter.hpp"
-#include "layer-parameter.h"
+#include "layer-parameter.hpp"
 
 namespace my_tensor {
 

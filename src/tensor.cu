@@ -7,9 +7,9 @@
 #include <utility>
 #include <vector>
 
-#include "error.h"
-#include "tensor.cuh"
-#include "utils.cuh"
+#include "error.hpp"
+#include "tensor.hpp"
+#include "utils.hpp"
 
 namespace my_tensor {
 template <typename T>

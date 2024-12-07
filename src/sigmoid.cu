@@ -4,9 +4,9 @@
 
 #include <vector>
 
-#include "error.h"
-#include "sigmoid.cuh"
-#include "utils.cuh"
+#include "error.hpp"
+#include "sigmoid.hpp"
+#include "utils.hpp"
 
 namespace my_tensor {
 template <typename T>

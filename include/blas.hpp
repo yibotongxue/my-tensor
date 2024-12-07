@@ -1,10 +1,10 @@
 // Copyright 2024 yibotongxue
 
-#ifndef INCLUDE_BLAS_CUH_
-#define INCLUDE_BLAS_CUH_
+#ifndef INCLUDE_BLAS_HPP_
+#define INCLUDE_BLAS_HPP_
 
-#include "error.h"
-#include "utils.cuh"
+#include "error.hpp"
+#include "utils.hpp"
 
 namespace my_tensor {
 
@@ -104,4 +104,4 @@ void col_sum(const float *mat, float *result, const int m, const int n,
              const int batch_count);
 }  // namespace my_tensor
 
-#endif  // INCLUDE_BLAS_CUH_
+#endif  // INCLUDE_BLAS_HPP_

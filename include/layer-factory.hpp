@@ -1,21 +1,21 @@
 // Copyright 2024 yibotongxue
 
-#ifndef INCLUDE_LAYER_FACTORY_CUH_
-#define INCLUDE_LAYER_FACTORY_CUH_
+#ifndef INCLUDE_LAYER_FACTORY_HPP_
+#define INCLUDE_LAYER_FACTORY_HPP_
 
 #include <memory>
 
-#include "conv.cuh"
-#include "error.h"
-#include "flatten.cuh"
-#include "layer-parameter.h"
-#include "layer.cuh"
-#include "linear.cuh"
-#include "loss-with-softmax.cuh"
-#include "pooling.cuh"
-#include "relu.cuh"
-#include "sigmoid.cuh"
-#include "softmax.cuh"
+#include "conv.hpp"
+#include "error.hpp"
+#include "flatten.hpp"
+#include "layer-parameter.hpp"
+#include "layer.hpp"
+#include "linear.hpp"
+#include "loss-with-softmax.hpp"
+#include "pooling.hpp"
+#include "relu.hpp"
+#include "sigmoid.hpp"
+#include "softmax.hpp"
 
 namespace my_tensor {
 template <typename T = float>
@@ -45,4 +45,4 @@ inline LayerPtr<T> CreateLayer(const LayerParameterPtr param) {
 template LayerPtr<> CreateLayer<>(const LayerParameterPtr param);
 }  // namespace my_tensor
 
-#endif  // INCLUDE_LAYER_FACTORY_CUH_
+#endif  // INCLUDE_LAYER_FACTORY_HPP_

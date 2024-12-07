@@ -11,10 +11,10 @@
 #include <numeric>
 #include <vector>
 
-#include "error.h"
-#include "layer-parameter.h"
-#include "softmax.cuh"
-#include "tensor.cuh"
+#include "error.hpp"
+#include "layer-parameter.hpp"
+#include "softmax.hpp"
+#include "tensor.hpp"
 
 namespace my_tensor {
 

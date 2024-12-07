@@ -1,6 +1,6 @@
 // Copyright 2024 yibotongxue
 
-#include "filler.cuh"
+#include "filler.hpp"
 
 namespace my_tensor {
 
