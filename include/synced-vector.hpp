@@ -3,8 +3,9 @@
 #ifndef INCLUDE_SYNCED_VECTOR_HPP_
 #define INCLUDE_SYNCED_VECTOR_HPP_
 
+#ifndef CPU_ONLY
 #include <thrust/device_vector.h>
-#include <thrust/host_vector.h>
+#endif  // CPU_ONLY
 
 #include <memory>
 #include <vector>
@@ -32,8 +33,10 @@ class SyncedVector {
   void SetCPUData(const std::vector<T>& data);
   const T* GetCPUPtr();
   T* GetMutableCPUPtr();
+#ifndef CPU_ONLY
   const thrust::device_vector<T>& GetGPUData();
   thrust::device_vector<T>& GetMutableGPUData();
+#endif  // CPU_ONLY
   void SetGPUData(const std::vector<T>& data);
   const T* GetGPUPtr();
   T* GetMutableGPUPtr();
@@ -46,6 +49,7 @@ class SyncedVector {
     state_ = kHeadAtCPU;
   }
 
+#ifndef CPU_ONLY
   template <typename Iter>
   inline void SetGPUData(const Iter begin, const Iter end) {
     gpu_data_.resize(std::distance(begin, end));
@@ -53,6 +57,7 @@ class SyncedVector {
     size_ = gpu_data_.size();
     state_ = kHeadAtGPU;
   }
+#endif  // CPU_ONLY
 
   void ClearCPUData();
   void ClearGPUData();
@@ -65,7 +70,9 @@ class SyncedVector {
   VectorState state_;
   size_t size_;
   std::vector<T> cpu_data_;
+#ifndef CPU_ONLY
   thrust::device_vector<T> gpu_data_;
+#endif  // CPU_ONLY
 
   void ToCPU();
   void ToGPU();

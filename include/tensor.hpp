@@ -3,7 +3,9 @@
 #ifndef INCLUDE_TENSOR_HPP_
 #define INCLUDE_TENSOR_HPP_
 
+#ifndef CPU_ONLY
 #include <thrust/device_vector.h>
+#endif  // CPU_ONLY
 
 #include <memory>
 #include <string>
@@ -58,15 +60,12 @@ class Tensor {
 
   // Get methods.
   // CPU
-  const std::vector<T>& GetCPUData() const {
-    return data_->GetCPUData();
-  }
+  const std::vector<T>& GetCPUData() const { return data_->GetCPUData(); }
   std::vector<T>& GetCPUData() { return data_->GetMutableCPUData(); }
-  const std::vector<T>& GetCPUDiff() const {
-    return diff_->GetCPUData();
-  }
+  const std::vector<T>& GetCPUDiff() const { return diff_->GetCPUData(); }
   std::vector<T>& GetCPUDiff() { return diff_->GetMutableCPUData(); }
   // GPU
+#ifndef CPU_ONLY
   const thrust::device_vector<T>& GetGPUData() const {
     return data_->GetGPUData();
   }
@@ -75,6 +74,7 @@ class Tensor {
     return diff_->GetGPUData();
   }
   thrust::device_vector<T>& GetGPUDiff() { return diff_->GetMutableGPUData(); }
+#endif  // CPU_ONLY
   // CPU
   const T* GetCPUDataPtr() const { return data_->GetCPUPtr(); }
   T* GetCPUDataPtr() { return data_->GetMutableCPUPtr(); }
