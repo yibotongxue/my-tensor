@@ -71,10 +71,6 @@ set(DATA_SRC src/dataset.cc src/data-loader.cu)
 add_library(tensor_lib ${TENSOR_SRC})
 set_cuda_properties(tensor_lib)
 
-add_library(layer_cpu src/relu.cc src/sigmoid.cc src/filler.cc src/linear.cc)
-set_target_properties(layer_cpu PROPERTIES CXX_STANDARD 23)
-target_compile_definitions(layer_cpu PRIVATE CPU_ONLY)
-
 add_library(data_lib ${DATA_SRC})
 set_cuda_properties(data_lib)
 target_link_libraries(tensor_lib)
@@ -89,7 +85,12 @@ target_compile_definitions(im2col_cpu PRIVATE CPU_ONLY)
 
 add_library(im2col_lib ${IM2COL_SRC})
 set_cuda_properties(im2col_lib)
-target_link_libraries(im2col_lib PRIVATE im2col_cpu)
+target_link_libraries(im2col_lib)
+
+add_library(layer_cpu src/relu.cc src/sigmoid.cc src/filler.cc src/linear.cc src/conv.cc)
+set_target_properties(layer_cpu PROPERTIES CXX_STANDARD 23)
+target_compile_definitions(layer_cpu PRIVATE CPU_ONLY)
+target_link_libraries(layer_cpu PUBLIC im2col_cpu)
 
 add_library(layer_lib ${LAYER_SRC})
 set_cuda_properties(layer_lib)
@@ -123,13 +124,13 @@ add_test(NAMD linear_test COMMAND linear_test)
 
 add_executable(im2col_test test/im2col-test.cu)
 set_cuda_properties(im2col_test)
-link_googletest(im2col_test im2col_lib tensor_lib)
+link_googletest(im2col_test im2col_lib im2col_cpu tensor_lib)
 add_test(NAMD im2col_test COMMAND im2col_test)
 
-# add_executable(conv_test test/conv-test.cu)
-# set_cuda_properties(conv_test)
-# link_googletest(conv_test layer_lib)
-# add_test(NAMD conv_test COMMAND conv_test)
+add_executable(conv_test test/conv-test.cu)
+set_cuda_properties(conv_test)
+link_googletest(conv_test layer_lib)
+add_test(NAMD conv_test COMMAND conv_test)
 
 # add_executable(pooling_test test/pooling-test.cu)
 # set_cuda_properties(pooling_test)
