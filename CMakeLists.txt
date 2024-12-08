@@ -71,7 +71,7 @@ set(DATA_SRC src/dataset.cc src/data-loader.cu)
 add_library(tensor_lib ${TENSOR_SRC})
 set_cuda_properties(tensor_lib)
 
-add_library(layer_cpu src/relu.cc src/sigmoid.cc src/filler.cc)
+add_library(layer_cpu src/relu.cc src/sigmoid.cc src/filler.cc src/linear.cc)
 set_target_properties(layer_cpu PROPERTIES CXX_STANDARD 23)
 target_compile_definitions(layer_cpu PRIVATE CPU_ONLY)
 
@@ -111,10 +111,10 @@ set_cuda_properties(blas_test)
 link_googletest(blas_test blas_lib tensor_lib)
 add_test(NAME blas_test COMMAND blas_test)
 
-# add_executable(linear_test test/linear-test.cu)
-# set_cuda_properties(linear_test)
-# link_googletest(linear_test layer_lib)
-# add_test(NAMD linear_test COMMAND linear_test)
+add_executable(linear_test test/linear-test.cu)
+set_cuda_properties(linear_test)
+link_googletest(linear_test layer_lib)
+add_test(NAMD linear_test COMMAND linear_test)
 
 # add_executable(im2col_test test/im2col-test.cu)
 # set_cuda_properties(im2col_test)
