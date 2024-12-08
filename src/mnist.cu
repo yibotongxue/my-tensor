@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 
+#include "common.hpp"
 #include "data-loader.hpp"
 #include "dataset.hpp"
 #include "json-loader.hpp"
@@ -12,6 +13,8 @@
 #include "tensor.hpp"
 
 int main() {
+  my_tensor::MyTensorContext::set_device_type(
+      my_tensor::MyTensorContext::DeviceType::GPU);
   my_tensor::JsonLoader loader("../test/json-test/mnist.json");
   int batch_size = loader.LoadBatchSize();
   float learning_rate = loader.LoadLearningRate();
