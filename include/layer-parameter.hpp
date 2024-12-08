@@ -42,11 +42,10 @@ class LayerParameter {
 
  protected:
   void ParseName(const nlohmann::json& js) {
-    // if (!js.contains("name") || !js["name"].is_string()) {
-    //   throw FileError("Layer object in layers object should contain key
-    //   name");
-    // }
-    // name_ = js["name"].get<std::string>();
+    if (!js.contains("name") || !js["name"].is_string()) {
+      throw FileError("Layer object in layers object should contain key name");
+    }
+    name_ = js["name"].get<std::string>();
   }
 
   virtual void ParseSettingParameter(const nlohmann::json& js) {}

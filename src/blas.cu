@@ -6,10 +6,9 @@
 #include <thrust/transform.h>
 
 #include "blas.hpp"
-#include "handle.hpp"
+#include "common.hpp"
 
 namespace my_tensor {
-extern HandlePtr handle;
 
 #define DEFINE_ABC_VEC(broadcast)                                      \
   int stride_A = (broadcast == 1) ? 0 : (m * k);                       \
@@ -42,10 +41,10 @@ void matmul(const float *A, const float *B, float *C, const int m, const int k,
   DEFINE_ABC_VEC(broadcast)
   // C<sup>T</sup> = (B<sup>T</sup>)(A<sup>T</sup>)
   // also C = AB
-  CUBLAS_ERROR_CHECK(cublasSgemmBatched(
-      handle->GetHandle(),  // handle
-      CUBLAS_OP_N,          // no transpose of A<sup>T</sup>
-      CUBLAS_OP_N,          // no transpose of B<sup>T</sup>
+  CUBLAS_CHECK(cublasSgemmBatched(
+      MyTensorContext::cublas_handle(),  // handle
+      CUBLAS_OP_N,                       // no transpose of A<sup>T</sup>
+      CUBLAS_OP_N,                       // no transpose of B<sup>T</sup>
       n,       // row number of B<sup>T</sup> and row number of C<sup>T</sup>
       m,       // col number of A<sup>T</sup> and col number of C<sup>T</sup>
       k,       // col number of B<sup>T</sup> and row number of A<sup>T</sup>
@@ -69,10 +68,10 @@ void transpose_matmul(const float *A, const float *B, float *C, const int m,
   float beta = 0.0f;
   // C<sup>T</sup> = (B<sup>T</sup>)(A)
   // also C = (A<sup>T</sup>)B
-  CUBLAS_ERROR_CHECK(cublasSgemmBatched(
-      handle->GetHandle(),  // handle
-      CUBLAS_OP_N,          // no transpose of A<sup>T</sup>
-      CUBLAS_OP_T,          // no transpose of B<sup>T</sup>
+  CUBLAS_CHECK(cublasSgemmBatched(
+      MyTensorContext::cublas_handle(),  // handle
+      CUBLAS_OP_N,                       // no transpose of A<sup>T</sup>
+      CUBLAS_OP_T,                       // no transpose of B<sup>T</sup>
       n,       // row number of B<sup>T</sup> and row number of C<sup>T</sup>
       m,       // col number of A and col number of C<sup>T</sup>
       k,       // col number of B<sup>T</sup> and row number of A
@@ -96,11 +95,11 @@ void matmul_transpose(const float *A, const float *B, float *C, const int m,
   float beta = 0.0f;
   // C<sup>T</sup> = (B)(A<sup>T</sup>)
   // also C = A(B<sup>T</sup>)
-  CUBLAS_ERROR_CHECK(cublasSgemmBatched(
-      handle->GetHandle(),  // handle
-      CUBLAS_OP_T,          // no transpose of A<sup>T</sup>
-      CUBLAS_OP_N,          // no transpose of B<sup>T</sup>
-      n,                    // row number of B and row number of C<sup>T</sup>
+  CUBLAS_CHECK(cublasSgemmBatched(
+      MyTensorContext::cublas_handle(),  // handle
+      CUBLAS_OP_T,                       // no transpose of A<sup>T</sup>
+      CUBLAS_OP_N,                       // no transpose of B<sup>T</sup>
+      n,       // row number of B and row number of C<sup>T</sup>
       m,       // col number of A<sup>T</sup> and col number of C<sup>T</sup>
       k,       // col number of B and row number of A<sup>T</sup>
       &alpha,  // alpha
@@ -123,21 +122,21 @@ void transpose_matmul_transpose(const float *A, const float *B, float *C,
   float beta = 0.0f;
   // C<sup>T</sup> = (B)(A)
   // also C = (A<sup>T</sup>)(B<sup>T</sup>)
-  CUBLAS_ERROR_CHECK(cublasSgemmBatched(
-      handle->GetHandle(),  // handle
-      CUBLAS_OP_T,          // no transpose of A<sup>T</sup>
-      CUBLAS_OP_T,          // no transpose of B<sup>T</sup>
-      n,                    // row number of B and row number of C<sup>T</sup>
-      m,                    // col number of A and col number of C<sup>T</sup>
-      k,                    // col number of B and row number of A
-      &alpha,               // alpha
-      RAW_PTR(B_vec),       // B pointer, in cublas will be B<sup>T</sup>
-      k,                    // leading dimension of B<sup>T</sup>
-      RAW_PTR(A_vec),       // A pointer, in cublas will be A<sup>T</sup>
-      m,                    // leading dimension of A<sup>T</sup>
-      &beta,                // beta
-      RAW_PTR(C_vec),       // C pointer, in cublas will be C<sup>T</sup>
-      n,                    // leading dimension of C<sup>T</sup>
+  CUBLAS_CHECK(cublasSgemmBatched(
+      MyTensorContext::cublas_handle(),  // handle
+      CUBLAS_OP_T,                       // no transpose of A<sup>T</sup>
+      CUBLAS_OP_T,                       // no transpose of B<sup>T</sup>
+      n,               // row number of B and row number of C<sup>T</sup>
+      m,               // col number of A and col number of C<sup>T</sup>
+      k,               // col number of B and row number of A
+      &alpha,          // alpha
+      RAW_PTR(B_vec),  // B pointer, in cublas will be B<sup>T</sup>
+      k,               // leading dimension of B<sup>T</sup>
+      RAW_PTR(A_vec),  // A pointer, in cublas will be A<sup>T</sup>
+      m,               // leading dimension of A<sup>T</sup>
+      &beta,           // beta
+      RAW_PTR(C_vec),  // C pointer, in cublas will be C<sup>T</sup>
+      n,               // leading dimension of C<sup>T</sup>
       batch_count));
 }
 
@@ -163,8 +162,8 @@ void add_row_vector(float *mat, const float *vec, const int m, const int n,
   cudaMalloc(&repeat_vec, m * batch_count * sizeof(float));
   RepeatVec<<<CudaGetBlocks(m * batch_count), kCudaThreadNum>>>(vec, repeat_vec,
                                                                 m, batch_count);
-  CUBLAS_ERROR_CHECK(cublasSger(handle->GetHandle(), n, m * batch_count, &alpha,
-                                ones, 1, repeat_vec, 1, mat, n));
+  CUBLAS_CHECK(cublasSger(MyTensorContext::cublas_handle(), n, m * batch_count,
+                          &alpha, ones, 1, repeat_vec, 1, mat, n));
   cudaFree(ones);
   cudaFree(repeat_vec);
 }
@@ -177,8 +176,8 @@ void add_col_vector(float *mat, const float *vec, const int m, const int n,
   cudaMalloc(&ones, m * batch_count * sizeof(float));
   SetAllOnes<<<CudaGetBlocks(m * batch_count), kCudaThreadNum>>>(
       ones, m * batch_count);
-  CUBLAS_ERROR_CHECK(cublasSger(handle->GetHandle(), n, m * batch_count, &alpha,
-                                vec, 1, ones, 1, mat, n));
+  CUBLAS_CHECK(cublasSger(MyTensorContext::cublas_handle(), n, m * batch_count,
+                          &alpha, vec, 1, ones, 1, mat, n));
   cudaFree(ones);
 }
 
@@ -197,9 +196,9 @@ void row_sum(const float *mat, float *result, const int m, const int n,
   float *ones = nullptr;
   cudaMalloc(&ones, n * sizeof(float));
   SetAllOnes<<<CudaGetBlocks(n), kCudaThreadNum>>>(ones, n);
-  CUBLAS_ERROR_CHECK(cublasSgemv(handle->GetHandle(), CUBLAS_OP_T, n,
-                                 m * batch_count, &alpha, mat, n, ones, 1,
-                                 &beta, result, 1));
+  CUBLAS_CHECK(cublasSgemv(MyTensorContext::cublas_handle(), CUBLAS_OP_T, n,
+                           m * batch_count, &alpha, mat, n, ones, 1, &beta,
+                           result, 1));
   cudaFree(ones);
 }
 
@@ -226,9 +225,10 @@ void col_sum(const float *mat, float *result, const int m, const int n,
       thrust::counting_iterator<int>(0),
       thrust::counting_iterator<int>(batch_count), result_vec.begin(),
       [result, n] __device__(int i) -> float * { return result + i * n; });
-  CUBLAS_ERROR_CHECK(cublasSgemvBatched(
-      handle->GetHandle(), CUBLAS_OP_N, n, m, &alpha, RAW_PTR(mat_vec), n,
-      RAW_PTR(ones_vec), 1, &beta, RAW_PTR(result_vec), 1, batch_count));
+  CUBLAS_CHECK(cublasSgemvBatched(MyTensorContext::cublas_handle(), CUBLAS_OP_N,
+                                  n, m, &alpha, RAW_PTR(mat_vec), n,
+                                  RAW_PTR(ones_vec), 1, &beta,
+                                  RAW_PTR(result_vec), 1, batch_count));
   cudaFree(ones);
 }
 

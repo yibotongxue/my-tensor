@@ -16,7 +16,7 @@ inline int CudaGetBlocks(const int N) {
        i += blockDim.x * gridDim.x)
 
 #ifdef DEBUG
-#define ERROR_CHECK(function)                                           \
+#define CUDA_CHECK(function)                                            \
   do {                                                                  \
     cudaError_t error_code = function;                                  \
     if (error_code != cudaSuccess) {                                    \
@@ -28,11 +28,11 @@ inline int CudaGetBlocks(const int N) {
     }                                                                   \
   } while (0);
 #else
-#define ERROR_CHECK(function) function
+#define CUDA_CHECK(function) function
 #endif  // DEBUG
 
 #ifdef DEBUG
-#define CUBLAS_ERROR_CHECK(function)                                   \
+#define CUBLAS_CHECK(function)                                         \
   do {                                                                 \
     cublasStatus_t status = function;                                  \
     if (status != CUBLAS_STATUS_SUCCESS) {                             \
@@ -44,7 +44,21 @@ inline int CudaGetBlocks(const int N) {
     }                                                                  \
   } while (0);
 #else
-#define CUBLAS_ERROR_CHECK(function) function
+#define CUBLAS_CHECK(function) function
+#endif  // DEBUG
+
+#ifdef DEBUG
+#define CURAND_CHECK(function)                                          \
+  do {                                                                  \
+    curandStatus_t status = function;                                   \
+    if (status != CURAND_STATUS_SUCCESS) {                              \
+      std::cerr << "cuRAND error:\r\nstatus = " << status               \
+                << "\r\nfile = " << __FILE__ << ", line = " << __LINE__ \
+                << "\r\n";                                              \
+    }                                                                   \
+  } while (0);
+#else
+#define CURAND_CHECK(function) function
 #endif  // DEBUG
 
 #define CHECK_GPU_AVAILABLE                                      \
