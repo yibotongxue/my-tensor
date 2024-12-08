@@ -71,9 +71,9 @@ set(DATA_SRC src/dataset.cc src/data-loader.cu)
 add_library(tensor_lib ${TENSOR_SRC})
 set_cuda_properties(tensor_lib)
 
-add_library(relu_cpu src/relu.cc)
-set_target_properties(relu_cpu PROPERTIES CXX_STANDARD 23)
-target_compile_definitions(relu_cpu PRIVATE CPU_ONLY)
+add_library(layer_cpu src/relu.cc src/sigmoid.cc)
+set_target_properties(layer_cpu PROPERTIES CXX_STANDARD 23)
+target_compile_definitions(layer_cpu PRIVATE CPU_ONLY)
 
 add_library(data_lib ${DATA_SRC})
 set_cuda_properties(data_lib)
@@ -88,7 +88,7 @@ set_cuda_properties(im2col_lib)
 
 add_library(layer_lib ${LAYER_SRC})
 set_cuda_properties(layer_lib)
-target_link_libraries(layer_lib PUBLIC tensor_lib blas_lib im2col_lib relu_cpu)
+target_link_libraries(layer_lib PUBLIC tensor_lib blas_lib im2col_lib layer_cpu)
 
 # # Add executables and tests
 add_executable(tensor_test test/tensor-test.cu)
@@ -101,10 +101,10 @@ set_cuda_properties(relu_test)
 link_googletest(relu_test layer_lib)
 add_test(NAME relu_test COMMAND relu_test)
 
-# add_executable(sigmoid_test test/sigmoid-test.cu)
-# set_cuda_properties(sigmoid_test)
-# link_googletest(sigmoid_test layer_lib)
-# add_test(NAME sigmoid_test COMMAND sigmoid_test)
+add_executable(sigmoid_test test/sigmoid-test.cu)
+set_cuda_properties(sigmoid_test)
+link_googletest(sigmoid_test layer_lib)
+add_test(NAME sigmoid_test COMMAND sigmoid_test)
 
 # add_executable(blas_test test/blas-test.cu)
 # set_cuda_properties(blas_test)
