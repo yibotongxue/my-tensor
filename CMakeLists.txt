@@ -88,7 +88,7 @@ set_cuda_properties(im2col_lib)
 target_link_libraries(im2col_lib)
 
 add_library(layer_cpu src/relu.cc src/sigmoid.cc src/filler.cc src/linear.cc src/conv.cc src/pooling.cc
-src/softmax.cc)
+src/softmax.cc src/loss-with-softmax.cc)
 set_target_properties(layer_cpu PROPERTIES CXX_STANDARD 23)
 target_compile_definitions(layer_cpu PRIVATE CPU_ONLY)
 target_link_libraries(layer_cpu PUBLIC im2col_cpu)
@@ -143,10 +143,10 @@ set_cuda_properties(softmax_test)
 link_googletest(softmax_test layer_lib)
 add_test(NAMD softmax_test COMMAND softmax_test)
 
-# add_executable(loss_with_softmax_test test/loss-with-softmax-test.cu)
-# set_cuda_properties(loss_with_softmax_test)
-# link_googletest(loss_with_softmax_test layer_lib)
-# add_test(NAMD loss_with_softmax_test COMMAND loss_with_softmax_test)
+add_executable(loss_with_softmax_test test/loss-with-softmax-test.cu)
+set_cuda_properties(loss_with_softmax_test)
+link_googletest(loss_with_softmax_test layer_lib)
+add_test(NAMD loss_with_softmax_test COMMAND loss_with_softmax_test)
 
 add_executable(json_test test/json-loader-test.cc src/json-loader.cc src/layer-parameter.cc)
 link_googletest(json_test)
