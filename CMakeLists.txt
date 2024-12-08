@@ -87,7 +87,7 @@ add_library(im2col_lib ${IM2COL_SRC})
 set_cuda_properties(im2col_lib)
 target_link_libraries(im2col_lib)
 
-add_library(layer_cpu src/relu.cc src/sigmoid.cc src/filler.cc src/linear.cc src/conv.cc src/pooling.cc
+add_library(layer_cpu src/relu.cc src/sigmoid.cc src/linear.cc src/conv.cc src/pooling.cc
 src/softmax.cc src/loss-with-softmax.cc)
 set_target_properties(layer_cpu PROPERTIES CXX_STANDARD 23)
 target_compile_definitions(layer_cpu PRIVATE CPU_ONLY)

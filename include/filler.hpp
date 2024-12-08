@@ -3,12 +3,12 @@
 #ifndef INCLUDE_FILLER_HPP_
 #define INCLUDE_FILLER_HPP_
 
-#include <assert.h>
+#include <curand_kernel.h>
+#include <thrust/fill.h>
 
 #include <cmath>
 #include <memory>
 
-#include "common.hpp"
 #include "error.hpp"
 #include "filler-parameter.hpp"
 #include "tensor.hpp"
@@ -21,21 +21,12 @@ class Filler {
  public:
   explicit Filler(FillerParameterPtr param) : filler_parameter_(param) {}
 
-  void Fill(TensorPtr<T> tensor) {
-    if (MyTensorContext::on_cpu()) {
-      FillCPU(tensor);
-    } else {
-      FillGPU(tensor);
-    }
-  }
+  virtual void Fill(TensorPtr<T> tensor) = 0;
 
   virtual ~Filler() = default;
 
  protected:
   FillerParameterPtr filler_parameter_;
-
-  virtual void FillCPU(TensorPtr<T> tensor) = 0;
-  virtual void FillGPU(TensorPtr<T> tensor) = 0;
 };  // class Filler
 
 template <typename T = float>
@@ -46,9 +37,7 @@ class ZeroFiller final : public Filler<T> {
     assert(zero_param.get() != nullptr);
   }
 
- private:
-  void FillCPU(TensorPtr<T> tensor) override;
-  void FillGPU(TensorPtr<T> tensor) override;
+  void Fill(TensorPtr<T> tensor) override;
 };  // class ZeroFiller
 
 template <typename T = float>
@@ -60,9 +49,9 @@ class ConstantFiller final : public Filler<T> {
     val_ = T(con_param->val_);
   }
 
+  void Fill(TensorPtr<T> tensor) override;
+
  private:
-  void FillCPU(TensorPtr<T> tensor) override;
-  void FillGPU(TensorPtr<T> tensor) override;
   T val_;
 };  // class ConstantFiller
 
@@ -76,13 +65,11 @@ class XavierFiller final : public Filler<T> {
     n_out_ = xparam->n_out_;
   }
 
+  void Fill(TensorPtr<T> tensor) override {
+    throw FillerError("Unimplemention error.");
+  }
+
  private:
-  void FillCPU(TensorPtr<T> tensor) override {
-    throw FillerError("Unimplemention");
-  }
-  void FillGPU(TensorPtr<T> tensor) override {
-    throw FillerError("Unimplemention");
-  }
   int n_in_;
   int n_out_;
 };  // class XavierFiller
@@ -96,13 +83,11 @@ class HeFiller final : public Filler<T> {
     n_ = hparam->n_;
   }
 
+  void Fill(TensorPtr<T> tensor) override {
+    throw FillerError("Unimplemention error.");
+  }
+
  private:
-  void FillCPU(TensorPtr<T> tensor) override {
-    throw FillerError("Unimplemention");
-  }
-  void FillGPU(TensorPtr<T> tensor) override {
-    throw FillerError("Unimplemention");
-  }
   int n_;
 };  // class HeFiller
 
