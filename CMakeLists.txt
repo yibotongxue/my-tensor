@@ -83,8 +83,13 @@ add_library(blas_lib src/common.cu src/blas.cu)
 set_cuda_properties(blas_lib)
 target_link_libraries(blas_lib PUBLIC cublas curand)
 
+add_library(im2col_cpu src/im2col.cc)
+set_target_properties(im2col_cpu PROPERTIES CXX_STANDARD 23)
+target_compile_definitions(im2col_cpu PRIVATE CPU_ONLY)
+
 add_library(im2col_lib ${IM2COL_SRC})
 set_cuda_properties(im2col_lib)
+target_link_libraries(im2col_lib PRIVATE im2col_cpu)
 
 add_library(layer_lib ${LAYER_SRC})
 set_cuda_properties(layer_lib)
@@ -116,10 +121,10 @@ set_cuda_properties(linear_test)
 link_googletest(linear_test layer_lib)
 add_test(NAMD linear_test COMMAND linear_test)
 
-# add_executable(im2col_test test/im2col-test.cu)
-# set_cuda_properties(im2col_test)
-# link_googletest(im2col_test im2col_lib tensor_lib)
-# add_test(NAMD im2col_test COMMAND im2col_test)
+add_executable(im2col_test test/im2col-test.cu)
+set_cuda_properties(im2col_test)
+link_googletest(im2col_test im2col_lib tensor_lib)
+add_test(NAMD im2col_test COMMAND im2col_test)
 
 # add_executable(conv_test test/conv-test.cu)
 # set_cuda_properties(conv_test)
