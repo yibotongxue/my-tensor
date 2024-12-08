@@ -85,6 +85,7 @@
         "unordered_set": "cpp",
         "complex": "cpp",
         "cinttypes": "cpp",
-        "typeindex": "cpp"
+        "typeindex": "cpp",
+        "stack": "cpp"
     }
 }

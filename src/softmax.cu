@@ -18,69 +18,6 @@
 
 namespace my_tensor {
 
-template <typename T>
-void Softmax<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
-                                  const std::vector<TensorPtr<T>>& top) const {
-  if (bottom.size() != 1) {
-    throw SoftmaxError(
-        "The bottom of convolution layer should have one tensor.");
-  }
-  if (top.size() != 1) {
-    throw SoftmaxError("The top of convolution layer should have one tensor.");
-  }
-}
-
-template <typename T>
-void Softmax<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
-                         const std::vector<TensorPtr<T>>& top) const {
-  top[0]->Resize({batch_size_, channels_});
-}
-
-template <typename T>
-void Softmax<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
-                            const std::vector<TensorPtr<T>>& top) {
-  if (bottom[0]->GetShape().size() != 2) {
-    throw SoftmaxError("The bottom of softmax should be two dimension.");
-  }
-  std::shared_ptr<SoftmaxParameter> param =
-      std::dynamic_pointer_cast<SoftmaxParameter>(this->layer_param_);
-  channels_ = param->channels_;
-  if (bottom[0]->GetShape()[1] != channels_) {
-    throw SoftmaxError(
-        "The channels of bottom of softmax not match the layer.");
-  }
-  batch_size_ = bottom[0]->GetShape()[0];
-  const std::vector<int> predict_shape{batch_size_};
-  predict_.reset();
-  predict_ = std::make_shared<Tensor<T>>(predict_shape);
-}
-
-template <typename T>
-void Softmax<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
-                            const std::vector<TensorPtr<T>>& top) {
-  CheckShape(bottom[0], top[0]);
-  const auto& bottom_data = bottom[0]->GetCPUData();
-  auto& top_data = top[0]->GetCPUData();
-  auto& predict_data = predict_->GetCPUData();
-  auto bottom_view = std::views::all(bottom_data);
-  for (int i = 0; i < batch_size_; i++) {  // for each row
-    auto sub_view = bottom_view | std::views::drop(i * channels_) |
-                    std::views::take(channels_);
-    auto max_postion = std::ranges::max_element(sub_view);
-    predict_data[i] = std::distance(sub_view.begin(), max_postion);
-    T max_value = *max_postion;
-    auto exp_view = sub_view | std::views::transform([max_value](T val) -> T {
-                      return static_cast<T>(std::exp(val - max_value));
-                    });
-    T sum_value =
-        std::accumulate(exp_view.begin(), exp_view.end(), T(0), std::plus<T>());
-    auto norm_view = exp_view | std::views::transform([sum_value](T val) -> T {
-                       return static_cast<T>(val / sum_value);
-                     });
-    std::ranges::copy(norm_view, top_data.begin() + i * channels_);
-  }
-}
-
 namespace {
 template <typename T>
 __global__ void GetMaxPerRow(const T* data, const int n, const int c,
@@ -138,30 +75,6 @@ void Softmax<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                     [max_ptr, channels] __device__(int i, T val) -> T {
                       return static_cast<T>(val / max_ptr[i / channels]);
                     });
-}
-
-template <typename T>
-void Softmax<T>::CheckShape(const TensorPtr<T> bottom,
-                            const TensorPtr<T> top) const {
-#ifdef DEBUG
-  if (bottom->GetShape().size() != 2) {
-    throw SoftmaxError(
-        "The bottom of softmax layer should be a two dimension tensor.");
-  }
-  if (top->GetShape().size() != 2) {
-    throw SoftmaxError(
-        "The top of softmax layer should be a two dimension tensor.");
-  }
-  CHECK_SAME_SHAPE(bottom, top)
-  if (bottom->GetShape()[0] != batch_size_) {
-    throw SoftmaxError(
-        "The batch size of bottom of softmax layer not match layer.");
-  }
-  if (bottom->GetShape()[1] != channels_) {
-    throw SoftmaxError(
-        "The channels size of bottom of softmax layer not match layer.");
-  }
-#endif  // DEBUG
 }
 
 template class Softmax<>;
