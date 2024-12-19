@@ -69,3 +69,5 @@ data/*
 myenv
 dist
 __pycache__
+
+.cache

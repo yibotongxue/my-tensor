@@ -4,22 +4,30 @@
 #define INCLUDE_DATA_LOADER_HPP_
 
 #include <array>
+#include <memory>
 #include <vector>
 
 #include "dataset.hpp"
-#include "tensor.hpp"
 
 namespace my_tensor {
+template <typename T>
+  requires std::is_arithmetic_v<T>
+class Tensor;
+
 class DataLoader {
  public:
-  explicit DataLoader(DatasetPtr dataset, int batch_size)
+  DataLoader(DatasetPtr dataset, int batch_size)
       : dataset_(dataset), batch_size_(batch_size), index_(0) {}
 
   bool HasNext() const { return index_ + batch_size_ <= dataset_->GetSize(); }
 
-  std::array<TensorPtr<>, 2> GetNext();
+  std::array<std::shared_ptr<Tensor<float>>, 2> GetNext();
 
-  void Reset() { index_ = 0; }
+  void Reset() noexcept { index_ = 0; }
+
+  std::vector<int> GetDataShape() const {
+    return {batch_size_, dataset_->GetHeight(), dataset_->GetWidth()};
+  }
 
  private:
   DatasetPtr dataset_;

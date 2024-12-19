@@ -80,6 +80,11 @@ class FillerError : public std::runtime_error {
  public:
   using runtime_error::runtime_error;
 };  // class FillerError
+
+class NetError : public std::runtime_error {
+ public:
+  using runtime_error::runtime_error;
+};  // class NetError
 }  // namespace my_tensor
 
 #endif  // INCLUDE_ERROR_HPP_

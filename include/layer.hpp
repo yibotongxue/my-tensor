@@ -6,6 +6,7 @@
 #include <memory>
 #include <vector>
 
+#include "common.hpp"
 #include "layer-parameter.hpp"
 #include "tensor.hpp"
 #include "utils.hpp"
@@ -38,6 +39,28 @@ class Layer {
   DISABLE_LAYER_COPY(Layer)
 
   virtual ~Layer() = default;
+
+  void Forward(const std::vector<TensorPtr<T>>& bottom,
+               const std::vector<TensorPtr<T>>& top) {
+    if (MyTensorContext::on_cpu()) {
+      ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
+                 const std::vector<TensorPtr<T>>& top);
+    } else {
+      ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
+                 const std::vector<TensorPtr<T>>& top);
+    }
+  }
+
+  void Backward(const std::vector<TensorPtr<T>>& top,
+                const std::vector<TensorPtr<T>>& bottom) {
+    if (MyTensorContext::on_cpu()) {
+      BackwardCPU(const std::vector<TensorPtr<T>>& top,
+                  const std::vector<TensorPtr<T>>& bottom);
+    } else {
+      BackwardGPU(const std::vector<TensorPtr<T>>& top,
+                  const std::vector<TensorPtr<T>>& bottom);
+    }
+  }
 
   // Pure virtual methods, forward and backward.
   // CPU

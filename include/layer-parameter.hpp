@@ -3,8 +3,10 @@
 #ifndef INCLUDE_LAYER_PARAMETER_HPP_
 #define INCLUDE_LAYER_PARAMETER_HPP_
 
+#include <format>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "filler-parameter.hpp"
 #include "nlohmann/json.hpp"
@@ -28,12 +30,16 @@ using LayerParameterPtr = std::shared_ptr<LayerParameter>;
 class LayerParameter {
  public:
   std::string name_;
+  std::vector<std::string> bottoms_;
+  std::vector<std::string> tops_;
   ParamType type_;
 
   explicit LayerParameter(const ParamType type) : type_(type) {}
 
   void Deserialize(const nlohmann::json& js) {
     ParseName(js);
+    ParseBottom(js);
+    ParseTop(js);
     ParseSettingParameter(js);
     ParseFillingParameter(js);
   }
@@ -41,16 +47,40 @@ class LayerParameter {
   virtual ~LayerParameter() = default;
 
  protected:
-  void ParseName(const nlohmann::json& js) {
-    if (!js.contains("name") || !js["name"].is_string()) {
-      throw FileError("Layer object in layers object should contain key name");
-    }
-    name_ = js["name"].get<std::string>();
+  void ParseName(const nlohmann::json& js) { name_ = ParseNameInFields(js); }
+
+  void ParseBottom(const nlohmann::json& js) {
+    bottoms_ = ParseNameVectorInFields(js, "bottom");
+  }
+
+  void ParseTop(const nlohmann::json& js) {
+    tops_ = ParseNameVectorInFields(js, "top");
   }
 
   virtual void ParseSettingParameter(const nlohmann::json& js) {}
 
   virtual void ParseFillingParameter(const nlohmann::json& js) {}
+
+ private:
+  static std::string ParseNameInFields(const nlohmann::json& js) {
+    if (!js.contains("name") || !js["name"].is_string()) {
+      throw FileError("Layer object in layers object should contain key name");
+    }
+    return js["name"].get<std::string>();
+  }
+
+  static std::vector<std::string> ParseNameVectorInFields(
+      const nlohmann::json& js, const std::string& field) {
+    if (!js.contains(field) || !js[field].is_array()) {
+      throw FileError(std::format(
+          "Layer object in layers object should contain key {}", field));
+    }
+    std::vector<std::string> result;
+    for (auto&& js_in_field : js[field]) {
+      result.emplace_back(ParseNameInFields(js_in_field));
+    }
+    return result;
+  }
 };  // class LayerParameter
 
 class ReluParameter final : public LayerParameter {
