@@ -3,8 +3,10 @@
 #ifndef INCLUDE_FILLER_HPP_
 #define INCLUDE_FILLER_HPP_
 
+#ifndef CPU_ONLY
 #include <curand_kernel.h>
 #include <thrust/fill.h>
+#endif  // CPU_ONLY
 
 #include <cmath>
 #include <memory>

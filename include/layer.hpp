@@ -43,22 +43,18 @@ class Layer {
   void Forward(const std::vector<TensorPtr<T>>& bottom,
                const std::vector<TensorPtr<T>>& top) {
     if (MyTensorContext::on_cpu()) {
-      ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
-                 const std::vector<TensorPtr<T>>& top);
+      ForwardCPU(bottom, top);
     } else {
-      ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
-                 const std::vector<TensorPtr<T>>& top);
+      ForwardGPU(bottom, top);
     }
   }
 
   void Backward(const std::vector<TensorPtr<T>>& top,
                 const std::vector<TensorPtr<T>>& bottom) {
     if (MyTensorContext::on_cpu()) {
-      BackwardCPU(const std::vector<TensorPtr<T>>& top,
-                  const std::vector<TensorPtr<T>>& bottom);
+      BackwardCPU(top, bottom);
     } else {
-      BackwardGPU(const std::vector<TensorPtr<T>>& top,
-                  const std::vector<TensorPtr<T>>& bottom);
+      BackwardGPU(top, bottom);
     }
   }
 

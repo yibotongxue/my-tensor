@@ -68,25 +68,6 @@ class Net {
    */
   void Reset() noexcept { dataloader_->Reset(); }
 
-  /**
-   * @brief Get the loss of the net.
-   * @return the loss of the net.
-   * @note This method should be called after calling the forward method.
-   */
-  float GetLoss() const;
-  /**
-   * @brief Get the predict lables.
-   * @return the predict lables.
-   * @note This method should be called after calling the forward method.
-   */
-  TensorPtr<T> GetPredict() const;
-  /**
-   * @brief Get the predict accuracy.
-   * @return the predict accuracy.
-   * @note This method should be called after calling the forward method.
-   */
-  float GetAccuracy() const;
-
  protected:
   // layer parameters
   std::vector<LayerParameterPtr> layer_parameters_;

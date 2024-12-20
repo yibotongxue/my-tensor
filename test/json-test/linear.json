@@ -18,7 +18,9 @@
           "init": "constant",
           "conval": 1
         }
-      ]
+      ],
+      "bottom": ["null"],
+      "top": ["null"]
     }
   ]
 }

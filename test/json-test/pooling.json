@@ -10,7 +10,9 @@
       "kernel_h": 2,
       "stride_w": 2,
       "stride_h": 2,
-      "input_channels": 3
+      "input_channels": 3,
+      "bottom": ["null"],
+      "top": ["null"]
     }
   ]
 }

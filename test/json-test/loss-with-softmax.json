@@ -6,7 +6,9 @@
     {
       "name": "loss_with_softmax",
       "type": "LossWithSoftmax",
-      "channels": 10
+      "channels": 10,
+      "bottom": ["null"],
+      "top": ["null"]
     }
   ]
 }

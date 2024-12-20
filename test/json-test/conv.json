@@ -18,7 +18,9 @@
           "name": "conv_bias",
           "init": "zero"
         }
-      ]
+      ],
+      "bottom": ["null"],
+      "top": ["null"]
     }
   ]
 }

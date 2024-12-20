@@ -4,8 +4,10 @@
   "l2": 1e-4,
   "layers": [
     {
-      "name": "sigmoid", 
-      "type": "Sigmoid"
+      "name": "sigmoid",
+      "type": "Sigmoid",
+      "bottom": ["null"],
+      "top": ["null"]
     }
   ]
 }

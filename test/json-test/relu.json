@@ -4,8 +4,10 @@
   "l2": 1e-4,
   "layers": [
     {
-      "name": "relu", 
-      "type": "Relu"
+      "name": "relu",
+      "type": "Relu",
+      "bottom": ["null"],
+      "top": ["null"]
     }
   ]
 }

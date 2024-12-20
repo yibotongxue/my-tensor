@@ -77,7 +77,7 @@ class LayerParameter {
     }
     std::vector<std::string> result;
     for (auto&& js_in_field : js[field]) {
-      result.emplace_back(ParseNameInFields(js_in_field));
+      result.emplace_back(js_in_field.get<std::string>());
     }
     return result;
   }
