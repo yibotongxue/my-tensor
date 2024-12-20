@@ -18,7 +18,9 @@
           "name": "conv_bias",
           "init": "zero"
         }
-      ]
+      ],
+      "bottom": ["input"],
+      "top": ["pooling1"]
     },
     {
       "name": "pooling1",
@@ -27,11 +29,15 @@
       "kernel_h": 2,
       "stride_w": 2,
       "stride_h": 2,
-      "input_channels": 3
+      "input_channels": 3,
+      "bottom": ["conv1"],
+      "top": ["relu1"]
     },
     {
       "name": "relu1",
-      "type": "Relu"
+      "type": "Relu",
+      "bottom": ["pooling1"],
+      "top": ["conv2"]
     },
     {
       "name": "conv2",
@@ -48,7 +54,9 @@
           "name": "conv_bias",
           "init": "zero"
         }
-      ]
+      ],
+      "bottom": ["relu1"],
+      "top": ["pooling2"]
     },
     {
       "name": "pooling2",
@@ -57,16 +65,22 @@
       "kernel_h": 2,
       "stride_w": 2,
       "stride_h": 2,
-      "input_channels": 10
+      "input_channels": 10,
+      "bottom": ["conv2"],
+      "top": ["relu2"]
     },
     {
-      "name": "relu",
-      "type": "Relu"
+      "name": "relu2",
+      "type": "Relu",
+      "bottom": ["pooling2"],
+      "top": ["flatten"]
     },
     {
       "name": "flatten",
       "type": "Flatten",
-      "inplace": false
+      "inplace": false,
+      "bottom": ["relu2"],
+      "top": ["linear1"]
     },
     {
       "name": "linear1",
@@ -83,11 +97,15 @@
           "init": "constant",
           "conval": 1
         }
-      ]
+      ],
+      "bottom": ["flatten"],
+      "top": ["relu3"]
     },
     {
-      "name": "relu2",
-      "type": "Relu"
+      "name": "relu3",
+      "type": "Relu",
+      "bottom": ["linear1"],
+      "top": ["linear2"]
     },
     {
       "name": "linear2",
@@ -103,11 +121,15 @@
           "name": "linear_bias",
           "init": "zero"
         }
-      ]
+      ],
+      "bottom": ["relu3"],
+      "top": ["relu4"]
     },
     {
-      "name": "relu3",
-      "type": "Relu"
+      "name": "relu4",
+      "type": "Relu",
+      "bottom": ["linear2"],
+      "top": ["linear3"]
     },
     {
       "name": "linear3",
@@ -123,12 +145,16 @@
           "name": "linear_bias",
           "init": "zero"
         }
-      ]
+      ],
+      "bottom": ["relu4"],
+      "top": ["loss_with_softmax"]
     },
     {
       "name": "loss_with_softmax",
       "type": "LossWithSoftmax",
-      "channels": 10
+      "channels": 10,
+      "bottom": ["linear3"],
+      "top": ["loss"]
     }
   ]
 }

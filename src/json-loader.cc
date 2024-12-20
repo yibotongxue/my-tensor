@@ -52,19 +52,6 @@ LayerParameterPtr JsonLoader::LoadLayerParam(const nlohmann::json& js) {
   return param;
 }
 
-template <typename T>
-T JsonLoader::LoadWithKey(const std::string& key) const {
-  if (!js.contains(key)) {
-    throw FileError(std::format("The json object should contain {} key", key));
-  }
-  try {
-    return js[key].get<T>();
-  } catch (...) {
-    throw FileError(std::format("Unknown error thrown from line {} of file {}",
-                                __LINE__, __FILE__));
-  }
-}
-
 nlohmann::json JsonLoader::LoadJsonObject(const std::string& json_file_path) {
   std::ifstream fs(json_file_path);
   if (fs.fail()) {
