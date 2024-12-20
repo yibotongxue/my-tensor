@@ -8,28 +8,44 @@
 #include <unordered_map>
 #include <vector>
 
+#include "data-parameter.hpp"
 #include "filler-parameter.hpp"
 #include "layer-parameter.hpp"
+#include "net-parameter.hpp"
 #include "nlohmann/json.hpp"
 
 namespace my_tensor {
 
 class JsonLoader {
  public:
-  explicit JsonLoader(const std::string& json_file_path);
+  explicit JsonLoader(const std::string& json_file_path)
+      : js(LoadJsonObject(json_file_path)) {}
 
+  int LoadBatchSize() const { return LoadWithKey<int>("batch_size"); }
+  float LoadLearningRate() const { return LoadWithKey<float>("learning_rate"); }
+  float LoadL2() const { return LoadWithKey<float>("l2"); }
+  std::string LoadDataType() const {
+    return LoadWithKey<std::string>("data_type");
+  }
+  std::string LoadImageFilePath() const {
+    return LoadWithKey<std::string>("image_file_path");
+  }
+  std::string LoadLabelFilePath() const {
+    return LoadWithKey<std::string>("label_file_path");
+  }
   std::vector<LayerParameterPtr> LoadLayers();
-  int LoadBatchSize() const { return batch_size_; }
-  float LoadLearningRate() const { return learning_rate_; }
-  float LoadL2() const { return l2_; }
+  DataParameterPtr LoadDataParameter();
+  NetParameterPtr LoadNet();
 
  private:
-  nlohmann::json layers_;
-  int batch_size_;
-  float learning_rate_;
-  float l2_;
+  nlohmann::json js;
 
   LayerParameterPtr LoadLayerParam(const nlohmann::json& js);
+
+  template <typename T>
+  T LoadWithKey(const std::string& key) const;
+
+  static nlohmann::json LoadJsonObject(const std::string& json_file_path);
 };
 
 }  // namespace my_tensor

@@ -5,16 +5,17 @@
 #include <format>
 
 #include "error.hpp"
+#include "layer-factory.hpp"
 
 namespace my_tensor {
-template <typename T>
-Net<T>::Net(const std::vector<LayerParameterPtr>& layers)
-    : layer_parameters_(layers),
-      dataloader_(nullptr),
-      learnable_params_(),
-      layers_(layers.size(), nullptr),
-      bottom_vec_(layers.size(), nullptr),
-      top_vec_(layers.size(), nullptr) {}
+// template <typename T>
+// Net<T>::Net(const std::vector<LayerParameterPtr>& layers)
+//     : layer_parameters_(layers),
+//       dataloader_(nullptr),
+//       learnable_params_(),
+//       layers_(layers.size(), nullptr),
+//       bottom_vec_(layers.size(), nullptr),
+//       top_vec_(layers.size(), nullptr) {}
 
 template <typename T>
 bool Net<T>::RefetchData() {
@@ -30,12 +31,14 @@ bool Net<T>::RefetchData() {
 }
 
 template <typename T>
-void Net<T>::Init(DatasetPtr dataset, int batch_size) {
-  CheckNetValid();
-  dataloader_.reset(new DataLoader(dataset, batch_size));
-  for (auto&& layer_param : TopoSort(layer_parameters_)) {
+void Net<T>::SetUp() {
+  dataloader_ = CreateDataLoader(net_parameter_->data_parameter_);
+  CheckNetValid(net_parameter_->layer_params_);
+  layers_.clear();
+  for (auto&& layer_param : TopoSort(net_parameter_->layer_params_)) {
     layers_.push_back(CreateLayer(layer_param));
   }
+  learnable_params_.clear();
   for (auto&& layer : layers_) {
     if (layer->GetLearnableParams().size() > 0) {
       learnable_params_.insert(learnable_params_.end(),
@@ -43,9 +46,29 @@ void Net<T>::Init(DatasetPtr dataset, int batch_size) {
                                layer->GetLearnableParams().end());
     }
   }
+  bottom_vec_.resize(layers_.size());
+  top_vec_.resize(layers_.size());
   ConnectBottomAndTop();
   InitBottom();
 }
+
+// template <typename T>
+// void Net<T>::Init(DatasetPtr dataset, int batch_size) {
+//   CheckNetValid();
+//   dataloader_.reset(new DataLoader(dataset, batch_size));
+//   for (auto&& layer_param : TopoSort(layer_parameters_)) {
+//     layers_.push_back(CreateLayer(layer_param));
+//   }
+//   for (auto&& layer : layers_) {
+//     if (layer->GetLearnableParams().size() > 0) {
+//       learnable_params_.insert(learnable_params_.end(),
+//                                layer->GetLearnableParams().begin(),
+//                                layer->GetLearnableParams().end());
+//     }
+//   }
+//   ConnectBottomAndTop();
+//   InitBottom();
+// }
 
 template <typename T>
 std::vector<LayerParameterPtr> Net<T>::TopoSort(
@@ -54,8 +77,9 @@ std::vector<LayerParameterPtr> Net<T>::TopoSort(
 }
 
 template <typename T>
-void Net<T>::CheckNoSplitPoint() const {
-  for (auto&& layer : layer_parameters_) {
+void Net<T>::CheckNoSplitPoint(
+    const std::vector<LayerParameterPtr> layer_parameters) {
+  for (auto&& layer : layer_parameters) {
     if (layer->bottoms_.size() == 0 || layer->tops_.size() == 0) {
       throw NetError("A split point occurs.");
     }
@@ -63,7 +87,8 @@ void Net<T>::CheckNoSplitPoint() const {
 }
 
 template <typename T>
-void Net<T>::CheckOneInput() const {
+void Net<T>::CheckOneInput(
+    const std::vector<LayerParameterPtr> layer_parameters) {
   int input_cnt = 0;
   for (auto&& layer : layer_parameters_) {
     for (auto&& bottom : layer->bottoms_) {
@@ -78,7 +103,8 @@ void Net<T>::CheckOneInput() const {
 }
 
 template <typename T>
-void Net<T>::CheckOneOutput() const {
+void Net<T>::CheckOneOutput(
+    const std::vector<LayerParameterPtr> layer_parameters) {
   int output_cnt = 0;
   for (auto&& layer : layer_parameters_) {
     for (auto&& top : layer->tops_) {
@@ -93,7 +119,8 @@ void Net<T>::CheckOneOutput() const {
 }
 
 template <typename T>
-void Net<T>::CheckNoCircle() const {
+void Net<T>::CheckNoCircle(
+    const std::vector<LayerParameterPtr> layer_parameters) {
   // TODO(yibotongxue)
 }
 

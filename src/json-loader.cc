@@ -15,59 +15,30 @@
 
 namespace my_tensor {
 
-JsonLoader::JsonLoader(const std::string& json_file_path) {
-  std::ifstream fs(json_file_path);
-  if (fs.fail()) {
-    throw FileError("File fail.");
-  }
-  if (!fs.is_open()) {
-    throw FileError("File not open.");
-  }
-  nlohmann::json js = nlohmann::json::parse(fs);
+std::vector<LayerParameterPtr> JsonLoader::LoadLayers() {
   if (!js.contains("layers")) {
     throw FileError(
         "The input json file is invalid. Valid json should contain key "
         "Layers.");
   }
-  layers_ = js["layers"];
+  auto layers_ = js["layers"];
   if (!layers_.is_array()) {
     throw FileError("Json object layers should be an array.");
   }
-  if (!js.contains("batch_size")) {
-    throw FileError(
-        "The input json file is invalid. Valid json should contain key "
-        "batch_size.");
-  }
-  if (!js["batch_size"].is_number_integer()) {
-    throw FileError("The batch_size should be an integer.");
-  }
-  batch_size_ = js["batch_size"].get<int>();
-  if (!js.contains("learning_rate")) {
-    throw FileError(
-        "The input json file is invalid. Valid json should contain key "
-        "learning_rate.");
-  }
-  if (!js["learning_rate"].is_number_float()) {
-    throw FileError("The learning_rate should be a float.");
-  }
-  learning_rate_ = js["learning_rate"].get<float>();
-  if (!js.contains("l2")) {
-    throw FileError(
-        "The input json file is invalid. Valid json should contain key "
-        "l2.");
-  }
-  if (!js["l2"].is_number_float()) {
-    throw FileError("The l2 should be a float.");
-  }
-  l2_ = js["l2"].get<float>();
-}
-
-std::vector<LayerParameterPtr> JsonLoader::LoadLayers() {
   std::vector<LayerParameterPtr> result;
   for (auto&& layer : layers_) {
     result.push_back(LoadLayerParam(layer));
   }
   return result;
+}
+
+DataParameterPtr JsonLoader::LoadDataParameter() {
+  return std::make_shared<DataParameter>(LoadDataType(), LoadImageFilePath(),
+                                         LoadLabelFilePath(), LoadBatchSize());
+}
+
+NetParameterPtr JsonLoader::LoadNet() {
+  return std::make_shared<NetParameter>(LoadDataParameter(), LoadLayers());
 }
 
 LayerParameterPtr JsonLoader::LoadLayerParam(const nlohmann::json& js) {
@@ -78,6 +49,30 @@ LayerParameterPtr JsonLoader::LoadLayerParam(const nlohmann::json& js) {
   auto param = CreateLayerParameter(type);
   param->Deserialize(js);
   return param;
+}
+
+template <typename T>
+T JsonLoader::LoadWithKey(const std::string& key) const {
+  if (!js.contains(key)) {
+    throw FileError(std::format("The json object should contain {} key", key));
+  }
+  try {
+    return js[key].get<T>();
+  } catch (...) {
+    throw FileError(std::format("Unknown error thrown from line {} of file {}",
+                                __LINE__, __FILE__));
+  }
+}
+
+nlohmann::json JsonLoader::LoadJsonObject(const std::string& json_file_path) {
+  std::ifstream fs(json_file_path);
+  if (fs.fail()) {
+    throw FileError("File fail.");
+  }
+  if (!fs.is_open()) {
+    throw FileError("File not open.");
+  }
+  return nlohmann::json::parse(fs);
 }
 
 }  // namespace my_tensor

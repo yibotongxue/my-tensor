@@ -12,6 +12,7 @@
 #include "dataset.hpp"
 #include "layer-parameter.hpp"
 #include "layer.hpp"
+#include "net-parameter.hpp"
 #include "tensor.hpp"
 
 namespace my_tensor {
@@ -26,7 +27,7 @@ namespace my_tensor {
 template <typename T>
 class Net {
  public:
-  explicit Net(const std::vector<LayerParameterPtr>& layers);
+  explicit Net(NetParameterPtr net_parameter) : net_parameter_(net_parameter) {}
 
   /**
    * @brief Fetch data and update input and label.
@@ -68,9 +69,15 @@ class Net {
    */
   void Reset() noexcept { dataloader_->Reset(); }
 
+  /**
+   * @brief Set up the net structures. This method will call all the SetUp
+   * method of the layers in the net.
+   */
+  void SetUp();
+
  protected:
-  // layer parameters
-  std::vector<LayerParameterPtr> layer_parameters_;
+  // net parameter
+  NetParameterPtr net_parameter_;
   // data loader
   std::shared_ptr<DataLoader> dataloader_;
   // learnable parameters
@@ -82,28 +89,31 @@ class Net {
   // top of the layers
   std::vector<std::vector<TensorPtr<T>>> top_vec_;
 
-  void Init(DatasetPtr dataset, int batch_size);
-
   // 拓扑排序
   static std::vector<LayerParameterPtr> TopoSort(
       const std::vector<LayerParameterPtr>& layers);
 
   // 检查网络是否合法
-  void CheckNetValid() const {
-    CheckNoSplitPoint();
-    CheckOneInput();
-    CheckOneOutput();
-    CheckNoCircle();
+  static void CheckNetValid(
+      const std::vector<LayerParameterPtr> layer_parameters) {
+    CheckNoSplitPoint(layer_parameters);
+    CheckOneInput(layer_parameters);
+    CheckOneOutput(layer_parameters);
+    CheckNoCircle(layer_parameters);
   }
 
   // 检查网络没有孤立的点
-  void CheckNoSplitPoint() const;
+  static void CheckNoSplitPoint(
+      const std::vector<LayerParameterPtr> layer_parameters);
   // 检查网络只有一个输入
-  void CheckOneInput() const;
+  static void CheckOneInput(
+      const std::vector<LayerParameterPtr> layer_parameters);
   // 检查网络只有一个输出
-  void CheckOneOutput() const;
+  static void CheckOneOutput(
+      const std::vector<LayerParameterPtr> layer_parameters);
   // 检查网络无环
-  void CheckNoCircle() const;
+  static void CheckNoCircle(
+      const std::vector<LayerParameterPtr> layer_parameters);
 
   /**
    * @brief Connect the layers bottom and top. All the bottom of the layers will
@@ -120,11 +130,6 @@ class Net {
    * top of other layers, this is safe.
    */
   void InitBottom();
-  /**
-   * @brief Set up the net structures. This method will call all the SetUp
-   * method of the layers in the net.
-   */
-  // void SetUp();
 };  // class Net
 
 template <typename T = float>

@@ -1,3 +1,5 @@
+-- modified based on https://gitee.com/pku-vcl/vcx2024
+
 set_project("my-tensor")
 set_version("2.0.0")
 set_xmakever("2.6.9")
@@ -9,17 +11,17 @@ add_cugencodes("native")
 
 add_requires("gtest", "pybind11", "nlohmann_json")
 
-tensor_src = {
+local tensor_src = {
     "src/synced-vector.cu",
     "src/tensor.cu"
 }
 
-data_src = {
+local data_src = {
     "src/dataset.cc",
     "src/data-loader.cu"
 }
 
-layer_cpu_src = {
+local layer_cpu_src = {
     "src/relu.cc",
     "src/sigmoid.cc",
     "src/linear.cc",
@@ -29,7 +31,7 @@ layer_cpu_src = {
     "src/loss-with-softmax.cc"
 }
 
-layer_src = {
+local layer_src = {
     "src/layer.cu",
     "src/json-loader.cc",
     "src/layer-parameter.cc",

@@ -4,11 +4,15 @@
 #define INCLUDE_DATASET_HPP_
 
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "error.hpp"
+
 namespace my_tensor {
+
 class Dataset {
  public:
   explicit Dataset(const std::string& image_file_path,
@@ -52,6 +56,18 @@ class MnistDataset : public Dataset {
 };  // class MnistDataset
 
 using DatasetPtr = std::shared_ptr<Dataset>;
+
+inline std::function<DatasetPtr(const std::string&, const std::string&)>
+GetDatasetCreater(const std::string& type) {
+  if (type == "mnist") {
+    return [](const std::string& image_file_path,
+              const std::string& label_file_path) -> DatasetPtr {
+      return std::make_shared<MnistDataset>(image_file_path, label_file_path);
+    };
+  } else {
+    throw DataError("Unsupported data set type.");
+  }
+}
 }  // namespace my_tensor
 
 #endif  // INCLUDE_DATASET_HPP_
