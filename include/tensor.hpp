@@ -17,7 +17,7 @@ namespace my_tensor {
 
 // Tensor class
 template <typename T = float>
-  requires std::is_arithmetic_v<T>
+
 class Tensor {
  public:
   Tensor();

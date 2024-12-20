@@ -33,6 +33,7 @@ class JsonLoader {
   std::string LoadLabelFilePath() const {
     return LoadWithKey<std::string>("label_file_path");
   }
+  std::string LoadNetName() const { return LoadWithKey<std::string>("name"); }
   std::vector<LayerParameterPtr> LoadLayers();
   DataParameterPtr LoadDataParameter();
   NetParameterPtr LoadNet();

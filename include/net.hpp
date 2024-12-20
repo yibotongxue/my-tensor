@@ -6,6 +6,7 @@
 #define CPU_ONLY
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "data-loader.hpp"
@@ -27,22 +28,35 @@ namespace my_tensor {
 template <typename T>
 class Net {
  public:
-  explicit Net(NetParameterPtr net_parameter) : net_parameter_(net_parameter) {}
+  enum class Phase { kTrain, kTest };  // enum class Phase
+
+  explicit Net(NetParameterPtr net_parameter)
+      : net_parameter_(net_parameter), phase_(Phase::kTrain) {}
 
   /**
    * @brief Fetch data and update input and label.
    * @return true if data fetched succefully, false if all the batches are
    * fetched.
    */
-  bool RefetchData();
+  void RefetchData();
 
   /**
    * @brief Forward method, calling all the forward methods of the layers in a
    * specific order.
    */
   void Forward() {
-    for (int i = 0; i < layers_.size(); i++) {
+    for (int i = 0; i < layers_.size() - 2; i++) {
       layers_[i]->Forward(bottom_vec_[i], top_vec_[i]);
+    }
+    // loss
+    if (phase_ == Phase::kTrain) {
+      layers_[layers_.size() - 2]->Forward(bottom_vec_[layers_.size() - 2],
+                                           top_vec_[layers_.size() - 2]);
+    }
+    // accuracy
+    if (phase_ == Phase::kTest) {
+      layers_[layers_.size() - 1]->Forward(bottom_vec_[layers_.size() - 1],
+                                           top_vec_[layers_.size() - 1]);
     }
   }
 
@@ -51,7 +65,7 @@ class Net {
    * specific order.
    */
   void Backward() {
-    for (int i = layers_.size() - 1; i >= 0; i--) {
+    for (int i = layers_.size() - 2; i >= 0; i--) {
       layers_[i]->Backward(top_vec_[i], bottom_vec_[i]);
     }
   }
@@ -67,7 +81,10 @@ class Net {
   /**
    * @brief Reset the dataloader.
    */
-  void Reset() noexcept { dataloader_->Reset(); }
+  void Reset() noexcept {
+    train_dataloader_->Reset();
+    test_dataloader_->Reset();
+  }
 
   /**
    * @brief Set up the net structures. This method will call all the SetUp
@@ -75,11 +92,22 @@ class Net {
    */
   void SetUp();
 
+  T GetOutput() const;
+  std::vector<std::vector<T>> GetModelData() const;
+  void SetModelData(std::vector<std::vector<T>>&& data);
+  void CopyFrom(const std::vector<TensorPtr<T>>& learnable_params);
+
  protected:
   // net parameter
   NetParameterPtr net_parameter_;
-  // data loader
-  std::shared_ptr<DataLoader> dataloader_;
+  // net parameter
+  Phase phase_;
+  // net name
+  std::string net_name_;
+  // train data loader
+  std::shared_ptr<DataLoader> train_dataloader_;
+  // test data loader
+  std::shared_ptr<DataLoader> test_dataloader_;
   // learnable parameters
   std::vector<TensorPtr<T>> learnable_params_;
   // layers in topo order
@@ -88,6 +116,12 @@ class Net {
   std::vector<std::vector<TensorPtr<T>>> bottom_vec_;
   // top of the layers
   std::vector<std::vector<TensorPtr<T>>> top_vec_;
+  // current image data
+  TensorPtr<T> curr_image_;
+  // current label data
+  TensorPtr<T> curr_label_;
+
+  std::shared_ptr<DataLoader> GetDataLoader() const;
 
   // 拓扑排序
   static std::vector<LayerParameterPtr> TopoSort(
@@ -95,25 +129,25 @@ class Net {
 
   // 检查网络是否合法
   static void CheckNetValid(
-      const std::vector<LayerParameterPtr> layer_parameters) {
+      const std::vector<LayerParameterPtr>& layer_parameters) {
     CheckNoSplitPoint(layer_parameters);
     CheckOneInput(layer_parameters);
-    CheckOneOutput(layer_parameters);
+    CheckTwoOutput(layer_parameters);
     CheckNoCircle(layer_parameters);
   }
 
   // 检查网络没有孤立的点
   static void CheckNoSplitPoint(
-      const std::vector<LayerParameterPtr> layer_parameters);
+      const std::vector<LayerParameterPtr>& layer_parameters);
   // 检查网络只有一个输入
   static void CheckOneInput(
-      const std::vector<LayerParameterPtr> layer_parameters);
+      const std::vector<LayerParameterPtr>& layer_parameters);
   // 检查网络只有一个输出
-  static void CheckOneOutput(
-      const std::vector<LayerParameterPtr> layer_parameters);
+  static void CheckTwoOutput(
+      const std::vector<LayerParameterPtr>& layer_parameters);
   // 检查网络无环
   static void CheckNoCircle(
-      const std::vector<LayerParameterPtr> layer_parameters);
+      const std::vector<LayerParameterPtr>& layer_parameters);
 
   /**
    * @brief Connect the layers bottom and top. All the bottom of the layers will

@@ -14,12 +14,15 @@ namespace my_tensor {
 
 class NetParameter final {
  public:
+  std::string name_;
   DataParameterPtr data_parameter_;
   std::vector<LayerParameterPtr> layer_params_;
 
-  NetParameter(DataParameterPtr data_parameter,
+  NetParameter(const std::string& name, DataParameterPtr data_parameter,
                const std::vector<LayerParameterPtr> layer_params)
-      : data_parameter_(data_parameter), layer_params_(layer_params) {}
+      : name_(name),
+        data_parameter_(data_parameter),
+        layer_params_(layer_params) {}
 };  // class NetParameter
 
 using NetParameterPtr = std::shared_ptr<NetParameter>;

@@ -18,21 +18,22 @@ namespace my_tensor {
 //       top_vec_(layers.size(), nullptr) {}
 
 template <typename T>
-bool Net<T>::RefetchData() {
-  if (dataloader_->HasNext()) {
-    auto [image, label] = dataloader_->GetNext();
-    bottom_vec_[0][0] = image;
-    top_vec_[top_vec_.size() - 1][0] = image;
-    bottom_vec_[bottom_vec_.size() - 1][1] = label;
-    return true;
-  } else {
-    return false;
+void Net<T>::RefetchData() {
+  if (!GetDataLoader()->HasNext()) {
+    GetDataLoader()->Reset();
   }
+  if (!GetDataLoader()->HasNext()) {
+    throw NetError("The batch size is larger than the dataset size.");
+  }
+  auto [image, label] = GetDataLoader()->GetNext();
+  *curr_image_ = *image;
+  *curr_label_ = *label;
 }
 
 template <typename T>
 void Net<T>::SetUp() {
-  dataloader_ = CreateDataLoader(net_parameter_->data_parameter_);
+  net_name_ = net_parameter_->name_;
+  train_dataloader_ = CreateDataLoader(net_parameter_->data_parameter_);
   CheckNetValid(net_parameter_->layer_params_);
   layers_.clear();
   for (auto&& layer_param : TopoSort(net_parameter_->layer_params_)) {
@@ -48,8 +49,45 @@ void Net<T>::SetUp() {
   }
   bottom_vec_.resize(layers_.size());
   top_vec_.resize(layers_.size());
+  curr_image_ = std::make_shared<Tensor<T>>(train_dataloader_->GetImageShape());
+  curr_label_ = std::make_shared<Tensor<T>>(train_dataloader_->GetLabelShape());
   ConnectBottomAndTop();
   InitBottom();
+}
+
+template <typename T>
+T Net<T>::GetOutput() const {
+  if (phase_ == Phase::kTrain) {
+    return top_vec_[top_vec_.size() - 2][0]->GetCPUData()[0];
+  }
+  if (phase_ == Phase::kTest) {
+    return top_vec_[top_vec_.size() - 1][0]->GetCPUData()[0];
+  }
+  throw NetError("Unsupport phase.");
+}
+
+template <typename T>
+std::vector<std::vector<T>> Net<T>::GetModelData() const {
+  std::vector<std::vector<T>> result;
+  for (auto&& learnable_param : GetLearnableParams()) {
+    result.emplace_back(learnable_param->GetCPUData());
+  }
+  return result;
+}
+
+template <typename T>
+void Net<T>::SetModelData(std::vector<std::vector<T>>&& data) {
+  for (int i = 0; i < data.size(); i++) {
+    // TODO(yibotongxue) should turn to SetData, auto detect the device.
+    learnable_params_[i]->SetCPUData(std::move(data[i]));
+  }
+}
+
+template <typename T>
+void Net<T>::CopyFrom(const std::vector<TensorPtr<T>>& learnable_params) {
+  for (int i = 0; i < learnable_params.size(); i++) {
+    *(learnable_params_[i]) = *(learnable_params[i]);
+  }
 }
 
 // template <typename T>
@@ -71,6 +109,17 @@ void Net<T>::SetUp() {
 // }
 
 template <typename T>
+std::shared_ptr<DataLoader> Net<T>::GetDataLoader() const {
+  if (phase_ == Phase::kTrain) {
+    return train_dataloader_;
+  }
+  if (phase_ == Phase::kTest) {
+    return test_dataloader_;
+  }
+  throw NetError("Unsupport phase.");
+}
+
+template <typename T>
 std::vector<LayerParameterPtr> Net<T>::TopoSort(
     const std::vector<LayerParameterPtr>& layers) {
   return layers;
@@ -78,7 +127,7 @@ std::vector<LayerParameterPtr> Net<T>::TopoSort(
 
 template <typename T>
 void Net<T>::CheckNoSplitPoint(
-    const std::vector<LayerParameterPtr> layer_parameters) {
+    const std::vector<LayerParameterPtr>& layer_parameters) {
   for (auto&& layer : layer_parameters) {
     if (layer->bottoms_.size() == 0 || layer->tops_.size() == 0) {
       throw NetError("A split point occurs.");
@@ -88,9 +137,9 @@ void Net<T>::CheckNoSplitPoint(
 
 template <typename T>
 void Net<T>::CheckOneInput(
-    const std::vector<LayerParameterPtr> layer_parameters) {
+    const std::vector<LayerParameterPtr>& layer_parameters) {
   int input_cnt = 0;
-  for (auto&& layer : layer_parameters_) {
+  for (auto&& layer : layer_parameters) {
     for (auto&& bottom : layer->bottoms_) {
       if (bottom == "data") {
         input_cnt += 1;
@@ -103,34 +152,35 @@ void Net<T>::CheckOneInput(
 }
 
 template <typename T>
-void Net<T>::CheckOneOutput(
-    const std::vector<LayerParameterPtr> layer_parameters) {
-  int output_cnt = 0;
-  for (auto&& layer : layer_parameters_) {
-    for (auto&& top : layer->tops_) {
-      if (top == "output") {
-        output_cnt += 1;
-        if (output_cnt > 1) {
-          throw NetError("The count of the output is not one.");
-        }
-      }
+void Net<T>::CheckTwoOutput(
+    const std::vector<LayerParameterPtr>& layer_parameters) {
+  for (int i = 0; i < layer_parameters.size() - 2; i++) {
+    if (layer_parameters[i]->tops_[0] == "loss" ||
+        layer_parameters[i]->tops_[1] == "accuracy") {
+      throw NetError("The count of the output is not two.");
     }
+  }
+  if (layer_parameters[layer_parameters.size() - 2]->tops_[0] == "loss") {
+    throw NetError("The last but one of the net is not loss layer.");
+  }
+  if (layer_parameters[layer_parameters.size() - 1]->tops_[0] == "accuracy") {
+    throw NetError("The last of the net is not accuracy layer.");
   }
 }
 
 template <typename T>
 void Net<T>::CheckNoCircle(
-    const std::vector<LayerParameterPtr> layer_parameters) {
+    const std::vector<LayerParameterPtr>& layer_parameters) {
   // TODO(yibotongxue)
 }
 
 template <typename T>
 void Net<T>::ConnectBottomAndTop() {
-  for (int i = 0; i < layers_.size(); i++) {
-    for (auto&& bottom : layer_parameters_[i]->bottoms_) {
+  for (int i = 1; i < layers_.size(); i++) {
+    for (auto&& bottom : net_parameter_->layer_params_[i]->bottoms_) {
       bool has_top = false;
-      for (int j = 0; j < layers_.size(); j++) {
-        if (bottom == layer_parameters_[j]->name_) {
+      for (int j = 0; j < i; j++) {
+        if (bottom == net_parameter_->layer_params_[j]->name_) {
           bottom_vec_[i] = top_vec_[j];
           has_top = true;
         }
@@ -140,13 +190,16 @@ void Net<T>::ConnectBottomAndTop() {
       }
     }
   }
-  bottom_vec_[0] = {std::make_shared<Tensor<T>>(dataloader_->GetDataShape())};
+  bottom_vec_[0] = {curr_image_};
+  // the top two layer should be loss and accuracy layer, thus have label as
+  // bottom
+  bottom_vec_[bottom_vec_.size() - 1].push_back(curr_label_);
+  bottom_vec_[bottom_vec_.size() - 2].push_back(curr_label_);
 }
 
 template <typename T>
 void Net<T>::InitBottom() {
-  bottom_vec_[0] = {std::make_shared<Tensor<T>>(dataloader_->GetDataShape())};
-  for (int i = 1; i < layers_.size() - 1; i++) {
+  for (int i = 0; i < layers_.size(); i++) {
     layers_[i]->SetUp(bottom_vec_[i], top_vec_[i]);
   }
 }

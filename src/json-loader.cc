@@ -38,7 +38,8 @@ DataParameterPtr JsonLoader::LoadDataParameter() {
 }
 
 NetParameterPtr JsonLoader::LoadNet() {
-  return std::make_shared<NetParameter>(LoadDataParameter(), LoadLayers());
+  return std::make_shared<NetParameter>(LoadNetName(), LoadDataParameter(),
+                                        LoadLayers());
 }
 
 LayerParameterPtr JsonLoader::LoadLayerParam(const nlohmann::json& js) {

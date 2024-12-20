@@ -11,7 +11,7 @@
 
 namespace my_tensor {
 template <typename T>
-  requires std::is_arithmetic_v<T>
+
 class Tensor;
 
 class DataLoader {
@@ -23,11 +23,18 @@ class DataLoader {
 
   std::array<std::shared_ptr<Tensor<float>>, 2> GetNext();
 
-  void Reset() noexcept { index_ = 0; }
+  void Reset() noexcept {
+    Shuffle();
+    index_ = 0;
+  }
 
-  std::vector<int> GetDataShape() const {
+  std::vector<int> GetImageShape() const {
     return {batch_size_, dataset_->GetHeight(), dataset_->GetWidth()};
   }
+
+  std::vector<int> GetLabelShape() const { return {batch_size_}; }
+
+  void Shuffle() noexcept {}
 
  private:
   DatasetPtr dataset_;

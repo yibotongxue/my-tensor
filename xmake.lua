@@ -9,7 +9,7 @@ add_rules("mode.debug", "mode.release", "mode.profile")
 add_cuflags("-G", "--extended-lambda")
 add_cugencodes("native")
 
-add_requires("gtest", "pybind11", "nlohmann_json")
+add_requires("gtest", "nlohmann_json")
 
 local tensor_src = {
     "src/synced-vector.cu",
@@ -43,7 +43,8 @@ local layer_src = {
     "src/conv.cu",
     "src/pooling.cu",
     "src/softmax.cu",
-    "src/loss-with-softmax.cu"
+    "src/loss-with-softmax.cu",
+    "src/filler.cu"
 }
 
 target("common_lib")
@@ -99,6 +100,13 @@ target("layer_lib")
     add_deps("layer_cpu")
     add_includedirs("include", {public = true})
     add_files(layer_src)
+
+target("net_lib")
+    set_kind("static")
+    add_deps("layer_lib")
+    add_deps("data_lib")
+    add_includedirs("include", {public = true})
+    add_files("src/net.cc")
 
 target("tensor_test")
     set_kind("binary")

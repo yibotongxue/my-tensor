@@ -8,6 +8,7 @@
 #include <thrust/fill.h>
 #endif  // CPU_ONLY
 
+#include <cassert>
 #include <cmath>
 #include <memory>
 
