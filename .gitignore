@@ -54,7 +54,7 @@ CMakeUserPresets.json
 *.cubin
 *.fatbin
 
-.vscode/c_cpp_properties.json
+.vscode
 
 CMakePresets.json
 
