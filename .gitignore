@@ -71,3 +71,5 @@ dist
 __pycache__
 
 .cache
+
+.xmake
