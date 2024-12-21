@@ -21,9 +21,9 @@ void Linear<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
   // weight k * n
   // top    m * n
   // bias   n * 1
-  matmul(bottom[0]->GetGPUDataPtr(), weight_->GetGPUDataPtr(),
-         top[0]->GetGPUDataPtr(), m, k, n);
-  add_col_vector(top[0]->GetGPUDataPtr(), bias_->GetGPUDataPtr(), m, n);
+  matmul_gpu(bottom[0]->GetGPUDataPtr(), weight_->GetGPUDataPtr(),
+             top[0]->GetGPUDataPtr(), m, k, n);
+  add_col_vector_gpu(top[0]->GetGPUDataPtr(), bias_->GetGPUDataPtr(), m, n);
 }
 
 template <typename T>
@@ -34,11 +34,12 @@ void Linear<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
   // weight k * n
   // top    m * n
   // bias   n * 1
-  matmul_transpose(top[0]->GetGPUDiffPtr(), this->GetWeight()->GetGPUDataPtr(),
-                   bottom[0]->GetGPUDiffPtr(), m, n, k);
-  transpose_matmul(bottom[0]->GetGPUDataPtr(), top[0]->GetGPUDiffPtr(),
-                   this->GetWeight()->GetGPUDiffPtr(), k, m, n);
-  col_sum(top[0]->GetGPUDiffPtr(), this->GetBias()->GetGPUDiffPtr(), m, n);
+  matmul_transpose_gpu(top[0]->GetGPUDiffPtr(),
+                       this->GetWeight()->GetGPUDataPtr(),
+                       bottom[0]->GetGPUDiffPtr(), m, n, k);
+  transpose_matmul_gpu(bottom[0]->GetGPUDataPtr(), top[0]->GetGPUDiffPtr(),
+                       this->GetWeight()->GetGPUDiffPtr(), k, m, n);
+  col_sum_gpu(top[0]->GetGPUDiffPtr(), this->GetBias()->GetGPUDiffPtr(), m, n);
   // *bottom = transpose_matmul(*weight_, *top, true);
   // *weight_ = matmul_transpose(*top, *bottom, true);
   // *bias_ = row_sum(*top, true);

@@ -49,6 +49,25 @@ NetParameterPtr JsonLoader::LoadNet() {
                                         LoadTestDataParameter(), LoadLayers());
 }
 
+SchedulerParameterPtr JsonLoader::LoadScheduler() {
+  if (!js.contains("scheduler")) {
+    throw FileError("The file should contain key scheduler.");
+  }
+  auto scheduler_js = js["scheduler"];
+  std::string type = LoadWithKey<std::string>(scheduler_js, "type");
+  auto scheduler = CreateSchedulerParameterPtr(type);
+  scheduler->Deserialize(scheduler_js);
+  return scheduler;
+}
+
+SolverParameterPtr JsonLoader::LoadSolver() {
+  auto&& solver_type = LoadWithKey<std::string>(js, "solver_type");
+  auto solver =
+      GetSolverParameterCreater(solver_type)(LoadScheduler(), LoadNet());
+  solver->Deserialize(js);
+  return solver;
+}
+
 LayerParameterPtr JsonLoader::LoadLayerParam(const nlohmann::json& js) {
   if (!js.contains("type") || !js["type"].is_string()) {
     throw FileError("Layer object in layers object should contain key type");
