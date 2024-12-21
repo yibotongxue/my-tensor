@@ -19,6 +19,7 @@ class SolverParameter {
   int max_iter_;
   float base_lr_;
   float l2_;
+  int test_step_;
   SchedulerParameterPtr scheduler_param_;
   NetParameterPtr net_param_;
 
@@ -37,6 +38,7 @@ class SolverParameter {
     max_iter_ = LoadWithKey<int>(js, "max_iter");
     base_lr_ = LoadWithKey<float>(js, "base_lr");
     l2_ = LoadWithKey<float>(js, "l2");
+    test_step_ = LoadWithKey<int>(js, "test_step");
   }
 
   virtual void ParseSettingParameters(const nlohmann::json& js) = 0;

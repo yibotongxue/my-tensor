@@ -3,6 +3,7 @@
 #ifndef INCLUDE_BLAS_HPP_
 #define INCLUDE_BLAS_HPP_
 
+#include "common.hpp"
 #include "error.hpp"
 #include "utils.hpp"
 
@@ -201,6 +202,32 @@ void col_sum_gpu(const float *mat, float *result, const int m, const int n,
 template <>
 void col_sum_cpu(const float *mat, float *result, const int m, const int n,
                  const int batch_count);
+
+template <typename T>
+void add_two_vec_gpu(T *lhs, const T *rhs, const T k, const int n) {
+  BLAS_UNIMPLEMENTION
+}
+
+template <typename T>
+void add_two_vec_cpu(T *lhs, const T *rhs, const T k, const int n) {
+  BLAS_UNIMPLEMENTION
+}
+
+template <>
+void add_two_vec_gpu(float *lhs, const float *rhs, const float k, const int n);
+
+template <>
+void add_two_vec_cpu(float *lhs, const float *rhs, const float k, const int n);
+
+template <typename T>
+inline void add_two_vec(float *lhs, const float *rhs, const float k,
+                        const int n) {
+  if (MyTensorContext::on_cpu()) {
+    add_two_vec_cpu(lhs, rhs, k, n);
+  } else {
+    add_two_vec_gpu(lhs, rhs, k, n);
+  }
+}
 }  // namespace my_tensor
 
 #endif  // INCLUDE_BLAS_HPP_

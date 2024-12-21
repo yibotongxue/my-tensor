@@ -29,6 +29,13 @@ int main() {
     net->Forward();
     std::cout << std::format("loss = {}", net->GetOutput()) << std::endl;
     net->Backward();
+    if (i % 10 == 0) {
+      net->SetTest();
+      net->RefetchData();
+      net->Forward();
+      std::cout << std::format("accuracy = {}", net->GetOutput()) << std::endl;
+      net->SetTrain();
+    }
     for (auto&& param : net->GetLearnableParams()) {
       thrust::transform(
           param->GetGPUData().begin(), param->GetGPUData().end(),
@@ -36,13 +43,6 @@ int main() {
           [learning_rate, l2] __device__(float val, float grad) -> float {
             return val - grad * learning_rate - 2 * l2 * learning_rate * val;
           });
-    }
-    if (i % 10 == 0) {
-      net->SetTest();
-      net->RefetchData();
-      net->Forward();
-      std::cout << std::format("accuracy = {}", net->GetOutput()) << std::endl;
-      net->SetTrain();
     }
   }
   net->SetTest();

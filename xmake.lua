@@ -50,6 +50,11 @@ local layer_src = {
     "src/filler.cu"
 }
 
+local solver_src = {
+    "src/solver.cc",
+    "src/sgd-solver.cc"
+}
+
 target("common_lib")
     set_kind("static")
     add_includedirs("include", {public = true})
@@ -79,6 +84,7 @@ target("blas_lib")
 
 target("im2col_lib")
     set_kind("static")
+    add_deps("common_lib")
     add_includedirs("include", {public = true})
     add_files("src/im2col.cu")
     add_files("src/im2col.cc", {defines = "CPU_ONLY"})
@@ -99,6 +105,12 @@ target("net_lib")
     add_deps("data_lib")
     add_includedirs("include", {public = true})
     add_files("src/net.cc")
+
+target("solver_lib")
+    set_kind("static")
+    add_deps("net_lib")
+    add_includedirs("include", {public = true})
+    add_files(solver_src)
 
 target("tensor_test")
     set_kind("binary")

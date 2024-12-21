@@ -38,7 +38,7 @@ class Net {
    * @return true if data fetched succefully, false if all the batches are
    * fetched.
    */
-  void RefetchData();
+  bool RefetchData();
 
   /**
    * @brief Forward method, calling all the forward methods of the layers in a

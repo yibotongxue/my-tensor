@@ -38,9 +38,9 @@ inline lr_scheduler CreateScheduler(SchedulerParameterPtr param) {
     int max_epoch = cosine_annealing_param->max_epoch_;
     return [max_epoch](float base_lr, int current_epoch) -> float {
       return base_lr / 2 *
-             (1.0f +
-              std::cos(static_cast<float>(current_epoch) /
-                       static_cast<float>(max_epoch) * std::numbers::pi_v));
+             (1.0f + std::cos(static_cast<float>(current_epoch) /
+                              static_cast<float>(max_epoch) *
+                              std::numbers::pi_v<float>));
     };
   } else {
     // TODO(yibotongxue) add specific exception type and description.

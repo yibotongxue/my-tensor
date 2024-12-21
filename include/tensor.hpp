@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "common.hpp"
 #include "synced-vector.hpp"
 
 namespace my_tensor {
@@ -85,6 +86,38 @@ class Tensor {
   T* GetGPUDataPtr() { return data_->GetMutableGPUPtr(); }
   const T* GetGPUDiffPtr() const { return diff_->GetGPUPtr(); }
   T* GetGPUDiffPtr() { return diff_->GetMutableGPUPtr(); }
+
+  const T* GetDataPtr() const {
+    if (MyTensorContext::on_cpu()) {
+      return GetCPUDataPtr();
+    } else {
+      return GetGPUDataPtr();
+    }
+  }
+
+  T* GetDataPtr() {
+    if (MyTensorContext::on_cpu()) {
+      return GetCPUDataPtr();
+    } else {
+      return GetGPUDataPtr();
+    }
+  }
+
+  const T* GetDiffPtr() const {
+    if (MyTensorContext::on_cpu()) {
+      return GetCPUDiffPtr();
+    } else {
+      return GetGPUDiffPtr();
+    }
+  }
+
+  T* GetDiffPtr() {
+    if (MyTensorContext::on_cpu()) {
+      return GetCPUDiffPtr();
+    } else {
+      return GetGPUDiffPtr();
+    }
+  }
 
   const std::vector<int>& GetShape() const { return shape_; }
 

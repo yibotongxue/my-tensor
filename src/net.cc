@@ -18,9 +18,11 @@ namespace my_tensor {
 //       top_vec_(layers.size(), nullptr) {}
 
 template <typename T>
-void Net<T>::RefetchData() {
+bool Net<T>::RefetchData() {
+  bool result = false;
   if (!GetDataLoader()->HasNext()) {
     GetDataLoader()->Reset();
+    result = true;
   }
   if (!GetDataLoader()->HasNext()) {
     throw NetError("The batch size is larger than the dataset size.");
@@ -28,6 +30,7 @@ void Net<T>::RefetchData() {
   auto [image, label] = GetDataLoader()->GetNext();
   *curr_image_ = *image;
   *curr_label_ = *label;
+  return result;
 }
 
 template <typename T>

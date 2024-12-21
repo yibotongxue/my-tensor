@@ -234,6 +234,12 @@ void col_sum_gpu(const float *mat, float *result, const int m, const int n,
   cudaFree(ones);
 }
 
+template <>
+void add_two_vec_gpu(float *lhs, const float *rhs, const float k, const int n) {
+  CUBLAS_CHECK(
+      cublasSaxpy(MyTensorContext::cublas_handle(), n, &k, rhs, 1, lhs, 1));
+}
+
 #undef DEFINE_ABC_VEC
 
 }  // namespace my_tensor

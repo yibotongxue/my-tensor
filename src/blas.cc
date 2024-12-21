@@ -117,4 +117,9 @@ void col_sum_cpu(const float *mat, float *result, const int m, const int n,
   // TODO(yibotongxue)
 }
 
+template <>
+void add_two_vec_cpu(float *lhs, const float *rhs, const float k, const int n) {
+  cblas_saxpy(n, k, rhs, 1, lhs, 1);
+}
+
 }  // namespace my_tensor
