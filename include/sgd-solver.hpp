@@ -16,6 +16,8 @@ class SgdSolver final : public Solver<T> {
   void UpdateParam() override;
 };  // class SgdSolver
 
+extern template class SgdSolver<float>;
+
 }  // namespace my_tensor
 
 #endif  // INCLUDE_SGD_SOLVER_HPP_

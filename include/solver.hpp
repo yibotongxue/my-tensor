@@ -3,6 +3,8 @@
 #ifndef INCLUDE_SOLVER_HPP_
 #define INCLUDE_SOLVER_HPP_
 
+#include <memory>
+
 #include "net.hpp"
 #include "scheduler.hpp"
 #include "solver-parameter.hpp"
@@ -41,6 +43,11 @@ class Solver {
 
   float GetLearningRate() { return scheduler_(base_lr_, current_epoch_); }
 };
+
+extern template class Solver<float>;
+
+template <typename T>
+using SolverPtr = std::shared_ptr<Solver<T>>;
 
 }  // namespace my_tensor
 

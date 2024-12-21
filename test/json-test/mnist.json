@@ -1,8 +1,16 @@
 {
   "name": "lenet",
   "batch_size": 1024,
-  "learning_rate": 0.3,
+  "base_lr": 0.3,
   "l2": 1.5e-4,
+  "solver_type": "sgd",
+  "max_iter": 100,
+  "test_step": 10,
+  "scheduler": {
+    "type": "step",
+    "gama": 0.1,
+    "stepsize": 1000
+  },
   "data_type": "mnist",
   "train_image_file_path": "/home/linyibo/Code/my-tensor/data/train-images-idx3-ubyte",
   "train_label_file_path": "/home/linyibo/Code/my-tensor/data/train-labels-idx1-ubyte",

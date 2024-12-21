@@ -9,9 +9,11 @@ namespace my_tensor {
 template <typename T>
 void SgdSolver<T>::UpdateParam() {
   for (auto&& param : this->net_->GetLearnableParams()) {
-    add_two_vec(param->GetDataPtr(), param->GetDiffPtr(),
-                -this->GetLearningRate(), param->GetSize());
+    add_two_vec<float>(param->GetDataPtr(), param->GetDiffPtr(),
+                       -this->GetLearningRate(), param->GetSize());
   }
 }
+
+template class SgdSolver<float>;
 
 }  // namespace my_tensor
