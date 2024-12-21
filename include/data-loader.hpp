@@ -29,7 +29,7 @@ class DataLoader {
   }
 
   std::vector<int> GetImageShape() const {
-    return {batch_size_, dataset_->GetHeight(), dataset_->GetWidth()};
+    return {batch_size_, 1, dataset_->GetHeight(), dataset_->GetWidth()};
   }
 
   std::vector<int> GetLabelShape() const { return {batch_size_}; }

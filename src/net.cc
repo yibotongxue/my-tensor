@@ -33,7 +33,8 @@ void Net<T>::RefetchData() {
 template <typename T>
 void Net<T>::SetUp() {
   net_name_ = net_parameter_->name_;
-  train_dataloader_ = CreateDataLoader(net_parameter_->data_parameter_);
+  train_dataloader_ = CreateDataLoader(net_parameter_->train_data_parameter_);
+  test_dataloader_ = CreateDataLoader(net_parameter_->test_data_parameter_);
   CheckNetValid(net_parameter_->layer_params_);
   layers_.clear();
   for (auto&& layer_param : TopoSort(net_parameter_->layer_params_)) {
@@ -41,18 +42,20 @@ void Net<T>::SetUp() {
   }
   learnable_params_.clear();
   for (auto&& layer : layers_) {
-    if (layer->GetLearnableParams().size() > 0) {
+    auto&& learnable_param_of_layer = layer->GetLearnableParameters();
+    if (learnable_param_of_layer.size() > 0) {
       learnable_params_.insert(learnable_params_.end(),
-                               layer->GetLearnableParams().begin(),
-                               layer->GetLearnableParams().end());
+                               learnable_param_of_layer.begin(),
+                               learnable_param_of_layer.end());
     }
   }
   bottom_vec_.resize(layers_.size());
   top_vec_.resize(layers_.size());
   curr_image_ = std::make_shared<Tensor<T>>(train_dataloader_->GetImageShape());
   curr_label_ = std::make_shared<Tensor<T>>(train_dataloader_->GetLabelShape());
+  InitTop();
   ConnectBottomAndTop();
-  InitBottom();
+  SetUpBottomAndTop();
 }
 
 template <typename T>
@@ -160,10 +163,10 @@ void Net<T>::CheckTwoOutput(
       throw NetError("The count of the output is not two.");
     }
   }
-  if (layer_parameters[layer_parameters.size() - 2]->tops_[0] == "loss") {
+  if (layer_parameters[layer_parameters.size() - 2]->tops_[0] != "loss") {
     throw NetError("The last but one of the net is not loss layer.");
   }
-  if (layer_parameters[layer_parameters.size() - 1]->tops_[0] == "accuracy") {
+  if (layer_parameters[layer_parameters.size() - 1]->tops_[0] != "accuracy") {
     throw NetError("The last of the net is not accuracy layer.");
   }
 }
@@ -172,6 +175,13 @@ template <typename T>
 void Net<T>::CheckNoCircle(
     const std::vector<LayerParameterPtr>& layer_parameters) {
   // TODO(yibotongxue)
+}
+
+template <typename T>
+void Net<T>::InitTop() {
+  for (int i = 0; i < top_vec_.size(); i++) {
+    top_vec_[i] = {std::make_shared<Tensor<T>>()};
+  }
 }
 
 template <typename T>
@@ -198,9 +208,11 @@ void Net<T>::ConnectBottomAndTop() {
 }
 
 template <typename T>
-void Net<T>::InitBottom() {
+void Net<T>::SetUpBottomAndTop() {
   for (int i = 0; i < layers_.size(); i++) {
     layers_[i]->SetUp(bottom_vec_[i], top_vec_[i]);
   }
 }
+
+template class Net<float>;
 }  // namespace my_tensor

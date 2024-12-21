@@ -29,7 +29,7 @@ template <typename T>
 void Convolution<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
                                 const std::vector<TensorPtr<T>>& top) {
   if (bottom[0]->GetShape().size() != 4) {
-    throw ConvError("The dimension of the inputshould be 4.");
+    throw ConvError("The dimension of the input should be 4.");
   }
   std::shared_ptr<ConvolutionParameter> param =
       std::dynamic_pointer_cast<ConvolutionParameter>(this->layer_param_);

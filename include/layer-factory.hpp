@@ -5,6 +5,7 @@
 
 #include <memory>
 
+#include "accuracy.hpp"
 #include "conv.hpp"
 #include "error.hpp"
 #include "flatten.hpp"
@@ -37,6 +38,8 @@ inline LayerPtr<T> CreateLayer(const LayerParameterPtr param) {
       return std::make_shared<Softmax<T>>(param);
     case ParamType::kLossWithSoftmax:
       return std::make_shared<LossWithSoftmax<T>>(param);
+    case ParamType::kAccuracy:
+      return std::make_shared<Accuracy<T>>(param);
     default:
       throw LayerError("Unimplemented layer.");
   }

@@ -29,8 +29,9 @@ class DataParameter {
 
 using DataParameterPtr = std::shared_ptr<DataParameter>;
 
-inline DataLoader CreateDataLoader(DataParameterPtr data_parameter) {
-  return DataLoader(
+inline std::shared_ptr<DataLoader> CreateDataLoader(
+    DataParameterPtr data_parameter) {
+  return std::make_shared<DataLoader>(
       GetDatasetCreater(data_parameter->dataset_type_)(
           data_parameter->image_file_path_, data_parameter->label_file_path_),
       data_parameter->batch_size_);

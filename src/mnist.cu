@@ -10,12 +10,17 @@
 #include "json-loader.hpp"
 #include "layer-factory.hpp"
 #include "layer-parameter.hpp"
+#include "net-parameter.hpp"
+#include "net.hpp"
 #include "tensor.hpp"
 
 int main() {
   my_tensor::MyTensorContext::set_device_type(
       my_tensor::MyTensorContext::DeviceType::GPU);
   my_tensor::JsonLoader loader("../test/json-test/mnist.json");
+  my_tensor::NetPtr<float> net =
+      std::make_shared<my_tensor::Net<float>>(loader.LoadNet());
+  net->SetUp();
   int batch_size = loader.LoadBatchSize();
   float learning_rate = loader.LoadLearningRate();
   float l2 = loader.LoadL2();

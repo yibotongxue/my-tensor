@@ -27,15 +27,22 @@ class JsonLoader {
   std::string LoadDataType() const {
     return LoadWithKey<std::string>("data_type");
   }
-  std::string LoadImageFilePath() const {
-    return LoadWithKey<std::string>("image_file_path");
+  std::string LoadTrainImageFilePath() const {
+    return LoadWithKey<std::string>("train_image_file_path");
   }
-  std::string LoadLabelFilePath() const {
-    return LoadWithKey<std::string>("label_file_path");
+  std::string LoadTrainLabelFilePath() const {
+    return LoadWithKey<std::string>("train_label_file_path");
+  }
+  std::string LoadTestImageFilePath() const {
+    return LoadWithKey<std::string>("test_image_file_path");
+  }
+  std::string LoadTestLabelFilePath() const {
+    return LoadWithKey<std::string>("test_label_file_path");
   }
   std::string LoadNetName() const { return LoadWithKey<std::string>("name"); }
   std::vector<LayerParameterPtr> LoadLayers();
-  DataParameterPtr LoadDataParameter();
+  DataParameterPtr LoadTrainDataParameter();
+  DataParameterPtr LoadTestDataParameter();
   NetParameterPtr LoadNet();
 
  private:

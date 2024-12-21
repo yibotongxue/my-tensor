@@ -32,14 +32,21 @@ std::vector<LayerParameterPtr> JsonLoader::LoadLayers() {
   return result;
 }
 
-DataParameterPtr JsonLoader::LoadDataParameter() {
-  return std::make_shared<DataParameter>(LoadDataType(), LoadImageFilePath(),
-                                         LoadLabelFilePath(), LoadBatchSize());
+DataParameterPtr JsonLoader::LoadTrainDataParameter() {
+  return std::make_shared<DataParameter>(
+      LoadDataType(), LoadTrainImageFilePath(), LoadTrainLabelFilePath(),
+      LoadBatchSize());
+}
+
+DataParameterPtr JsonLoader::LoadTestDataParameter() {
+  return std::make_shared<DataParameter>(
+      LoadDataType(), LoadTestImageFilePath(), LoadTestLabelFilePath(),
+      LoadBatchSize());
 }
 
 NetParameterPtr JsonLoader::LoadNet() {
-  return std::make_shared<NetParameter>(LoadNetName(), LoadDataParameter(),
-                                        LoadLayers());
+  return std::make_shared<NetParameter>(LoadNetName(), LoadTrainDataParameter(),
+                                        LoadTestDataParameter(), LoadLayers());
 }
 
 LayerParameterPtr JsonLoader::LoadLayerParam(const nlohmann::json& js) {

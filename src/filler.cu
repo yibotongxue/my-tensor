@@ -5,13 +5,13 @@
 namespace my_tensor {
 
 template <typename T>
-void ZeroFiller<T>::Fill(TensorPtr<T> tensor) {
+void ZeroFiller<T>::FillGPU(TensorPtr<T> tensor) {
   T *data = tensor->GetGPUDataPtr();
   CUDA_CHECK(cudaMemset(data, 0, tensor->GetSize() * sizeof(T)));
 }
 
 template <typename T>
-void ConstantFiller<T>::Fill(TensorPtr<T> tensor) {
+void ConstantFiller<T>::FillGPU(TensorPtr<T> tensor) {
   auto &tensor_data = tensor->GetGPUData();
   thrust::fill(tensor_data.begin(), tensor_data.end(), val_);
 }
@@ -25,7 +25,7 @@ __global__ static void XavierFillerKernel(float *data, float limit, int n) {
 }
 
 template <>
-void XavierFiller<>::Fill(TensorPtr<> tensor) {
+void XavierFiller<>::FillGPU(TensorPtr<> tensor) {
   int n = tensor->GetSize();
   float limit = std::sqrt(6.0f / (n_in_ + n_out_));
   XavierFillerKernel<<<CudaGetBlocks(n), kCudaThreadNum>>>(
@@ -41,7 +41,7 @@ __global__ static void HeFillKernel(float *data, float limit, int n) {
 }
 
 template <>
-void HeFiller<>::Fill(TensorPtr<> tensor) {
+void HeFiller<>::FillGPU(TensorPtr<> tensor) {
   float *data = tensor->GetGPUDataPtr();
   int n = tensor->GetSize();
   float limit = std::sqrt(2.0f / n_);

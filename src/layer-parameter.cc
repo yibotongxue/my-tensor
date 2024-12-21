@@ -220,4 +220,12 @@ void LossWithSoftmaxParameter::ParseSettingParameter(const nlohmann::json& js) {
   channels_ = js["channels"].get<int>();
 }
 
+void AccuracyParameter::ParseSettingParameter(const nlohmann::json& js) {
+  if (!js.contains("features") || !js["features"].is_number_integer()) {
+    throw FileError(
+        "The softmax layer should have an integer number as features.");
+  }
+  features_ = js["features"].get<int>();
+}
+
 }  // namespace my_tensor

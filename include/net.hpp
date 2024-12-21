@@ -149,6 +149,8 @@ class Net {
   static void CheckNoCircle(
       const std::vector<LayerParameterPtr>& layer_parameters);
 
+  void InitTop();
+
   /**
    * @brief Connect the layers bottom and top. All the bottom of the layers will
    * be set to a top of other layer or the input. The implemention will make the
@@ -163,11 +165,13 @@ class Net {
    * pointer of the input and the label, since the input and label won't be the
    * top of other layers, this is safe.
    */
-  void InitBottom();
+  void SetUpBottomAndTop();
 };  // class Net
 
 template <typename T = float>
 using NetPtr = std::shared_ptr<Net<T>>;
+
+extern template class Net<float>;
 }  // namespace my_tensor
 
 #endif  // INCLUDE_NET_HPP_

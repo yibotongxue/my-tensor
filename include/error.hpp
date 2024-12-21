@@ -76,6 +76,11 @@ class LossWithSoftmaxError : public std::runtime_error {
   using runtime_error::runtime_error;
 };  // class LossWithSoftmaxError
 
+class AccuracyError : public std::runtime_error {
+ public:
+  using runtime_error::runtime_error;
+};  // class AccuracyError
+
 class FillerError : public std::runtime_error {
  public:
   using runtime_error::runtime_error;

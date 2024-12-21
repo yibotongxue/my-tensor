@@ -28,7 +28,9 @@ local layer_cpu_src = {
     "src/conv.cc",
     "src/pooling.cc",
     "src/softmax.cc",
-    "src/loss-with-softmax.cc"
+    "src/loss-with-softmax.cc",
+    "src/accuracy.cc",
+    "src/filler.cc"
 }
 
 local layer_src = {
@@ -44,6 +46,7 @@ local layer_src = {
     "src/pooling.cu",
     "src/softmax.cu",
     "src/loss-with-softmax.cu",
+    "src/accuracy.cu",
     "src/filler.cu"
 }
 
@@ -189,5 +192,6 @@ target("mnist")
     set_kind("binary")
     add_deps("layer_lib")
     add_deps("data_lib")
+    add_deps("net_lib")
     add_files("src/json-loader.cc")
     add_files("src/mnist.cu")

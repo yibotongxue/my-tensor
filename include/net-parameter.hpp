@@ -15,13 +15,16 @@ namespace my_tensor {
 class NetParameter final {
  public:
   std::string name_;
-  DataParameterPtr data_parameter_;
+  DataParameterPtr train_data_parameter_;
+  DataParameterPtr test_data_parameter_;
   std::vector<LayerParameterPtr> layer_params_;
 
-  NetParameter(const std::string& name, DataParameterPtr data_parameter,
+  NetParameter(const std::string& name, DataParameterPtr train_data_parameter,
+               DataParameterPtr test_data_parameter,
                const std::vector<LayerParameterPtr> layer_params)
       : name_(name),
-        data_parameter_(data_parameter),
+        train_data_parameter_(train_data_parameter),
+        test_data_parameter_(test_data_parameter),
         layer_params_(layer_params) {}
 };  // class NetParameter
 
