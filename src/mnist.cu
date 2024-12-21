@@ -24,5 +24,6 @@ int main() {
       std::make_shared<my_tensor::SgdSolver<float>>(loader.LoadSolver());
   solver->SetUp();
   solver->Solve();
+  std::cout << "Final test accuracy = " << solver->Test() << std::endl;
   return 0;
 }

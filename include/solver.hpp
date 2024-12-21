@@ -23,6 +23,8 @@ class Solver {
 
   void Solve();
 
+  float Test();
+
  protected:
   NetPtr<T> net_;
   SolverParameterPtr param_;

@@ -37,6 +37,20 @@ void Solver<T>::Solve() {
 }
 
 template <typename T>
+float Solver<T>::Test() {
+  net_->Reset();
+  net_->SetTest();
+  int total = 0;
+  float accuracy = 0.0f;
+  while (!net_->RefetchData()) {
+    net_->Forward();
+    accuracy += net_->GetOutput();
+    total++;
+  }
+  return accuracy / static_cast<float>(total);
+}
+
+template <typename T>
 void Solver<T>::Step() {
   if (net_->RefetchData()) {
     current_epoch_++;
