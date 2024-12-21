@@ -31,7 +31,7 @@ void XavierFiller<>::FillCPU(TensorPtr<> tensor) {
 
 template <>
 void HeFiller<>::FillCPU(TensorPtr<> tensor) {
-  float *data = tensor->GetGPUDataPtr();
+  float *data = tensor->GetCPUDataPtr();
   int n = tensor->GetSize();
   float limit = std::sqrt(2.0f / n_);
   auto gen = MyTensorContext::random_eigine();
