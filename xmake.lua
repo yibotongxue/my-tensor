@@ -178,6 +178,13 @@ target("loss_with_softmax_test")
     add_includedirs("test/include")
     add_files("test/loss-with-softmax-test.cu")
 
+target("accuracy_test")
+    set_kind("binary")
+    add_packages("gtest")
+    add_deps("layer_lib")
+    add_includedirs("test/include")
+    add_files("test/accuracy-test.cu")
+
 target("mnist")
     set_kind("binary")
     add_deps("layer_lib")

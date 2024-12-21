@@ -1,0 +1,14 @@
+{
+  "batch_size": 1024,
+  "learning_rate": 0.0006,
+  "l2": 1e-4,
+  "layers": [
+    {
+      "name": "accuracy",
+      "type": "Accuracy",
+      "features": 10,
+      "bottom": ["null"],
+      "top": ["null"]
+    }
+  ]
+}
