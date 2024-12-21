@@ -40,6 +40,13 @@ void Net<T>::SetUp() {
   for (auto&& layer_param : TopoSort(net_parameter_->layer_params_)) {
     layers_.push_back(CreateLayer(layer_param));
   }
+  bottom_vec_.resize(layers_.size());
+  top_vec_.resize(layers_.size());
+  curr_image_ = std::make_shared<Tensor<T>>(train_dataloader_->GetImageShape());
+  curr_label_ = std::make_shared<Tensor<T>>(train_dataloader_->GetLabelShape());
+  InitTop();
+  ConnectBottomAndTop();
+  SetUpBottomAndTop();
   learnable_params_.clear();
   for (auto&& layer : layers_) {
     auto&& learnable_param_of_layer = layer->GetLearnableParameters();
@@ -49,13 +56,6 @@ void Net<T>::SetUp() {
                                learnable_param_of_layer.end());
     }
   }
-  bottom_vec_.resize(layers_.size());
-  top_vec_.resize(layers_.size());
-  curr_image_ = std::make_shared<Tensor<T>>(train_dataloader_->GetImageShape());
-  curr_label_ = std::make_shared<Tensor<T>>(train_dataloader_->GetLabelShape());
-  InitTop();
-  ConnectBottomAndTop();
-  SetUpBottomAndTop();
 }
 
 template <typename T>

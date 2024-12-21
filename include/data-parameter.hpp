@@ -31,10 +31,10 @@ using DataParameterPtr = std::shared_ptr<DataParameter>;
 
 inline std::shared_ptr<DataLoader> CreateDataLoader(
     DataParameterPtr data_parameter) {
-  return std::make_shared<DataLoader>(
-      GetDatasetCreater(data_parameter->dataset_type_)(
-          data_parameter->image_file_path_, data_parameter->label_file_path_),
-      data_parameter->batch_size_);
+  auto dataset = GetDatasetCreater(data_parameter->dataset_type_)(
+      data_parameter->image_file_path_, data_parameter->label_file_path_);
+  dataset->LoadData();
+  return std::make_shared<DataLoader>(dataset, data_parameter->batch_size_);
 }
 
 }  // namespace my_tensor

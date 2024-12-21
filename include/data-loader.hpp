@@ -4,6 +4,7 @@
 #define INCLUDE_DATA_LOADER_HPP_
 
 #include <array>
+#include <iostream>
 #include <memory>
 #include <vector>
 
