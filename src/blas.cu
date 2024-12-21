@@ -34,8 +34,9 @@ namespace my_tensor {
       [C, m, n] __device__(int i) -> float * { return C + i * m * n; });
 
 template <>
-void matmul(const float *A, const float *B, float *C, const int m, const int k,
-            const int n, const int batch_count, const int broadcast) {
+void matmul_gpu(const float *A, const float *B, float *C, const int m,
+                const int k, const int n, const int batch_count,
+                const int broadcast) {
   float alpha = 1.0f;
   float beta = 0.0f;
   DEFINE_ABC_VEC(broadcast)
@@ -60,9 +61,9 @@ void matmul(const float *A, const float *B, float *C, const int m, const int k,
 }
 
 template <>
-void transpose_matmul(const float *A, const float *B, float *C, const int m,
-                      const int k, const int n, const int batch_count,
-                      const int broadcast) {
+void transpose_matmul_gpu(const float *A, const float *B, float *C, const int m,
+                          const int k, const int n, const int batch_count,
+                          const int broadcast) {
   DEFINE_ABC_VEC(broadcast)
   float alpha = 1.0f;
   float beta = 0.0f;
@@ -87,9 +88,9 @@ void transpose_matmul(const float *A, const float *B, float *C, const int m,
 }
 
 template <>
-void matmul_transpose(const float *A, const float *B, float *C, const int m,
-                      const int k, const int n, const int batch_count,
-                      const int broadcast) {
+void matmul_transpose_gpu(const float *A, const float *B, float *C, const int m,
+                          const int k, const int n, const int batch_count,
+                          const int broadcast) {
   DEFINE_ABC_VEC(broadcast)
   float alpha = 1.0f;
   float beta = 0.0f;
@@ -114,9 +115,10 @@ void matmul_transpose(const float *A, const float *B, float *C, const int m,
 }
 
 template <>
-void transpose_matmul_transpose(const float *A, const float *B, float *C,
-                                const int m, const int k, const int n,
-                                const int batch_count, const int broadcast) {
+void transpose_matmul_transpose_gpu(const float *A, const float *B, float *C,
+                                    const int m, const int k, const int n,
+                                    const int batch_count,
+                                    const int broadcast) {
   DEFINE_ABC_VEC(broadcast)
   float alpha = 1.0f;
   float beta = 0.0f;
@@ -152,8 +154,8 @@ __global__ void RepeatVec(const float *vec, float *result, const int m,
 }  // namespace
 
 template <>
-void add_row_vector(float *mat, const float *vec, const int m, const int n,
-                    const int batch_count) {
+void add_row_vector_gpu(float *mat, const float *vec, const int m, const int n,
+                        const int batch_count) {
   float alpha = 1.0f;
   float *ones = nullptr;
   cudaMalloc(&ones, n * sizeof(float));
@@ -169,8 +171,8 @@ void add_row_vector(float *mat, const float *vec, const int m, const int n,
 }
 
 template <>
-void add_col_vector(float *mat, const float *vec, const int m, const int n,
-                    const int batch_count) {
+void add_col_vector_gpu(float *mat, const float *vec, const int m, const int n,
+                        const int batch_count) {
   float alpha = 1.0f;
   float *ones = nullptr;
   cudaMalloc(&ones, m * batch_count * sizeof(float));
@@ -182,15 +184,15 @@ void add_col_vector(float *mat, const float *vec, const int m, const int n,
 }
 
 template <>
-float tensor_sum(const float *tensor, const int cnt) {
+float tensor_sum_gpu(const float *tensor, const int cnt) {
   return thrust::reduce(thrust::device_pointer_cast(tensor),
                         thrust::device_pointer_cast(tensor + cnt), 0.0f,
                         thrust::plus<float>());
 }
 
 template <>
-void row_sum(const float *mat, float *result, const int m, const int n,
-             const int batch_count) {
+void row_sum_gpu(const float *mat, float *result, const int m, const int n,
+                 const int batch_count) {
   float alpha = 1.0f;
   float beta = 0.0f;
   float *ones = nullptr;
@@ -203,8 +205,8 @@ void row_sum(const float *mat, float *result, const int m, const int n,
 }
 
 template <>
-void col_sum(const float *mat, float *result, const int m, const int n,
-             const int batch_count) {
+void col_sum_gpu(const float *mat, float *result, const int m, const int n,
+                 const int batch_count) {
   float alpha = 1.0f;
   float beta = 0.0f;
   float *ones = nullptr;

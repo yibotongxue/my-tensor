@@ -9,7 +9,7 @@ add_rules("mode.debug", "mode.release", "mode.profile")
 add_cuflags("-G", "--extended-lambda")
 add_cugencodes("native")
 
-add_requires("gtest", "nlohmann_json")
+add_requires("gtest", "nlohmann_json", "openblas")
 
 local tensor_src = {
     "src/synced-vector.cu",
@@ -71,38 +71,27 @@ target("data_lib")
 
 target("blas_lib")
     set_kind("static")
+    add_packages("openblas")
     add_deps("tensor_lib")
     add_includedirs("include", {public = true})
     add_files("src/blas.cu")
-
-target("im2col_cpu")
-    set_kind("static")
-    add_defines("CPU_ONLY")
-    add_includedirs("include", {public = true})
-    add_files("src/im2col.cc")
+    add_files("src/blas.cc", {defines = "CPU_ONLY"})
 
 target("im2col_lib")
     set_kind("static")
-    add_deps("im2col_cpu")
     add_includedirs("include", {public = true})
     add_files("src/im2col.cu")
-
-target("layer_cpu")
-    set_kind("static")
-    add_packages("nlohmann_json", {public = true})
-    add_deps("im2col_cpu")
-    add_includedirs("include", {public = true})
-    add_files(layer_cpu_src)
-    add_defines("CPU_ONLY")
+    add_files("src/im2col.cc", {defines = "CPU_ONLY"})
 
 target("layer_lib")
     set_kind("static")
+    add_packages("nlohmann_json", {public = true})
     add_deps("tensor_lib")
     add_deps("blas_lib")
     add_deps("im2col_lib")
-    add_deps("layer_cpu")
     add_includedirs("include", {public = true})
     add_files(layer_src)
+    add_files(layer_cpu_src, {defines = "CPU_ONLY"})
 
 target("net_lib")
     set_kind("static")
