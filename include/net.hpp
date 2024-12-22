@@ -3,8 +3,6 @@
 #ifndef INCLUDE_NET_HPP_
 #define INCLUDE_NET_HPP_
 
-#define CPU_ONLY
-
 #include <memory>
 #include <string>
 #include <vector>
