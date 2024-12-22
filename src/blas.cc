@@ -122,4 +122,9 @@ void add_two_vec_cpu(float *lhs, const float *rhs, const float k, const int n) {
   cblas_saxpy(n, k, rhs, 1, lhs, 1);
 }
 
+template <>
+void scale_cpu(float *x, const int n, const float k) {
+  cblas_sscal(n, k, x, 1);
+}
+
 }  // namespace my_tensor

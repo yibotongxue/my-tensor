@@ -240,6 +240,11 @@ void add_two_vec_gpu(float *lhs, const float *rhs, const float k, const int n) {
       cublasSaxpy(MyTensorContext::cublas_handle(), n, &k, rhs, 1, lhs, 1));
 }
 
+template <>
+void scale_gpu(float *x, const int n, const float k) {
+  CUBLAS_CHECK(cublasSscal(MyTensorContext::cublas_handle(), n, &k, x, 1));
+}
+
 #undef DEFINE_ABC_VEC
 
 }  // namespace my_tensor

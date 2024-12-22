@@ -228,6 +228,31 @@ inline void add_two_vec(float *lhs, const float *rhs, const float k,
     add_two_vec_gpu(lhs, rhs, k, n);
   }
 }
+
+template <typename T>
+void scale_cpu(T *x, const int n, const T k) {
+  BLAS_UNIMPLEMENTION
+}
+
+template <typename T>
+void scale_gpu(T *x, const int n, const T k) {
+  BLAS_UNIMPLEMENTION
+}
+
+template <>
+void scale_cpu(float *x, const int n, const float k);
+
+template <>
+void scale_gpu(float *x, const int n, const float k);
+
+template <typename T>
+inline void scale(T *x, const int n, const T k) {
+  if (MyTensorContext::on_cpu()) {
+    scale_cpu(x, n, k);
+  } else {
+    scale_gpu(x, n, k);
+  }
+}
 }  // namespace my_tensor
 
 #endif  // INCLUDE_BLAS_HPP_

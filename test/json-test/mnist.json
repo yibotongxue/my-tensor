@@ -3,7 +3,8 @@
   "batch_size": 1024,
   "base_lr": 0.3,
   "l2": 1.5e-4,
-  "solver_type": "sgd",
+  "solver_type": "sgd_with_momentum",
+  "momentum": 0.9,
   "max_iter": 100,
   "test_step": 10,
   "scheduler": {

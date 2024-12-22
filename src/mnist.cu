@@ -13,6 +13,7 @@
 #include "net-parameter.hpp"
 #include "net.hpp"
 #include "sgd-solver.hpp"
+#include "solver-factory.hpp"
 #include "solver.hpp"
 #include "tensor.hpp"
 
@@ -21,7 +22,7 @@ int main() {
       my_tensor::MyTensorContext::DeviceType::GPU);
   my_tensor::JsonLoader loader("../test/json-test/mnist.json");
   my_tensor::SolverPtr<float> solver =
-      std::make_shared<my_tensor::SgdSolver<float>>(loader.LoadSolver());
+      my_tensor::CreateSolver<float>(loader.LoadSolver());
   solver->SetUp();
   solver->Solve();
   std::cout << "Final test accuracy = " << solver->Test() << std::endl;

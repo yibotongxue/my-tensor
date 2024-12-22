@@ -6,12 +6,13 @@
 #include <memory>
 #include <string>
 
+#include "json-utils.hpp"
 #include "net-parameter.hpp"
 #include "scheduler-parameter.hpp"
 
 namespace my_tensor {
 
-enum class SolverType { kSgd };  // enum class SolverType
+enum class SolverType { kSgd, kSgdWithMomentum };  // enum class SolverType
 
 class SolverParameter {
  public:
@@ -54,6 +55,21 @@ class SgdSolverParameter final : public SolverParameter {
   void ParseSettingParameters(const nlohmann::json& js) override {}
 };  // class SgdSolverParameter
 
+class SgdWithMomentumSolverParameter final : public SolverParameter {
+ public:
+  SgdWithMomentumSolverParameter(SchedulerParameterPtr scheduler_param,
+                                 NetParameterPtr net_param)
+      : SolverParameter(SolverType::kSgdWithMomentum, scheduler_param,
+                        net_param) {}
+
+  float momentum_;
+
+ private:
+  void ParseSettingParameters(const nlohmann::json& js) override {
+    momentum_ = LoadWithKey<float>(js, "momentum");
+  }
+};  // class SgdWithMomentumSolverParameter
+
 using SolverParameterPtr = std::shared_ptr<SolverParameter>;
 
 inline std::function<SolverParameterPtr(SchedulerParameterPtr, NetParameterPtr)>
@@ -62,6 +78,12 @@ GetSolverParameterCreater(const std::string& type) {
     return [](SchedulerParameterPtr scheduler_param,
               NetParameterPtr net_param) -> SolverParameterPtr {
       return std::make_shared<SgdSolverParameter>(scheduler_param, net_param);
+    };
+  } else if (type == "sgd_with_momentum") {
+    return [](SchedulerParameterPtr scheduler_param,
+              NetParameterPtr net_param) -> SolverParameterPtr {
+      return std::make_shared<SgdWithMomentumSolverParameter>(scheduler_param,
+                                                              net_param);
     };
   } else {
     // TODO(yibotongxue) Add specific exception type and description.

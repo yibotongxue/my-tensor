@@ -52,7 +52,8 @@ local layer_src = {
 
 local solver_src = {
     "src/solver.cc",
-    "src/sgd-solver.cc"
+    "src/sgd-solver.cc",
+    "src/sgd-with-momentum-solver.cc"
 }
 
 target("common_lib")
