@@ -17,10 +17,13 @@
 #include "solver.hpp"
 #include "tensor.hpp"
 
-int main() {
+int main(int argc, char** argv) {
+  if (argc != 2) {
+    throw std::runtime_error("");
+  }
   my_tensor::MyTensorContext::set_device_type(
       my_tensor::MyTensorContext::DeviceType::GPU);
-  my_tensor::JsonLoader loader("../test/json-test/mnist.json");
+  my_tensor::JsonLoader loader(argv[1]);
   my_tensor::SolverPtr<float> solver =
       my_tensor::CreateSolver<float>(loader.LoadSolver());
   solver->SetUp();

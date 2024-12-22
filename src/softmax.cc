@@ -46,9 +46,6 @@ void Softmax<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
         "The channels of bottom of softmax not match the layer.");
   }
   batch_size_ = bottom[0]->GetShape()[0];
-  const std::vector<int> predict_shape{batch_size_};
-  predict_.reset();
-  predict_ = std::make_shared<Tensor<T>>(predict_shape);
 }
 
 template <typename T>
@@ -57,13 +54,11 @@ void Softmax<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
   CheckShape(bottom[0], top[0]);
   const auto& bottom_data = bottom[0]->GetCPUData();
   auto& top_data = top[0]->GetCPUData();
-  auto& predict_data = predict_->GetCPUData();
   auto bottom_view = std::views::all(bottom_data);
   for (int i = 0; i < batch_size_; i++) {  // for each row
     auto sub_view = bottom_view | std::views::drop(i * channels_) |
                     std::views::take(channels_);
     auto max_postion = std::ranges::max_element(sub_view);
-    predict_data[i] = std::distance(sub_view.begin(), max_postion);
     T max_value = *max_postion;
     auto exp_view = sub_view | std::views::transform([max_value](T val) -> T {
                       return static_cast<T>(std::exp(val - max_value));

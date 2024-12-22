@@ -36,8 +36,6 @@ class LossWithSoftmax final : public Layer<T> {
   void BackwardGPU(const std::vector<TensorPtr<T>>& top,
                    const std::vector<TensorPtr<T>>& bottom) override;
 
-  float GetAccuracy(const TensorPtr<T> label) const;
-
  private:
   LayerPtr<T> softmax_;
   int channels_;

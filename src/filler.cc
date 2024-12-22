@@ -23,7 +23,7 @@ template <>
 void XavierFiller<>::FillCPU(TensorPtr<> tensor) {
   int n = tensor->GetSize();
   float limit = std::sqrt(6.0f / (n_in_ + n_out_));
-  auto gen = MyTensorContext::random_eigine();
+  auto& gen = MyTensorContext::random_eigine();
   std::uniform_real_distribution<float> dis(-limit, limit);
   auto func = [&dis, &gen]() -> float { return dis(gen); };
   std::ranges::generate(tensor->GetCPUData(), func);
@@ -31,11 +31,10 @@ void XavierFiller<>::FillCPU(TensorPtr<> tensor) {
 
 template <>
 void HeFiller<>::FillCPU(TensorPtr<> tensor) {
-  float *data = tensor->GetCPUDataPtr();
   int n = tensor->GetSize();
   float limit = std::sqrt(2.0f / n_);
-  auto gen = MyTensorContext::random_eigine();
-  std::normal_distribution<float> dis(-limit, limit);
+  auto& gen = MyTensorContext::random_eigine();
+  std::normal_distribution<float> dis(0, limit);
   auto func = [&dis, &gen]() -> float { return dis(gen); };
   std::ranges::generate(tensor->GetCPUData(), func);
 }
