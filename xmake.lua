@@ -49,7 +49,8 @@ local layer_src = {
     "src/linear.cc",
     "src/conv.cu",
     "src/conv.cc",
-    -- "src/pooling.cu",
+    "src/pooling.cu",
+    "src/pooling.cc",
     -- "src/softmax.cu",
     -- "src/loss-with-softmax.cu",
     -- "src/accuracy.cu",
@@ -109,7 +110,6 @@ target("layer_lib")
     add_deps("im2col_lib")
     add_includedirs("include", {public = true})
     add_files(layer_src)
-    -- add_files(layer_cpu_src, {defines = "CPU_ONLY"})
     set_policy("build.cuda.devlink", true)
 
 -- target("net_lib")
@@ -176,12 +176,12 @@ target("conv_test")
     add_includedirs("test/include")
     add_files("test/conv-test.cc")
 
--- target("pooling_test")
---     set_kind("binary")
---     add_packages("gtest")
---     add_deps("layer_lib")
---     add_includedirs("test/include")
---     add_files("test/pooling-test.cu")
+target("pooling_test")
+    set_kind("binary")
+    add_packages("gtest")
+    add_deps("layer_lib")
+    add_includedirs("test/include")
+    add_files("test/pooling-test.cc")
 
 -- target("softmax_test")
 --     set_kind("binary")

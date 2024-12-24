@@ -64,9 +64,9 @@ template <typename T>
 void Pooling<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                             const std::vector<TensorPtr<T>>& top) {
   CheckShape(bottom[0], top[0]);
-  const auto& bottom_data = bottom[0]->GetCPUData();
-  auto& top_data = top[0]->GetCPUData();
-  auto& mask_data = mask_->GetCPUData();
+  const T* bottom_data = bottom[0]->GetCPUDataPtr();
+  T* top_data = top[0]->GetCPUDataPtr();
+  int* mask_data = mask_->GetCPUDataPtr();
   int input_im_size = input_height_ * input_width_;
   int output_im_size = output_height_ * output_width_;
   for (int t = 0; t < batch_size_ * input_channels_; t++) {
@@ -98,14 +98,14 @@ template <typename T>
 void Pooling<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
                              const std::vector<TensorPtr<T>>& bottom) {
   CheckShape(bottom[0], top[0]);
-  const auto& top_diff = top[0]->GetCPUDiff();
-  const auto& mask_data = mask_->GetCPUData();
-  auto& bottom_diff = bottom[0]->GetCPUDiff();
+  const T* top_diff = top[0]->GetCPUDiffPtr();
+  const int* mask_data = mask_->GetCPUDataPtr();
+  T* bottom_diff = bottom[0]->GetCPUDiffPtr();
   // thrust::fill(bottom_diff.begin(), bottom_diff.end(), 0);
   // thrust::scatter(top_diff.begin(), top_diff.end(), mask_data.begin(),
   //                 bottom_diff.begin());
-  std::ranges::fill(bottom_diff, 0);
-  for (int i = 0; i < mask_data.size(); i++) {
+  std::fill(bottom_diff, bottom_diff + bottom[0]->GetSize(), 0);
+  for (int i = 0; i < mask_->GetSize(); i++) {
     bottom_diff[mask_data[i]] = top_diff[i];
   }
 }
@@ -114,8 +114,8 @@ template <typename T>
 void Pooling<T>::CheckShape(const TensorPtr<T> bottom,
                             const TensorPtr<T> top) const {
 #ifdef DEBUG
-  const auto& bottom_shape = bottom->GetShape();
-  const auto& top_shape = top->GetShape();
+  const T* bottom_shape = bottom->GetShape();
+  const T* top_shape = top->GetShape();
   if (bottom_shape.size() != 4) {
     throw PoolingError(
         "The input of pooling layer should be 4 dimension tensor.");

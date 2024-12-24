@@ -40,8 +40,8 @@
       top.reset();                                                     \
       bottom = std::make_shared<my_tensor::Tensor<>>(bottom_shape);    \
       top = std::make_shared<my_tensor::Tensor<>>(top_shape);          \
-      bottom->Set##device##Data(bottom_data);                          \
-      top->Set##device##Diff(top_diff);                                \
+      bottom->Set##device##Data(bottom_data.data(), bottom_data.size());                          \
+      top->Set##device##Diff(top_diff.data(), top_diff.size());                                \
       bottom_vec.clear();                                              \
       top_vec.clear();                                                 \
       bottom_vec.push_back(bottom);                                    \
@@ -67,8 +67,6 @@ POOLING_TEST_CLASS(GPU)
 
 #define POOLING_FORWARD_TOP_TEST(device)                                       \
   TEST_F(Pooling##device##Test, ForwardTop) {                                  \
-    std::vector<float> actual(top->Get##device##Data().begin(),                \
-                              top->Get##device##Data().end());                 \
     for (int i = 0; i < 14400; i++) {                                          \
       int t = i / 480;                                                         \
       int row = (i % 480) / 32;                                                \
@@ -83,7 +81,7 @@ POOLING_TEST_CLASS(GPU)
               bottom_data[t * 1984 + (input_row + x) * 64 + (input_col + y)]); \
         }                                                                      \
       }                                                                        \
-      ASSERT_EQ(actual[i], expect);                                            \
+      ASSERT_EQ(top->Get##device##Data(i), expect);                                            \
     }                                                                          \
   }
 
@@ -94,9 +92,6 @@ POOLING_FORWARD_TOP_TEST(GPU)
   TEST_F(Pooling##device##Test, ForwardMask) {                              \
     auto pooling_ptr =                                                      \
         std::dynamic_pointer_cast<my_tensor::Pooling<>>(pooling);           \
-    std::vector<int> actual(                                                \
-        pooling_ptr->GetMask()->Get##device##Data().begin(),                \
-        pooling_ptr->GetMask()->Get##device##Data().end());                 \
     for (int i = 0; i < 14400; i++) {                                       \
       int t = i / 480;                                                      \
       int row = (i % 480) / 32;                                             \
@@ -114,7 +109,7 @@ POOLING_FORWARD_TOP_TEST(GPU)
           }                                                                 \
         }                                                                   \
       }                                                                     \
-      ASSERT_EQ(actual[i], expect);                                         \
+      ASSERT_EQ(pooling_ptr->GetMask()->Get##device##Data(i), expect);                                         \
     }                                                                       \
   }
 
@@ -124,8 +119,6 @@ POOLING_FORWARD_MASK_TEST(GPU)
 #define POOLING_BACKWARD_BOTTOM_TEST(device)                                \
   TEST_F(Pooling##device##Test, BackwardBottom) {                           \
     pooling->Backward##device(top_vec, bottom_vec);                         \
-    std::vector<float> actual(bottom->Get##device##Diff().begin(),          \
-                              bottom->Get##device##Diff().end());           \
     std::vector<float> expect(59520, 0.0f);                                 \
     for (int t = 0; t < 30; t++) {                                          \
       for (int i = 0; i < 15; i++) {                                        \
@@ -148,7 +141,7 @@ POOLING_FORWARD_MASK_TEST(GPU)
       }                                                                     \
     }                                                                       \
     for (int i = 0; i < 59520; i++) {                                       \
-      ASSERT_EQ(actual[i], expect[i]);                                      \
+      ASSERT_EQ(bottom->Get##device##Diff(i), expect[i]);                                      \
     }                                                                       \
   }
 

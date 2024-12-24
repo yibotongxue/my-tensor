@@ -13,7 +13,7 @@
 #include "layer.hpp"
 #include "linear.hpp"
 // #include "loss-with-softmax.hpp"
-// #include "pooling.hpp"
+#include "pooling.hpp"
 #include "relu.hpp"
 #include "sigmoid.hpp"
 // #include "softmax.hpp"
@@ -32,8 +32,8 @@ inline LayerPtr<T> CreateLayer(const LayerParameterPtr param) {
       return std::make_shared<Linear<T>>(param);
     case ParamType::kConvolution:
       return std::make_shared<Convolution<T>>(param);
-    // case ParamType::kPooling:
-    //   return std::make_shared<Pooling<T>>(param);
+    case ParamType::kPooling:
+      return std::make_shared<Pooling<T>>(param);
     // case ParamType::kSoftmax:
     //   return std::make_shared<Softmax<T>>(param);
     // case ParamType::kLossWithSoftmax:
