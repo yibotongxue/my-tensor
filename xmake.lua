@@ -19,19 +19,7 @@ local tensor_src = {
 
 local data_src = {
     "src/dataset.cc",
-    "src/data-loader.cu"
-}
-
-local layer_cpu_src = {
-    "src/relu.cc",
-    "src/sigmoid.cc",
-    "src/linear.cc",
-    "src/conv.cc",
-    "src/pooling.cc",
-    "src/softmax.cc",
-    "src/loss-with-softmax.cc",
-    "src/accuracy.cc",
-    "src/filler.cc"
+    "src/data-loader.cc"
 }
 
 local layer_src = {
@@ -81,12 +69,12 @@ target("tensor_lib")
     add_files(tensor_src)
     set_policy("build.cuda.devlink", true)
 
--- target("data_lib")
---     set_kind("static")
---     add_deps("tensor_lib")
---     add_includedirs("include", {public = true})
---     add_files(data_src)
---     set_policy("build.cuda.devlink", true)
+target("data_lib")
+    set_kind("static")
+    add_deps("tensor_lib")
+    add_includedirs("include", {public = true})
+    add_files(data_src)
+    set_policy("build.cuda.devlink", true)
 
 target("blas_lib")
     set_kind("static")
@@ -115,20 +103,20 @@ target("layer_lib")
     add_files(layer_src)
     set_policy("build.cuda.devlink", true)
 
--- target("net_lib")
---     set_kind("static")
---     add_deps("layer_lib")
---     add_deps("data_lib")
---     add_includedirs("include", {public = true})
---     add_files("src/net.cc", {defines = "CPU_ONLY"})
---     set_policy("build.cuda.devlink", true)
+target("net_lib")
+    set_kind("static")
+    add_deps("layer_lib")
+    add_deps("data_lib")
+    add_includedirs("include", {public = true})
+    add_files("src/net.cc")
+    set_policy("build.cuda.devlink", true)
 
--- target("solver_lib")
---     set_kind("static")
---     add_deps("net_lib")
---     add_includedirs("include", {public = true})
---     add_files(solver_src, {defines = "CPU_ONLY"})
---     set_policy("build.cuda.devlink", true)
+target("solver_lib")
+    set_kind("static")
+    add_deps("net_lib")
+    add_includedirs("include", {public = true})
+    add_files(solver_src)
+    set_policy("build.cuda.devlink", true)
 
 target("tensor_test")
     set_kind("binary")
@@ -207,10 +195,10 @@ target("accuracy_test")
     add_includedirs("test/include")
     add_files("test/accuracy-test.cc")
 
--- target("mnist")
---     set_kind("binary")
---     add_deps("layer_lib")
---     add_deps("data_lib")
---     add_deps("solver_lib")
---     add_files("src/json-loader.cc")
---     add_files("src/mnist.cc", {defines = "CPU_ONLY"})
+target("mnist")
+    set_kind("binary")
+    add_deps("layer_lib")
+    add_deps("data_lib")
+    add_deps("solver_lib")
+    add_files("src/json-loader.cc")
+    add_files("src/mnist.cc")

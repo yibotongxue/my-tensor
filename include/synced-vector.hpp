@@ -15,7 +15,7 @@ class SyncedVector {
  public:
   SyncedVector();
   explicit SyncedVector(size_t size);
-  ~SyncedVector() = default;
+  ~SyncedVector();
 
   SyncedVector(const SyncedVector<T>& vec);
   SyncedVector<T>& operator=(const SyncedVector<T>& vec);

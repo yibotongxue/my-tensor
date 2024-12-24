@@ -8,14 +8,6 @@
 #include "layer-factory.hpp"
 
 namespace my_tensor {
-// template <typename T>
-// Net<T>::Net(const std::vector<LayerParameterPtr>& layers)
-//     : layer_parameters_(layers),
-//       dataloader_(nullptr),
-//       learnable_params_(),
-//       layers_(layers.size(), nullptr),
-//       bottom_vec_(layers.size(), nullptr),
-//       top_vec_(layers.size(), nullptr) {}
 
 template <typename T>
 bool Net<T>::RefetchData() {
@@ -64,10 +56,10 @@ void Net<T>::SetUp() {
 template <typename T>
 T Net<T>::GetOutput() const {
   if (phase_ == Phase::kTrain) {
-    return top_vec_[top_vec_.size() - 2][0]->GetCPUData()[0];
+    return top_vec_[top_vec_.size() - 2][0]->GetCPUData(0);
   }
   if (phase_ == Phase::kTest) {
-    return top_vec_[top_vec_.size() - 1][0]->GetCPUData()[0];
+    return top_vec_[top_vec_.size() - 1][0]->GetCPUData(0);
   }
   throw NetError("Unsupport phase.");
 }
@@ -76,7 +68,8 @@ template <typename T>
 std::vector<std::vector<T>> Net<T>::GetModelData() const {
   std::vector<std::vector<T>> result;
   for (auto&& learnable_param : GetLearnableParams()) {
-    result.emplace_back(learnable_param->GetCPUData());
+    auto&& temp_span = learnable_param->GetCPUDataSpan();
+    result.emplace_back(std::vector<T>(temp_span.begin(), temp_span.end()));
   }
   return result;
 }
@@ -85,7 +78,7 @@ template <typename T>
 void Net<T>::SetModelData(std::vector<std::vector<T>>&& data) {
   for (int i = 0; i < data.size(); i++) {
     // TODO(yibotongxue) should turn to SetData, auto detect the device.
-    learnable_params_[i]->SetCPUData(std::move(data[i]));
+    learnable_params_[i]->SetCPUData(data[i].data(), data[i].size());
   }
 }
 
@@ -95,24 +88,6 @@ void Net<T>::CopyFrom(const std::vector<TensorPtr<T>>& learnable_params) {
     *(learnable_params_[i]) = *(learnable_params[i]);
   }
 }
-
-// template <typename T>
-// void Net<T>::Init(DatasetPtr dataset, int batch_size) {
-//   CheckNetValid();
-//   dataloader_.reset(new DataLoader(dataset, batch_size));
-//   for (auto&& layer_param : TopoSort(layer_parameters_)) {
-//     layers_.push_back(CreateLayer(layer_param));
-//   }
-//   for (auto&& layer : layers_) {
-//     if (layer->GetLearnableParams().size() > 0) {
-//       learnable_params_.insert(learnable_params_.end(),
-//                                layer->GetLearnableParams().begin(),
-//                                layer->GetLearnableParams().end());
-//     }
-//   }
-//   ConnectBottomAndTop();
-//   InitBottom();
-// }
 
 template <typename T>
 std::shared_ptr<DataLoader> Net<T>::GetDataLoader() const {

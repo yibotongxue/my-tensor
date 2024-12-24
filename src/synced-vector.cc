@@ -26,6 +26,12 @@ SyncedVector<T>::SyncedVector(size_t size)
       gpu_data_(nullptr) {}
 
 template <typename T>
+SyncedVector<T>::~SyncedVector() {
+  MyMemFreeCPU(cpu_data_);
+  MyMemFreeGPU(gpu_data_);
+}
+
+template <typename T>
 SyncedVector<T>::SyncedVector(const SyncedVector<T>& vec)
     : state_(vec.state_),
       size_(vec.size_),
