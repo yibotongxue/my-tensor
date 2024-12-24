@@ -1,7 +1,6 @@
 // Copyright 2024 yibotongxue
 
 #include <gtest/gtest.h>
-#include <thrust/tabulate.h>
 
 #include <algorithm>
 #include <memory>
@@ -37,10 +36,8 @@
     std::uniform_real_distribution<float> dis(-10.0f, 10.0f);             \
     auto random_func = [&gen, &dis]() -> float { return dis(gen); };      \
     std::ranges::generate(bottom_data, random_func);                      \
-    bottom->Set##device##Data(bottom_data);                               \
+    bottom->Set##device##Data(bottom_data.data(), bottom_data.size());                               \
     softmax->Forward##device({bottom}, {top});                            \
-    std::vector<float> actual(top->Get##device##Data().begin(),           \
-                              top->Get##device##Data().end());            \
     std::vector<float> max_values(1024, -11);                             \
     for (int i = 0; i < 1024; i++) {                                      \
       for (int j = 0; j < 10; j++) {                                      \
@@ -63,7 +60,7 @@
     for (int i = 0; i < 1024; i++) {                                      \
       for (int j = 0; j < 10; j++) {                                      \
         float expect = bottom_data[i * 10 + j] / max_values[i];           \
-        ASSERT_NEAR(actual[i * 10 + j], expect, 0.01);                    \
+        ASSERT_NEAR(top->Get##device##Data(i * 10 + j), expect, 0.01);                    \
       }                                                                   \
     }                                                                     \
   }

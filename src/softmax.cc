@@ -52,8 +52,8 @@ template <typename T>
 void Softmax<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                             const std::vector<TensorPtr<T>>& top) {
   CheckShape(bottom[0], top[0]);
-  const auto& bottom_data = bottom[0]->GetCPUData();
-  auto& top_data = top[0]->GetCPUData();
+  auto&& bottom_data = bottom[0]->GetCPUDataSpan();
+  auto&& top_data = top[0]->GetCPUDataSpan();
   auto bottom_view = std::views::all(bottom_data);
   for (int i = 0; i < batch_size_; i++) {  // for each row
     auto sub_view = bottom_view | std::views::drop(i * channels_) |

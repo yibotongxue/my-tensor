@@ -1,7 +1,7 @@
 // Copyright 2024 yibotongxue
 
+#include <thrust/device_ptr.h>
 #include <thrust/device_vector.h>
-#include <thrust/host_vector.h>
 #include <thrust/tabulate.h>
 #include <thrust/transform.h>
 
@@ -21,8 +21,8 @@ namespace my_tensor {
 template <typename T>
 void Softmax<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                             const std::vector<TensorPtr<T>>& top) {
-  const auto& bottom_data = bottom[0]->GetGPUData();
-  auto& top_data = top[0]->GetGPUData();
+  auto bottom_data = thrust::device_ptr<T>(bottom[0]->GetGPUDataPtr());
+  auto top_data = thrust::device_ptr<T>(top[0]->GetGPUDataPtr());
   thrust::device_vector<int> keys(batch_size_ * channels_);
   int channels = channels_;
   // generate key
@@ -34,24 +34,24 @@ void Softmax<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
   thrust::device_vector<T> max_values(batch_size_);
   T* max_ptr = RAW_PTR(max_values);
   // compute row max element
-  thrust::reduce_by_key(keys.begin(), keys.end(), bottom_data.begin(),
+  thrust::reduce_by_key(keys.begin(), keys.end(), bottom_data,
                         output_keys.begin(), max_values.begin(),
                         thrust::equal_to<int>(), thrust::maximum<T>());
   // substract the max element
   thrust::transform(
       thrust::counting_iterator(0),
-      thrust::counting_iterator(batch_size_ * channels_), bottom_data.begin(),
-      top_data.begin(), [max_ptr, channels] __device__(int i, T val) -> T {
+      thrust::counting_iterator(batch_size_ * channels_), bottom_data, top_data,
+      [max_ptr, channels] __device__(int i, T val) -> T {
         return static_cast<T>(std::exp(val - max_ptr[i / channels]));
       });
   // compute normalization factor
-  thrust::reduce_by_key(keys.begin(), keys.end(), top_data.begin(),
-                        output_keys.begin(), max_values.begin(),
-                        thrust::equal_to<int>(), thrust::plus<T>());
+  thrust::reduce_by_key(keys.begin(), keys.end(), top_data, output_keys.begin(),
+                        max_values.begin(), thrust::equal_to<int>(),
+                        thrust::plus<T>());
   // noramlization
   thrust::transform(thrust::counting_iterator(0),
                     thrust::counting_iterator(batch_size_ * channels_),
-                    top_data.begin(), top_data.begin(),
+                    top_data, top_data,
                     [max_ptr, channels] __device__(int i, T val) -> T {
                       return static_cast<T>(val / max_ptr[i / channels]);
                     });

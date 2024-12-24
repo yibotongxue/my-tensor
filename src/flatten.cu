@@ -6,6 +6,7 @@
 
 #include "error.hpp"
 #include "flatten.hpp"
+#include "memory-util.hpp"
 
 namespace my_tensor {
 
@@ -54,8 +55,8 @@ void Flatten<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
   if (inplace_) {
     bottom[0]->Reshape(top_shape_);
   } else {
-    thrust::copy(bottom[0]->GetCPUData().begin(), bottom[0]->GetCPUData().end(),
-                 top[0]->GetCPUData().begin());
+    MyMemcpyCPU2CPU(bottom[0]->GetCPUDataPtr(), top[0]->GetCPUDataPtr(),
+                    bottom[0]->GetSize());
   }
 }
 
@@ -65,8 +66,8 @@ void Flatten<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
   if (inplace_) {
     bottom[0]->Reshape(bottom_shape_);
   } else {
-    thrust::copy(top[0]->GetCPUDiff().begin(), top[0]->GetCPUDiff().end(),
-                 bottom[0]->GetCPUDiff().begin());
+    MyMemcpyCPU2CPU(top[0]->GetCPUDiffPtr(), bottom[0]->GetCPUDiffPtr(),
+                    top[0]->GetSize());
   }
 }
 
@@ -76,8 +77,8 @@ void Flatten<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
   if (inplace_) {
     bottom[0]->Reshape(top_shape_);
   } else {
-    thrust::copy(bottom[0]->GetGPUData().begin(), bottom[0]->GetGPUData().end(),
-                 top[0]->GetGPUData().begin());
+    MyMemcpyGPU2GPU(bottom[0]->GetGPUDataPtr(), top[0]->GetGPUDataPtr(),
+                    bottom[0]->GetSize());
   }
 }
 
@@ -87,8 +88,8 @@ void Flatten<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
   if (inplace_) {
     bottom[0]->Reshape(bottom_shape_);
   } else {
-    thrust::copy(top[0]->GetGPUDiff().begin(), top[0]->GetGPUDiff().end(),
-                 bottom[0]->GetGPUDiff().begin());
+    MyMemcpyGPU2GPU(top[0]->GetGPUDiffPtr(), bottom[0]->GetGPUDiffPtr(),
+                    top[0]->GetSize());
   }
 }
 
