@@ -38,19 +38,20 @@ local layer_src = {
     "src/layer.cc",
     "src/json-loader.cc",
     "src/layer-parameter.cc",
-    -- "src/filler.cu",
+    "src/filler.cu",
+    "src/filler.cc",
     "src/relu.cu",
     "src/relu.cc",
     "src/sigmoid.cu",
     "src/sigmoid.cc",
     -- "src/flatten.cu",
-    -- "src/linear.cu",
+    "src/linear.cu",
+    "src/linear.cc",
     -- "src/conv.cu",
     -- "src/pooling.cu",
     -- "src/softmax.cu",
     -- "src/loss-with-softmax.cu",
     -- "src/accuracy.cu",
-    -- "src/filler.cu"
 }
 
 local solver_src = {
@@ -160,12 +161,12 @@ target("sigmoid_test")
     add_includedirs("test/include")
     add_files("test/sigmoid-test.cc")
 
--- target("linear_test")
---     set_kind("binary")
---     add_packages("gtest")
---     add_deps("layer_lib")
---     add_includedirs("test/include")
---     add_files("test/linear-test.cu")
+target("linear_test")
+    set_kind("binary")
+    add_packages("gtest")
+    add_deps("layer_lib")
+    add_includedirs("test/include")
+    add_files("test/linear-test.cc")
 
 -- target("conv_test")
 --     set_kind("binary")

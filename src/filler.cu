@@ -1,5 +1,7 @@
 // Copyright 2024 yibotongxue
 
+#include <thrust/device_ptr.h>
+
 #include "filler.hpp"
 
 namespace my_tensor {
@@ -12,8 +14,8 @@ void ZeroFiller<T>::FillGPU(TensorPtr<T> tensor) {
 
 template <typename T>
 void ConstantFiller<T>::FillGPU(TensorPtr<T> tensor) {
-  auto &tensor_data = tensor->GetGPUData();
-  thrust::fill(tensor_data.begin(), tensor_data.end(), val_);
+  auto data_ptr = thrust::device_ptr<T>(tensor->GetGPUDataPtr());
+  thrust::fill(data_ptr, data_ptr + tensor->GetSize(), val_);
 }
 
 __global__ static void XavierFillerKernel(float *data, float limit, int n) {

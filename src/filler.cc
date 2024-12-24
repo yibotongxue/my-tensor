@@ -11,12 +11,14 @@ namespace my_tensor {
 
 template <typename T>
 void ZeroFiller<T>::FillCPU(TensorPtr<T> tensor) {
-  std::ranges::fill(tensor->GetCPUData(), 0);
+  std::fill(tensor->GetCPUDataPtr(),
+            tensor->GetCPUDataPtr() + tensor->GetSize(), 0);
 }
 
 template <typename T>
 void ConstantFiller<T>::FillCPU(TensorPtr<T> tensor) {
-  std::ranges::fill(tensor->GetCPUData(), val_);
+  std::fill(tensor->GetCPUDataPtr(),
+            tensor->GetCPUDataPtr() + tensor->GetSize(), val_);
 }
 
 template <>
@@ -26,7 +28,8 @@ void XavierFiller<>::FillCPU(TensorPtr<> tensor) {
   auto& gen = MyTensorContext::random_eigine();
   std::uniform_real_distribution<float> dis(-limit, limit);
   auto func = [&dis, &gen]() -> float { return dis(gen); };
-  std::ranges::generate(tensor->GetCPUData(), func);
+  std::generate(tensor->GetCPUDataPtr(),
+                tensor->GetCPUDataPtr() + tensor->GetSize(), func);
 }
 
 template <>
@@ -36,7 +39,8 @@ void HeFiller<>::FillCPU(TensorPtr<> tensor) {
   auto& gen = MyTensorContext::random_eigine();
   std::normal_distribution<float> dis(0, limit);
   auto func = [&dis, &gen]() -> float { return dis(gen); };
-  std::ranges::generate(tensor->GetCPUData(), func);
+  std::generate(tensor->GetCPUDataPtr(),
+                tensor->GetCPUDataPtr() + tensor->GetSize(), func);
 }
 
 template class Filler<>;

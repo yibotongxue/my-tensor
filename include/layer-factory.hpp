@@ -11,7 +11,7 @@
 // #include "flatten.hpp"
 // #include "layer-parameter.hpp"
 #include "layer.hpp"
-// #include "linear.hpp"
+#include "linear.hpp"
 // #include "loss-with-softmax.hpp"
 // #include "pooling.hpp"
 #include "relu.hpp"
@@ -28,8 +28,8 @@ inline LayerPtr<T> CreateLayer(const LayerParameterPtr param) {
       return std::make_shared<Sigmoid<T>>(param);
     // case ParamType::kFlatten:
     //   return std::make_shared<Flatten<T>>(param);
-    // case ParamType::kLinear:
-    //   return std::make_shared<Linear<T>>(param);
+    case ParamType::kLinear:
+      return std::make_shared<Linear<T>>(param);
     // case ParamType::kConvolution:
     //   return std::make_shared<Convolution<T>>(param);
     // case ParamType::kPooling:

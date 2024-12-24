@@ -56,10 +56,10 @@ template <typename T>
 void Linear<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                            const std::vector<TensorPtr<T>>& top) {
   CheckShape(bottom[0], top[0]);
-  const auto& weight_data = weight_->GetCPUData();
-  const auto& bias_data = bias_->GetCPUData();
-  const auto& bottom_data = bottom[0]->GetCPUData();
-  auto& top_data = top[0]->GetCPUData();
+  const T* weight_data = weight_->GetCPUDataPtr();
+  const T* bias_data = bias_->GetCPUDataPtr();
+  const T* bottom_data = bottom[0]->GetCPUDataPtr();
+  T* top_data = top[0]->GetCPUDataPtr();
   // bottom m * k
   // weight k * n
   // top    m * n
@@ -79,13 +79,13 @@ template <typename T>
 void Linear<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
                             const std::vector<TensorPtr<T>>& bottom) {
   CheckShape(bottom[0], top[0]);
-  const auto& weight_data = weight_->GetCPUData();
-  const auto& bias_data = bias_->GetCPUData();
-  const auto& top_diff = top[0]->GetCPUDiff();
-  const auto& bottom_data = bottom[0]->GetCPUData();
-  auto& weight_diff = weight_->GetCPUDiff();
-  auto& bias_diff = bias_->GetCPUDiff();
-  auto& bottom_diff = bottom[0]->GetCPUDiff();
+  const T* weight_data = weight_->GetCPUDataPtr();
+  const T* bias_data = bias_->GetCPUDataPtr();
+  const T* top_diff = top[0]->GetCPUDiffPtr();
+  const T* bottom_data = bottom[0]->GetCPUDataPtr();
+  T* weight_diff = weight_->GetCPUDiffPtr();
+  T* bias_diff = bias_->GetCPUDiffPtr();
+  T* bottom_diff = bottom[0]->GetCPUDiffPtr();
   // bottom m * k
   // weight k * n
   // top    m * n
