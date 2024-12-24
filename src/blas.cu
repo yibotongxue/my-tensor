@@ -6,7 +6,7 @@
 #include <thrust/transform.h>
 
 #include "blas.hpp"
-#include "common.hpp"
+#include "cuda-context.hpp"
 
 namespace my_tensor {
 
@@ -43,9 +43,9 @@ void matmul_gpu(const float *A, const float *B, float *C, const int m,
   // C<sup>T</sup> = (B<sup>T</sup>)(A<sup>T</sup>)
   // also C = AB
   CUBLAS_CHECK(cublasSgemmBatched(
-      MyTensorContext::cublas_handle(),  // handle
-      CUBLAS_OP_N,                       // no transpose of A<sup>T</sup>
-      CUBLAS_OP_N,                       // no transpose of B<sup>T</sup>
+      CudaContext::cublas_handle(),  // handle
+      CUBLAS_OP_N,                   // no transpose of A<sup>T</sup>
+      CUBLAS_OP_N,                   // no transpose of B<sup>T</sup>
       n,       // row number of B<sup>T</sup> and row number of C<sup>T</sup>
       m,       // col number of A<sup>T</sup> and col number of C<sup>T</sup>
       k,       // col number of B<sup>T</sup> and row number of A<sup>T</sup>
@@ -70,9 +70,9 @@ void transpose_matmul_gpu(const float *A, const float *B, float *C, const int m,
   // C<sup>T</sup> = (B<sup>T</sup>)(A)
   // also C = (A<sup>T</sup>)B
   CUBLAS_CHECK(cublasSgemmBatched(
-      MyTensorContext::cublas_handle(),  // handle
-      CUBLAS_OP_N,                       // no transpose of A<sup>T</sup>
-      CUBLAS_OP_T,                       // no transpose of B<sup>T</sup>
+      CudaContext::cublas_handle(),  // handle
+      CUBLAS_OP_N,                   // no transpose of A<sup>T</sup>
+      CUBLAS_OP_T,                   // no transpose of B<sup>T</sup>
       n,       // row number of B<sup>T</sup> and row number of C<sup>T</sup>
       m,       // col number of A and col number of C<sup>T</sup>
       k,       // col number of B<sup>T</sup> and row number of A
@@ -97,9 +97,9 @@ void matmul_transpose_gpu(const float *A, const float *B, float *C, const int m,
   // C<sup>T</sup> = (B)(A<sup>T</sup>)
   // also C = A(B<sup>T</sup>)
   CUBLAS_CHECK(cublasSgemmBatched(
-      MyTensorContext::cublas_handle(),  // handle
-      CUBLAS_OP_T,                       // no transpose of A<sup>T</sup>
-      CUBLAS_OP_N,                       // no transpose of B<sup>T</sup>
+      CudaContext::cublas_handle(),  // handle
+      CUBLAS_OP_T,                   // no transpose of A<sup>T</sup>
+      CUBLAS_OP_N,                   // no transpose of B<sup>T</sup>
       n,       // row number of B and row number of C<sup>T</sup>
       m,       // col number of A<sup>T</sup> and col number of C<sup>T</sup>
       k,       // col number of B and row number of A<sup>T</sup>
@@ -125,9 +125,9 @@ void transpose_matmul_transpose_gpu(const float *A, const float *B, float *C,
   // C<sup>T</sup> = (B)(A)
   // also C = (A<sup>T</sup>)(B<sup>T</sup>)
   CUBLAS_CHECK(cublasSgemmBatched(
-      MyTensorContext::cublas_handle(),  // handle
-      CUBLAS_OP_T,                       // no transpose of A<sup>T</sup>
-      CUBLAS_OP_T,                       // no transpose of B<sup>T</sup>
+      CudaContext::cublas_handle(),  // handle
+      CUBLAS_OP_T,                   // no transpose of A<sup>T</sup>
+      CUBLAS_OP_T,                   // no transpose of B<sup>T</sup>
       n,               // row number of B and row number of C<sup>T</sup>
       m,               // col number of A and col number of C<sup>T</sup>
       k,               // col number of B and row number of A
@@ -164,7 +164,7 @@ void add_row_vector_gpu(float *mat, const float *vec, const int m, const int n,
   cudaMalloc(&repeat_vec, m * batch_count * sizeof(float));
   RepeatVec<<<CudaGetBlocks(m * batch_count), kCudaThreadNum>>>(vec, repeat_vec,
                                                                 m, batch_count);
-  CUBLAS_CHECK(cublasSger(MyTensorContext::cublas_handle(), n, m * batch_count,
+  CUBLAS_CHECK(cublasSger(CudaContext::cublas_handle(), n, m * batch_count,
                           &alpha, ones, 1, repeat_vec, 1, mat, n));
   cudaFree(ones);
   cudaFree(repeat_vec);
@@ -178,7 +178,7 @@ void add_col_vector_gpu(float *mat, const float *vec, const int m, const int n,
   cudaMalloc(&ones, m * batch_count * sizeof(float));
   SetAllOnes<<<CudaGetBlocks(m * batch_count), kCudaThreadNum>>>(
       ones, m * batch_count);
-  CUBLAS_CHECK(cublasSger(MyTensorContext::cublas_handle(), n, m * batch_count,
+  CUBLAS_CHECK(cublasSger(CudaContext::cublas_handle(), n, m * batch_count,
                           &alpha, vec, 1, ones, 1, mat, n));
   cudaFree(ones);
 }
@@ -198,7 +198,7 @@ void row_sum_gpu(const float *mat, float *result, const int m, const int n,
   float *ones = nullptr;
   cudaMalloc(&ones, n * sizeof(float));
   SetAllOnes<<<CudaGetBlocks(n), kCudaThreadNum>>>(ones, n);
-  CUBLAS_CHECK(cublasSgemv(MyTensorContext::cublas_handle(), CUBLAS_OP_T, n,
+  CUBLAS_CHECK(cublasSgemv(CudaContext::cublas_handle(), CUBLAS_OP_T, n,
                            m * batch_count, &alpha, mat, n, ones, 1, &beta,
                            result, 1));
   cudaFree(ones);
@@ -227,22 +227,21 @@ void col_sum_gpu(const float *mat, float *result, const int m, const int n,
       thrust::counting_iterator<int>(0),
       thrust::counting_iterator<int>(batch_count), result_vec.begin(),
       [result, n] __device__(int i) -> float * { return result + i * n; });
-  CUBLAS_CHECK(cublasSgemvBatched(MyTensorContext::cublas_handle(), CUBLAS_OP_N,
-                                  n, m, &alpha, RAW_PTR(mat_vec), n,
-                                  RAW_PTR(ones_vec), 1, &beta,
-                                  RAW_PTR(result_vec), 1, batch_count));
+  CUBLAS_CHECK(cublasSgemvBatched(
+      CudaContext::cublas_handle(), CUBLAS_OP_N, n, m, &alpha, RAW_PTR(mat_vec),
+      n, RAW_PTR(ones_vec), 1, &beta, RAW_PTR(result_vec), 1, batch_count));
   cudaFree(ones);
 }
 
 template <>
 void add_two_vec_gpu(float *lhs, const float *rhs, const float k, const int n) {
   CUBLAS_CHECK(
-      cublasSaxpy(MyTensorContext::cublas_handle(), n, &k, rhs, 1, lhs, 1));
+      cublasSaxpy(CudaContext::cublas_handle(), n, &k, rhs, 1, lhs, 1));
 }
 
 template <>
 void scale_gpu(float *x, const int n, const float k) {
-  CUBLAS_CHECK(cublasSscal(MyTensorContext::cublas_handle(), n, &k, x, 1));
+  CUBLAS_CHECK(cublasSscal(CudaContext::cublas_handle(), n, &k, x, 1));
 }
 
 #undef DEFINE_ABC_VEC
