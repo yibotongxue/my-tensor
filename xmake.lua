@@ -53,7 +53,8 @@ local layer_src = {
     "src/pooling.cc",
     "src/softmax.cu",
     "src/softmax.cc",
-    -- "src/loss-with-softmax.cu",
+    "src/loss-with-softmax.cu",
+    "src/loss-with-softmax.cc",
     -- "src/accuracy.cu",
 }
 
@@ -191,12 +192,12 @@ target("softmax_test")
     add_includedirs("test/include")
     add_files("test/softmax-test.cc")
 
--- target("loss_with_softmax_test")
---     set_kind("binary")
---     add_packages("gtest")
---     add_deps("layer_lib")
---     add_includedirs("test/include")
---     add_files("test/loss-with-softmax-test.cu")
+target("loss_with_softmax_test")
+    set_kind("binary")
+    add_packages("gtest")
+    add_deps("layer_lib")
+    add_includedirs("test/include")
+    add_files("test/loss-with-softmax-test.cc")
 
 -- target("accuracy_test")
 --     set_kind("binary")

@@ -50,8 +50,8 @@
       input = std::make_shared<my_tensor::Tensor<>>(input_shape);           \
       label = std::make_shared<my_tensor::Tensor<>>(label_shape);           \
       loss = std::make_shared<my_tensor::Tensor<>>(loss_shape);             \
-      input->Set##device##Data(input_data);                                 \
-      label->Set##device##Data(label_data);                                 \
+      input->Set##device##Data(input_data.data(), input_data.size());                                 \
+      label->Set##device##Data(label_data.data(), label_data.size());                                 \
       loss_with_softmax->SetUp({input, label}, {loss});                     \
     }                                                                       \
     std::vector<float> input_data;                                          \
@@ -68,7 +68,7 @@ LOSS_WITH_SOFTMAX_TEST_CLASS(GPU)
 #define LOSS_WITH_SOFTMAX_TEST_FORWARD_LOSS(device)                           \
   TEST_F(LossWithSoftmax##device##Test, ForwardLoss) {                        \
     loss_with_softmax->Forward##device({input, label}, {loss});               \
-    float actual = loss->Get##device##Data()[0];                              \
+    float actual = loss->Get##device##Data(0);                              \
     std::vector<float> max_values(1024, -11);                                 \
     for (int i = 0; i < 1024; i++) {                                          \
       for (int j = 0; j < 10; j++) {                                          \
@@ -103,8 +103,6 @@ LOSS_WITH_SOFTMAX_TEST_FORWARD_LOSS(GPU)
   TEST_F(LossWithSoftmax##device##Test, BackwardBottom) {                \
     loss_with_softmax->Forward##device({input, label}, {loss});          \
     loss_with_softmax->Backward##device({loss}, {input, label});         \
-    std::vector<float> actual(input->Get##device##Diff().begin(),        \
-                              input->Get##device##Diff().end());         \
     std::vector<float> max_values(1024, -11);                            \
     for (int i = 0; i < 1024; i++) {                                     \
       for (int j = 0; j < 10; j++) {                                     \
@@ -131,7 +129,7 @@ LOSS_WITH_SOFTMAX_TEST_FORWARD_LOSS(GPU)
           expect -= 1;                                                   \
         }                                                                \
         expect /= 1024;                                                  \
-        ASSERT_NEAR(actual[i * 10 + j], expect, 0.01);                   \
+        ASSERT_NEAR(input->Get##device##Diff(i * 10 + j), expect, 0.01);                   \
       }                                                                  \
     }                                                                    \
   }
