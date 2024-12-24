@@ -38,8 +38,8 @@
       sigmoid = my_tensor::CreateLayer<>(layer_parameters[0]);        \
       bottom = std::make_shared<my_tensor::Tensor<>>(shape);          \
       top = std::make_shared<my_tensor::Tensor<>>(shape);             \
-      bottom->Set##device##Data(data);                                \
-      top->Set##device##Diff(diff);                                   \
+      bottom->Set##device##Data(data.data(), data.size());                                \
+      top->Set##device##Diff(diff.data(), diff.size());                                   \
       bottom_vec.clear();                                             \
       top_vec.clear();                                                \
       bottom_vec.push_back(bottom);                                   \
@@ -62,13 +62,11 @@ SIGMOID_TEST_CLASS(GPU)
 #define SIGMOID_FORWARD_TEST(device)                                    \
   TEST_F(Sigmoid##device##Test, Forward_Data) {                         \
     sigmoid->Forward##device(bottom_vec, top_vec);                      \
-    const std::vector<float> top_data(top->Get##device##Data().begin(), \
-                                      top->Get##device##Data().end());  \
     std::ranges::transform(data, data.begin(), [](float x) {            \
       return 1.0f / (1.0f + std::exp(-x));                              \
     });                                                                 \
     for (int i = 0; i < 30000; i++) {                                   \
-      EXPECT_NEAR(top_data[i], data[i], 0.01);                          \
+      EXPECT_NEAR(top->Get##device##Data(i), data[i], 0.01);                          \
     }                                                                   \
   }
 

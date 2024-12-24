@@ -28,17 +28,18 @@ void Sigmoid<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
 template <typename T>
 void Sigmoid<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                             const std::vector<TensorPtr<T>>& top) {
-  std::ranges::transform(
-      bottom[0]->GetCPUData(), top[0]->GetCPUData().begin(), [](T val) -> T {
-        return static_cast<T>(1) / (static_cast<T>(1) + std::exp(-val));
-      });
+  auto&& bottom_data = bottom[0]->GetCPUDataSpan();
+  std::ranges::transform(bottom_data, top[0]->GetCPUDataPtr(), [](T val) -> T {
+    return static_cast<T>(1) / (static_cast<T>(1) + std::exp(-val));
+  });
 }
 
 template <typename T>
 void Sigmoid<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
                              const std::vector<TensorPtr<T>>& bottom) {
-  std::ranges::transform(top[0]->GetCPUDiff(), top[0]->GetCPUData(),
-                         bottom[0]->GetCPUDiff().begin(),
+  auto&& top_diff = top[0]->GetCPUDiffSpan();
+  auto&& top_data = top[0]->GetCPUDataSpan();
+  std::ranges::transform(top_diff, top_data, bottom[0]->GetCPUDiffPtr(),
                          [](T diff, T data) -> T {
                            return diff * data * (static_cast<T>(1) - data);
                          });

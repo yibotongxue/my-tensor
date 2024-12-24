@@ -1,5 +1,6 @@
 // Copyright 2024 yibotongxue
 
+#include <thrust/device_ptr.h>
 #include <thrust/transform.h>
 
 #include <vector>
@@ -29,8 +30,9 @@ template <typename T>
 void Sigmoid<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                             const std::vector<TensorPtr<T>>& top) {
   CHECK_SAME_SHAPE(top[0], bottom[0])
-  thrust::transform(bottom[0]->GetGPUData().begin(),
-                    bottom[0]->GetGPUData().end(), top[0]->GetGPUData().begin(),
+  auto bottom_ptr = thrust::device_ptr<T>(bottom[0]->GetGPUDataPtr());
+  auto top_ptr = thrust::device_ptr<T>(top[0]->GetGPUDataPtr());
+  thrust::transform(bottom_ptr, bottom_ptr + bottom[0]->GetSize(), top_ptr,
                     SigmoidOperator<T>());
 }
 
@@ -38,9 +40,11 @@ template <typename T>
 void Sigmoid<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
                              const std::vector<TensorPtr<T>>& bottom) {
   CHECK_SAME_SHAPE(top[0], bottom[0])
-  thrust::transform(top[0]->GetGPUDiff().begin(), top[0]->GetGPUDiff().end(),
-                    top[0]->GetGPUData().begin(),
-                    bottom[0]->GetGPUDiff().begin(), SigmoidGradOperator<T>());
+  auto top_diff_ptr = thrust::device_ptr<T>(top[0]->GetGPUDiffPtr());
+  auto top_data_ptr = thrust::device_ptr<T>(top[0]->GetGPUDataPtr());
+  auto bottom_diff_ptr = thrust::device_ptr<T>(bottom[0]->GetGPUDiffPtr());
+  thrust::transform(top_diff_ptr, top_diff_ptr + top[0]->GetSize(),
+                    top_data_ptr, bottom_diff_ptr, SigmoidGradOperator<T>());
 }
 
 template class Sigmoid<>;

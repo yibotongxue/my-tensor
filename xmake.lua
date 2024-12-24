@@ -40,8 +40,9 @@ local layer_src = {
     "src/layer-parameter.cc",
     -- "src/filler.cu",
     "src/relu.cu",
-    "src/relu.cc"
-    -- "src/sigmoid.cu",
+    "src/relu.cc",
+    "src/sigmoid.cu",
+    "src/sigmoid.cc",
     -- "src/flatten.cu",
     -- "src/linear.cu",
     -- "src/conv.cu",
@@ -152,12 +153,12 @@ target("relu_test")
     add_includedirs("test/include")
     add_files("test/relu-test.cc")
 
--- target("sigmoid_test")
---     set_kind("binary")
---     add_packages("gtest")
---     add_deps("layer_lib")
---     add_includedirs("test/include")
---     add_files("test/sigmoid-test.cu")
+target("sigmoid_test")
+    set_kind("binary")
+    add_packages("gtest")
+    add_deps("layer_lib")
+    add_includedirs("test/include")
+    add_files("test/sigmoid-test.cc")
 
 -- target("linear_test")
 --     set_kind("binary")
