@@ -30,7 +30,7 @@
       return i;                                                              \
     };                                                                       \
     std::ranges::generate(data, func);                                       \
-    im_tensor->Set##device##Data(data);                                      \
+    im_tensor->Set##device##Data(data.data(), data.size());                                      \
                                                                              \
     const std::vector<int> col_shape = {1, 48, 9};                           \
     auto col_tensor = std::make_shared<my_tensor::Tensor<>>(col_shape);      \
@@ -98,8 +98,8 @@
       auto random_func = [&gen, &dis]() -> float { return dis(gen); }; \
       std::ranges::generate(im_data, random_func);                     \
       std::ranges::generate(col_diff, random_func);                    \
-      im_tensor->Set##device##Data(im_data);                           \
-      col_tensor->Set##device##Diff(col_diff);                         \
+      im_tensor->Set##device##Data(im_data.data(), im_data.size());                           \
+      col_tensor->Set##device##Diff(col_diff.data(), col_diff.size());                         \
     }                                                                  \
     const std::vector<int> im_shape{10, 3, 32, 64};                    \
     const std::vector<int> col_shape{10, 27, 2048};                    \
@@ -116,8 +116,6 @@ IM2COL_TEST_CLASS(GPU)
   TEST_F(Im2col##device##Test, im2col) {                                      \
     my_tensor::Im2col_##device(10, im_tensor->Get##device##DataPtr(), 3, 32,  \
                                64, 3, 3, col_tensor->Get##device##DataPtr()); \
-    std::vector<float> actual(col_tensor->Get##device##Data().begin(),        \
-                              col_tensor->Get##device##Data().end());         \
     std::vector<float> expect(552960);                                        \
     for (int i = 0; i < 30; i++) {                                            \
       for (int j = 0; j < 9; j++) {                                           \
@@ -137,7 +135,7 @@ IM2COL_TEST_CLASS(GPU)
       }                                                                       \
     }                                                                         \
     for (int i = 0; i < 552960; i++) {                                        \
-      ASSERT_NEAR(expect[i], actual[i], 0.01);                                \
+      ASSERT_NEAR(expect[i], col_tensor->Get##device##Data(i), 0.01);                                \
     }                                                                         \
   }
 
@@ -148,8 +146,6 @@ IM2COL_TEST(GPU)
   TEST_F(Im2col##device##Test, col2im) {                                      \
     my_tensor::Col2im_##device(10, col_tensor->Get##device##DiffPtr(), 3, 32, \
                                64, 3, 3, im_tensor->Get##device##DiffPtr());  \
-    std::vector<float> actual(im_tensor->Get##device##Diff().begin(),         \
-                              im_tensor->Get##device##Diff().end());          \
     std::vector<float> expect(61440, 0.0f);                                   \
     for (int i = 0; i < 30; i++) {                                            \
       for (int j = 0; j < 9; j++) {                                           \
@@ -169,7 +165,7 @@ IM2COL_TEST(GPU)
       }                                                                       \
     }                                                                         \
     for (int i = 0; i < 61440; i++) {                                         \
-      ASSERT_NEAR(expect[i], actual[i], 0.01);                                \
+      ASSERT_NEAR(expect[i], im_tensor->Get##device##Diff(i), 0.01);                                \
     }                                                                         \
   }
 
