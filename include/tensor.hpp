@@ -51,6 +51,9 @@ class Tensor {
   T GetGPUData(size_t index) const { return data_->device(index); }
   T GetGPUDiff(size_t index) const { return diff_->device(index); }
 
+  std::span<T> GetCPUDataSpan() const { return data_->GetCPUSpan(); }
+  std::span<T> GetCPUDiffSpan() const { return diff_->GetCPUSpan(); }
+
   inline T GetData(size_t index) const {
     if (MyTensorContext::on_cpu()) {
       return GetCPUData(index);

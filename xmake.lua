@@ -35,20 +35,21 @@ local layer_cpu_src = {
 }
 
 local layer_src = {
-    "src/layer.cu",
+    "src/layer.cc",
     "src/json-loader.cc",
     "src/layer-parameter.cc",
-    "src/filler.cu",
+    -- "src/filler.cu",
     "src/relu.cu",
-    "src/sigmoid.cu",
-    "src/flatten.cu",
-    "src/linear.cu",
-    "src/conv.cu",
-    "src/pooling.cu",
-    "src/softmax.cu",
-    "src/loss-with-softmax.cu",
-    "src/accuracy.cu",
-    "src/filler.cu"
+    "src/relu.cc"
+    -- "src/sigmoid.cu",
+    -- "src/flatten.cu",
+    -- "src/linear.cu",
+    -- "src/conv.cu",
+    -- "src/pooling.cu",
+    -- "src/softmax.cu",
+    -- "src/loss-with-softmax.cu",
+    -- "src/accuracy.cu",
+    -- "src/filler.cu"
 }
 
 local solver_src = {
@@ -97,16 +98,16 @@ target("im2col_lib")
     add_files("src/im2col.cc")
     set_policy("build.cuda.devlink", true)
 
--- target("layer_lib")
---     set_kind("static")
---     add_packages("nlohmann_json", {public = true})
---     add_deps("tensor_lib")
---     add_deps("blas_lib")
---     add_deps("im2col_lib")
---     add_includedirs("include", {public = true})
---     add_files(layer_src)
---     add_files(layer_cpu_src, {defines = "CPU_ONLY"})
---     set_policy("build.cuda.devlink", true)
+target("layer_lib")
+    set_kind("static")
+    add_packages("nlohmann_json", {public = true})
+    add_deps("tensor_lib")
+    add_deps("blas_lib")
+    add_deps("im2col_lib")
+    add_includedirs("include", {public = true})
+    add_files(layer_src)
+    -- add_files(layer_cpu_src, {defines = "CPU_ONLY"})
+    set_policy("build.cuda.devlink", true)
 
 -- target("net_lib")
 --     set_kind("static")
@@ -144,12 +145,12 @@ target("im2col_test")
     add_deps("tensor_lib")
     add_files("test/im2col-test.cc")
 
--- target("relu_test")
---     set_kind("binary")
---     add_packages("gtest")
---     add_deps("layer_lib")
---     add_includedirs("test/include")
---     add_files("test/relu-test.cu")
+target("relu_test")
+    set_kind("binary")
+    add_packages("gtest")
+    add_deps("layer_lib")
+    add_includedirs("test/include")
+    add_files("test/relu-test.cc")
 
 -- target("sigmoid_test")
 --     set_kind("binary")

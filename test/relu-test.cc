@@ -47,8 +47,8 @@
       relu = my_tensor::CreateLayer<>(layer_parameters[0]);        \
       bottom = std::make_shared<my_tensor::Tensor<>>(shape);       \
       top = std::make_shared<my_tensor::Tensor<>>(shape);          \
-      bottom->Set##device##Data(data);                             \
-      top->Set##device##Diff(diff);                                \
+      bottom->Set##device##Data(data.data(), data.size());                             \
+      top->Set##device##Diff(diff.data(), diff.size());                                \
       bottom_vec.clear();                                          \
       top_vec.clear();                                             \
       bottom_vec.push_back(bottom);                                \
@@ -71,13 +71,11 @@ RELU_TEST_CLASS(GPU)
 #define RELU_FORWARD_TEST(device)                                       \
   TEST_F(Relu##device##Test, Forward_Data) {                            \
     relu->Forward##device(bottom_vec, top_vec);                         \
-    const std::vector<float> top_data(top->Get##device##Data().begin(), \
-                                      top->Get##device##Data().end());  \
     for (int i = 0; i < 30000; i++) {                                   \
       if (data[i] > 0) {                                                \
-        EXPECT_EQ(top_data[i], data[i]);                                \
+        EXPECT_EQ(top->Get##device##Data(i), data[i]);                                \
       } else {                                                          \
-        EXPECT_EQ(top_data[i], 0);                                      \
+        EXPECT_EQ(top->Get##device##Data(i), 0);                                      \
       }                                                                 \
     }                                                                   \
   }
