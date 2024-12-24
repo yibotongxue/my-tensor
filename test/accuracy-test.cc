@@ -1,7 +1,6 @@
 // Copyright 2024 yibotongxue
 
 #include <gtest/gtest.h>
-#include <thrust/tabulate.h>
 
 #include <algorithm>
 #include <memory>
@@ -46,8 +45,8 @@
     };                                                                 \
     std::ranges::generate(label_data, label_random);                   \
     accuracy->SetUp({bottom, label}, {top});                           \
-    bottom->Set##device##Data(bottom_data);                            \
-    label->Set##device##Data(label_data);                              \
+    bottom->Set##device##Data(bottom_data.data(), bottom_data.size());                            \
+    label->Set##device##Data(label_data.data(), label_data.size());                              \
     accuracy->Forward##device({bottom, label}, {top});                 \
     int correct = 0;                                                   \
     for (int i = 0; i < 1024; i++) {                                   \
@@ -64,7 +63,7 @@
       }                                                                \
     }                                                                  \
     float actual = static_cast<float>(correct) / 1024.0f;              \
-    ASSERT_NEAR(top->Get##device##Data()[0], actual, 0.001);           \
+    ASSERT_NEAR(top->Get##device##Data(0), actual, 0.001);           \
   }
 
 ACCURACY_TEST(CPU)
