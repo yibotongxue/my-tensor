@@ -3,12 +3,7 @@
 #ifndef INCLUDE_SYNCED_VECTOR_HPP_
 #define INCLUDE_SYNCED_VECTOR_HPP_
 
-#ifndef CPU_ONLY
-#include <thrust/device_vector.h>
-#endif  // CPU_ONLY
-
 #include <memory>
-#include <vector>
 
 #include "error.hpp"
 
@@ -28,39 +23,15 @@ class SyncedVector {
 
   enum VectorState { kUninitialized, kHeadAtCPU, kHeadAtGPU, kSynced };
 
-  const std::vector<T>& GetCPUData();
-  std::vector<T>& GetMutableCPUData();
-  void SetCPUData(const std::vector<T>& data);
+  void SetCPUData(const T* const data, size_t size);
   const T* GetCPUPtr();
   T* GetMutableCPUPtr();
-#ifndef CPU_ONLY
-  const thrust::device_vector<T>& GetGPUData();
-  thrust::device_vector<T>& GetMutableGPUData();
-#endif  // CPU_ONLY
-  void SetGPUData(const std::vector<T>& data);
+  void SetGPUData(const T* const data, size_t size);
   const T* GetGPUPtr();
   T* GetMutableGPUPtr();
 
-  template <typename Iter>
-  inline void SetCPUData(const Iter begin, const Iter end) {
-    cpu_data_.resize(std::distance(begin, end));
-    cpu_data_.assign(begin, end);
-    size_ = cpu_data_.size();
-    state_ = kHeadAtCPU;
-  }
-
-#ifndef CPU_ONLY
-  template <typename Iter>
-  inline void SetGPUData(const Iter begin, const Iter end) {
-    gpu_data_.resize(std::distance(begin, end));
-    gpu_data_.assign(begin, end);
-    size_ = gpu_data_.size();
-    state_ = kHeadAtGPU;
-  }
-#endif  // CPU_ONLY
-
-  void ClearCPUData();
-  void ClearGPUData();
+  T host(size_t index);
+  T device(size_t index);
 
   inline size_t size() const noexcept { return size_; }
 
@@ -69,10 +40,8 @@ class SyncedVector {
  private:
   VectorState state_;
   size_t size_;
-  std::vector<T> cpu_data_;
-#ifndef CPU_ONLY
-  thrust::device_vector<T> gpu_data_;
-#endif  // CPU_ONLY
+  T* cpu_data_;
+  T* gpu_data_;
 
   void ToCPU();
   void ToGPU();

@@ -9,7 +9,6 @@
 
 #include "error.hpp"
 #include "tensor.hpp"
-#include "utils.hpp"
 
 namespace my_tensor {
 template <typename T>

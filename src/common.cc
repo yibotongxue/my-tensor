@@ -32,10 +32,6 @@ int64_t cluster_seedgen(void) {
 }
 
 MyTensorContext::~MyTensorContext() {
-  if (cublas_handle_) CUBLAS_CHECK(cublasDestroy(cublas_handle_));
-  if (curand_generator_) {
-    CURAND_CHECK(curandDestroyGenerator(curand_generator_));
-  }
 }
 
 MyTensorContext& MyTensorContext::Get() {
@@ -45,22 +41,11 @@ MyTensorContext& MyTensorContext::Get() {
 
 MyTensorContext::MyTensorContext()
     : device_type_(CPU),
-      random_engine_(std::random_device{}()),  // NOLINT
-      cublas_handle_(nullptr),
-      curand_generator_(nullptr) {
+      random_engine_(std::random_device{}())  // NOLINT
+      {
   // from https://github.com/BVLC/caffe.git
   // Try to create a cublas handler, and report an error if failed (but we will
   // keep the program running as one might just want to run CPU code).
-  if (cublasCreate(&cublas_handle_) != CUBLAS_STATUS_SUCCESS) {
-    std::cerr << "Cannot create Cublas handle. Cublas won't be available.";
-  }
-  // Try to create a curand handler.
-  if (curandCreateGenerator(&curand_generator_, CURAND_RNG_PSEUDO_DEFAULT) !=
-          CURAND_STATUS_SUCCESS ||
-      curandSetPseudoRandomGeneratorSeed(
-          curand_generator_, cluster_seedgen()) != CURAND_STATUS_SUCCESS) {
-    std::cerr << "Cannot create Curand generator. Curand won't be available.";
-  }
 }
 
 }  // namespace my_tensor

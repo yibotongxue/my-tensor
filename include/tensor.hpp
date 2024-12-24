@@ -3,10 +3,6 @@
 #ifndef INCLUDE_TENSOR_HPP_
 #define INCLUDE_TENSOR_HPP_
 
-#ifndef CPU_ONLY
-#include <thrust/device_vector.h>
-#endif  // CPU_ONLY
-
 #include <memory>
 #include <string>
 #include <vector>
@@ -36,46 +32,42 @@ class Tensor {
   ~Tensor() = default;
 
   // Set methods.
-  void SetCPUData(const std::vector<T>& data) { data_->SetCPUData(data); }
-  void SetCPUDiff(const std::vector<T>& diff) { diff_->SetCPUData(diff); }
-  void SetGPUData(const std::vector<T>& data) { data_->SetGPUData(data); }
-  void SetGPUDiff(const std::vector<T>& diff) { diff_->SetGPUData(diff); }
-
-  // Set by intetor
-  template <typename Iter>
-  void SetCPUData(const Iter begin, const Iter end) {
-    data_->SetCPUData(begin, end);
+  void SetCPUData(const T* const data, size_t size) {
+    data_->SetCPUData(data, size);
   }
-  template <typename Iter>
-  void SetCPUDiff(const Iter begin, const Iter end) {
-    diff_->SetCPUData(begin, end);
+  void SetCPUDiff(const T* const diff, size_t size) {
+    diff_->SetCPUData(diff, size);
   }
-  template <typename Iter>
-  void SetGPUData(const Iter begin, const Iter end) {
-    data_->SetGPUData(begin, end);
+  void SetGPUData(const T* const data, size_t size) {
+    data_->SetGPUData(data, size);
   }
-  template <typename Iter>
-  void SetGPUDiff(const Iter begin, const Iter end) {
-    diff_->SetGPUData(begin, end);
+  void SetGPUDiff(const T* const diff, size_t size) {
+    diff_->SetGPUData(diff, size);
   }
 
   // Get methods.
-  // CPU
-  const std::vector<T>& GetCPUData() const { return data_->GetCPUData(); }
-  std::vector<T>& GetCPUData() { return data_->GetMutableCPUData(); }
-  const std::vector<T>& GetCPUDiff() const { return diff_->GetCPUData(); }
-  std::vector<T>& GetCPUDiff() { return diff_->GetMutableCPUData(); }
-  // GPU
-#ifndef CPU_ONLY
-  const thrust::device_vector<T>& GetGPUData() const {
-    return data_->GetGPUData();
+  T GetCPUData(size_t index) const { return data_->host(index); }
+  T GetCPUDiff(size_t index) const { return diff_->host(index); }
+  T GetGPUData(size_t index) const { return data_->device(index); }
+  T GetGPUDiff(size_t index) const { return diff_->device(index); }
+
+  inline T GetData(size_t index) const {
+    if (MyTensorContext::on_cpu()) {
+      return GetCPUData(index);
+    } else {
+      return GetGPUData(index);
+    }
   }
-  thrust::device_vector<T>& GetGPUData() { return data_->GetMutableGPUData(); }
-  const thrust::device_vector<T>& GetGPUDiff() const {
-    return diff_->GetGPUData();
+
+  inline T GetDiff(size_t index) const {
+    if (MyTensorContext::on_cpu()) {
+      return GetCPUDiff(index);
+    } else {
+      return GetGPUDiff(index);
+    }
   }
-  thrust::device_vector<T>& GetGPUDiff() { return diff_->GetMutableGPUData(); }
-#endif  // CPU_ONLY
+
+  // #endif  // CPU_ONLY
   // CPU
   const T* GetCPUDataPtr() const { return data_->GetCPUPtr(); }
   T* GetCPUDataPtr() { return data_->GetMutableCPUPtr(); }

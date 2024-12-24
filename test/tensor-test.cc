@@ -41,139 +41,43 @@ class TensorSetMethodTest : public ::testing::Test {
 };
 
 TEST_F(TensorSetMethodTest, TensorSetCPUOnCPUData_Left) {
-  tensor->SetCPUData(data);
+  tensor->SetCPUData(data.data(), data.size());
   DATA_EQUAL_TEST(CPU)
 }
 
 TEST_F(TensorSetMethodTest, TensorSetCPUOnGPUData_Left) {
-  tensor->SetCPUData(data);
+  tensor->SetCPUData(data.data(), data.size());
   DATA_EQUAL_TEST(GPU)
 }
 
 TEST_F(TensorSetMethodTest, TensorSetGPUOnCPUData_Left) {
-  tensor->SetGPUData(data);
+  tensor->SetGPUData(data.data(), data.size());
   DATA_EQUAL_TEST(CPU)
 }
 
 TEST_F(TensorSetMethodTest, TensorSetGPUOnGPUData_Left) {
-  tensor->SetCPUData(data);
+  tensor->SetCPUData(data.data(), data.size());
   DATA_EQUAL_TEST(GPU)
 }
 
 TEST_F(TensorSetMethodTest, TensorSetCPUOnCPUDiff_Left) {
-  tensor->SetCPUDiff(diff);
+  tensor->SetCPUDiff(diff.data(), diff.size());
   DIFF_EQUAL_TEST(CPU)
 }
 
 TEST_F(TensorSetMethodTest, TensorSetCPUOnGPUDiff_Left) {
-  tensor->SetCPUDiff(diff);
+  tensor->SetCPUDiff(diff.data(), diff.size());
   DIFF_EQUAL_TEST(GPU)
 }
 
 TEST_F(TensorSetMethodTest, TensorSetGPUOnCPUDiff_Left) {
-  tensor->SetGPUDiff(diff);
+  tensor->SetGPUDiff(diff.data(), diff.size());
   DIFF_EQUAL_TEST(CPU)
 }
 
 TEST_F(TensorSetMethodTest, TensorSetGPUOnGPUDiff_Left) {
-  tensor->SetCPUDiff(diff);
+  tensor->SetCPUDiff(diff.data(), diff.size());
   DIFF_EQUAL_TEST(GPU)
-}
-
-TEST(TensorSetMethodIteratorTest, TensorSetCPUOnCPUDIterata_Data) {
-  const std::vector<int> shape{3, 4};
-  auto tensor = std::make_shared<my_tensor::Tensor<>>(shape);
-  std::vector<float> data(14);
-  float i = 0;
-  std::ranges::generate(data, [&i]() -> float { return i++; });
-  tensor->SetCPUData(data.begin() + 1, data.end() - 1);
-  for (int j = 0; j < 12; j++) {
-    EXPECT_EQ(tensor->GetCPUData()[j], static_cast<float>(j + 1));
-  }
-}
-
-TEST(TensorSetMethodIteratorTest, TensorSetCPUOnGPUDIterata_Data) {
-  const std::vector<int> shape{3, 4};
-  auto tensor = std::make_shared<my_tensor::Tensor<>>(shape);
-  std::vector<float> data(14);
-  float i = 0;
-  std::ranges::generate(data, [&i]() -> float { return i++; });
-  tensor->SetCPUData(data.begin() + 1, data.end() - 1);
-  for (int j = 0; j < 12; j++) {
-    EXPECT_EQ(tensor->GetGPUData()[j], static_cast<float>(j + 1));
-  }
-}
-
-TEST(TensorSetMethodIteratorTest, TensorSetGPUOnCPUDIterata_Data) {
-  const std::vector<int> shape{3, 4};
-  auto tensor = std::make_shared<my_tensor::Tensor<>>(shape);
-  std::vector<float> data(14);
-  float i = 0;
-  std::ranges::generate(data, [&i]() -> float { return i++; });
-  tensor->SetGPUData(data.begin() + 1, data.end() - 1);
-  for (int j = 0; j < 12; j++) {
-    EXPECT_EQ(tensor->GetCPUData()[j], static_cast<float>(j + 1));
-  }
-}
-
-TEST(TensorSetMethodIteratorTest, TensorSetGPUOnGPUDIterata_Data) {
-  const std::vector<int> shape{3, 4};
-  auto tensor = std::make_shared<my_tensor::Tensor<>>(shape);
-  std::vector<float> data(14);
-  float i = 0;
-  std::ranges::generate(data, [&i]() -> float { return i++; });
-  tensor->SetGPUData(data.begin() + 1, data.end() - 1);
-  for (int j = 0; j < 12; j++) {
-    EXPECT_EQ(tensor->GetGPUData()[j], static_cast<float>(j + 1));
-  }
-}
-
-TEST(TensorSetMethodIteratorTest, TensorSetCPUOnCPUDIterata_Diff) {
-  const std::vector<int> shape{3, 4};
-  auto tensor = std::make_shared<my_tensor::Tensor<>>(shape);
-  std::vector<float> diff(14);
-  float i = 0;
-  std::ranges::generate(diff, [&i]() -> float { return i++; });
-  tensor->SetCPUDiff(diff.begin() + 1, diff.end() - 1);
-  for (int j = 0; j < 12; j++) {
-    EXPECT_EQ(tensor->GetCPUDiff()[j], static_cast<float>(j + 1));
-  }
-}
-
-TEST(TensorSetMethodIteratorTest, TensorSetCPUOnGPUDIterata_Diff) {
-  const std::vector<int> shape{3, 4};
-  auto tensor = std::make_shared<my_tensor::Tensor<>>(shape);
-  std::vector<float> diff(14);
-  float i = 0;
-  std::ranges::generate(diff, [&i]() -> float { return i++; });
-  tensor->SetCPUDiff(diff.begin() + 1, diff.end() - 1);
-  for (int j = 0; j < 12; j++) {
-    EXPECT_EQ(tensor->GetGPUDiff()[j], static_cast<float>(j + 1));
-  }
-}
-
-TEST(TensorSetMethodIteratorTest, TensorSetGPUOnCPUDIterata_Diff) {
-  const std::vector<int> shape{3, 4};
-  auto tensor = std::make_shared<my_tensor::Tensor<>>(shape);
-  std::vector<float> diff(14);
-  float i = 0;
-  std::ranges::generate(diff, [&i]() -> float { return i++; });
-  tensor->SetGPUDiff(diff.begin() + 1, diff.end() - 1);
-  for (int j = 0; j < 12; j++) {
-    EXPECT_EQ(tensor->GetCPUDiff()[j], static_cast<float>(j + 1));
-  }
-}
-
-TEST(TensorSetMethodIteratorTest, TensorSetGPUOnGPUDIterata_Diff) {
-  const std::vector<int> shape{3, 4};
-  auto tensor = std::make_shared<my_tensor::Tensor<>>(shape);
-  std::vector<float> diff(14);
-  float i = 0;
-  std::ranges::generate(diff, [&i]() -> float { return i++; });
-  tensor->SetGPUDiff(diff.begin() + 1, diff.end() - 1);
-  for (int j = 0; j < 12; j++) {
-    EXPECT_EQ(tensor->GetGPUDiff()[j], static_cast<float>(j + 1));
-  }
 }
 
 #define TENSOR_COPY_CONSTRUCT_CLASS(device)                          \
@@ -185,8 +89,8 @@ TEST(TensorSetMethodIteratorTest, TensorSetGPUOnGPUDIterata_Diff) {
       try {                                                          \
         my_tensor::TensorPtr<> another =                             \
             std::make_shared<my_tensor::Tensor<>>(shape);            \
-        another->Set##device##Data(data);                            \
-        another->Set##device##Diff(diff);                            \
+        another->Set##device##Data(data.data(), data.size());                            \
+        another->Set##device##Diff(diff.data(), diff.size());                            \
         tensor = std::make_shared<my_tensor::Tensor<>>(*another);    \
       } catch (my_tensor::ShapeError & e) {                          \
         std::cerr << e.what() << std::endl;                          \
@@ -215,8 +119,8 @@ TEST_DATA_AND_DIFF(TensorCopyConstructGPU)
       try {                                                                  \
         my_tensor::TensorPtr<> another =                                     \
             std::make_shared<my_tensor::Tensor<>>(shape);                    \
-        another->Set##device##Data(data);                                    \
-        another->Set##device##Diff(diff);                                    \
+        another->Set##device##Data(data.data(), data.size());                                    \
+        another->Set##device##Diff(diff.data(), diff.size());                                    \
         tensor = std::make_shared<my_tensor::Tensor<>>(std::move(*another)); \
       } catch (my_tensor::ShapeError & e) {                                  \
         std::cerr << e.what() << std::endl;                                  \
@@ -251,11 +155,11 @@ TEST_DATA_AND_DIFF(TensorMoveConstructGPU)
         diff[i] = i + 1;                                                       \
       }                                                                        \
       try {                                                                    \
-        another->Set##device_from##Data(another_data);                         \
-        another->Set##device_from##Diff(another_diff);                         \
+        another->Set##device_from##Data(another_data.data(), another_data.size());                         \
+        another->Set##device_from##Diff(another_diff.data(), another_diff.size());                         \
         tensor = std::make_shared<my_tensor::Tensor<>>(shape);                 \
-        tensor->Set##device_to##Data(data);                                    \
-        tensor->Set##device_to##Diff(diff);                                    \
+        tensor->Set##device_to##Data(data.data(), data.size());                                    \
+        tensor->Set##device_to##Diff(diff.data(), diff.size());                                    \
         *tensor = *another;                                                    \
       } catch (my_tensor::ShapeError & e) {                                    \
         std::cerr << e.what() << std::endl;                                    \
@@ -299,11 +203,11 @@ TEST_DATA_AND_DIFF(TensorCopyGPU2GPU)
         diff[i] = i + 1;                                                       \
       }                                                                        \
       try {                                                                    \
-        another->Set##device_from##Data(another_data);                         \
-        another->Set##device_from##Diff(another_diff);                         \
+        another->Set##device_from##Data(another_data.data(), another_data.size());                         \
+        another->Set##device_from##Diff(another_diff.data(), another_diff.size());                         \
         tensor = std::make_shared<my_tensor::Tensor<>>(shape);                 \
-        tensor->Set##device_to##Data(data);                                    \
-        tensor->Set##device_to##Diff(diff);                                    \
+        tensor->Set##device_to##Data(data.data(), data.size());                                    \
+        tensor->Set##device_to##Diff(diff.data(), diff.size());                                    \
         *tensor = std::move(*another);                                         \
       } catch (my_tensor::ShapeError & e) {                                    \
         std::cerr << e.what() << std::endl;                                    \

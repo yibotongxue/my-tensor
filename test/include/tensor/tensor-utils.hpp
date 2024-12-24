@@ -7,25 +7,13 @@
 #include <memory>
 #include <vector>
 
-#define TEST_SHAPE_AND_SIZE(test_fixture)                         \
-  TEST_F(test_fixture##Test, test_fixture##_ShapeMatches) {       \
-    const std::vector<int> shape = {2, 3};                        \
-    EXPECT_EQ(tensor->GetShape(), shape);                         \
-  }                                                               \
-  TEST_F(test_fixture##Test, test_fixture##_SizeMatches) {        \
-    EXPECT_EQ(tensor->GetSize(), 6);                              \
-  }                                                               \
-  TEST_F(test_fixture##Test, test_fixture##_CPUDataSizeMatches) { \
-    EXPECT_EQ(tensor->GetCPUData().size(), 6);                    \
-  }                                                               \
-  TEST_F(test_fixture##Test, test_fixture##_CPUDiffSizeMatches) { \
-    EXPECT_EQ(tensor->GetCPUDiff().size(), 6);                    \
-  }                                                               \
-  TEST_F(test_fixture##Test, test_fixture##_GPUDataSizeMatches) { \
-    EXPECT_EQ(tensor->GetGPUData().size(), 6);                    \
-  }                                                               \
-  TEST_F(test_fixture##Test, test_fixture##_GPUDiffSizeMatches) { \
-    EXPECT_EQ(tensor->GetGPUDiff().size(), 6);                    \
+#define TEST_SHAPE_AND_SIZE(test_fixture)                   \
+  TEST_F(test_fixture##Test, test_fixture##_ShapeMatches) { \
+    const std::vector<int> shape = {2, 3};                  \
+    EXPECT_EQ(tensor->GetShape(), shape);                   \
+  }                                                         \
+  TEST_F(test_fixture##Test, test_fixture##_SizeMatches) {  \
+    EXPECT_EQ(tensor->GetSize(), 6);                        \
   }
 
 #define DEFINE_DATA_AND_DIFF(data_name, diff_name) \
@@ -50,18 +38,18 @@
     FAIL() << "Failed to construct tensor.";                                  \
   }
 
-#define DATA_EQUAL_TEST(device)                       \
-  for (int i = 0; i < 6; i++) {                       \
-    EXPECT_EQ(tensor->Get##device##Data()[i], i + 1); \
+#define DATA_EQUAL_TEST(device)                     \
+  for (int i = 0; i < 6; i++) {                     \
+    EXPECT_EQ(tensor->Get##device##Data(i), i + 1); \
   }
 
-#define DIFF_EQUAL_TEST(device)                 \
-  EXPECT_EQ(tensor->Get##device##Diff()[0], 1); \
-  EXPECT_EQ(tensor->Get##device##Diff()[1], 3); \
-  EXPECT_EQ(tensor->Get##device##Diff()[2], 5); \
-  EXPECT_EQ(tensor->Get##device##Diff()[3], 2); \
-  EXPECT_EQ(tensor->Get##device##Diff()[4], 4); \
-  EXPECT_EQ(tensor->Get##device##Diff()[5], 6);
+#define DIFF_EQUAL_TEST(device)               \
+  EXPECT_EQ(tensor->Get##device##Diff(0), 1); \
+  EXPECT_EQ(tensor->Get##device##Diff(1), 3); \
+  EXPECT_EQ(tensor->Get##device##Diff(2), 5); \
+  EXPECT_EQ(tensor->Get##device##Diff(3), 2); \
+  EXPECT_EQ(tensor->Get##device##Diff(4), 4); \
+  EXPECT_EQ(tensor->Get##device##Diff(5), 6);
 
 #define TEST_DATA(test_fixture, device)                          \
   TEST_F(test_fixture##Test, test_fixture##device##_DataEqual) { \
