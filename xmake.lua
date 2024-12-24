@@ -47,7 +47,8 @@ local layer_src = {
     -- "src/flatten.cu",
     "src/linear.cu",
     "src/linear.cc",
-    -- "src/conv.cu",
+    "src/conv.cu",
+    "src/conv.cc",
     -- "src/pooling.cu",
     -- "src/softmax.cu",
     -- "src/loss-with-softmax.cu",
@@ -168,12 +169,12 @@ target("linear_test")
     add_includedirs("test/include")
     add_files("test/linear-test.cc")
 
--- target("conv_test")
---     set_kind("binary")
---     add_packages("gtest")
---     add_deps("layer_lib")
---     add_includedirs("test/include")
---     add_files("test/conv-test.cu")
+target("conv_test")
+    set_kind("binary")
+    add_packages("gtest")
+    add_deps("layer_lib")
+    add_includedirs("test/include")
+    add_files("test/conv-test.cc")
 
 -- target("pooling_test")
 --     set_kind("binary")

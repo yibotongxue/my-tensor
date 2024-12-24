@@ -40,9 +40,9 @@
       std::ranges::generate(kernels_data, random_func);                      \
       std::ranges::generate(bias_data, random_func);                         \
       input = std::make_shared<my_tensor::Tensor<>>(input_shape);            \
-      input->Set##device##Data(input_data);                                  \
+      input->Set##device##Data(input_data.data(), input_data.size());                                  \
       output = std::make_shared<my_tensor::Tensor<>>(output_shape);          \
-      output->Set##device##Diff(output_diff);                                \
+      output->Set##device##Diff(output_diff.data(), output_diff.size());                                \
       bottom.clear();                                                        \
       top.clear();                                                           \
       bottom.push_back(input);                                               \
@@ -51,9 +51,9 @@
       conv->SetUp(bottom, top);                                              \
       auto temp = std::dynamic_pointer_cast<my_tensor::Convolution<>>(conv); \
       kernels = temp->GetKernel();                                           \
-      kernels->Set##device##Data(kernels_data);                              \
+      kernels->Set##device##Data(kernels_data.data(), kernels_data.size());                              \
       bias = temp->GetBias();                                                \
-      bias->Set##device##Data(bias_data);                                    \
+      bias->Set##device##Data(bias_data.data(), bias_data.size());                                    \
     }                                                                        \
     const std::vector<int> input_shape{10, 5, 32, 64};                       \
     const std::vector<int> output_shape{10, 9, 32, 64};                      \
@@ -78,8 +78,6 @@ CONVOLUTION_TEST_CLASS(GPU)
 #define CONVOLUTION_FORWARD_TEST(device)                                   \
   TEST_F(Convolution##device##Test, ForwardTest) {                         \
     conv->Forward##device(bottom, top);                                    \
-    std::vector<float> actual(output->Get##device##Data().begin(),         \
-                              output->Get##device##Data().end());          \
     for (int i = 0; i < 184320; i++) {                                     \
       int n = i / 18432;                                                   \
       int c = (i % 18432) / 2048;                                          \
@@ -100,7 +98,7 @@ CONVOLUTION_TEST_CLASS(GPU)
           }                                                                \
         }                                                                  \
       }                                                                    \
-      ASSERT_NEAR(actual[i], expect, 0.01);                                \
+      ASSERT_NEAR(output->Get##device##Data(i), expect, 0.01);                                \
     }                                                                      \
   }
 
@@ -111,8 +109,6 @@ CONVOLUTION_FORWARD_TEST(GPU)
   TEST_F(Convolution##device##Test, BackwardBottomTest) {                    \
     conv->Forward##device(bottom, top);                                      \
     conv->Backward##device(top, bottom);                                     \
-    std::vector<float> actual(input->Get##device##Diff().begin(),            \
-                              input->Get##device##Diff().end());             \
     for (int i = 0; i < 102400; i++) {                                       \
       int n = i / 10240;                                                     \
       int c = (i % 10240) / 2048;                                            \
@@ -133,7 +129,7 @@ CONVOLUTION_FORWARD_TEST(GPU)
           }                                                                  \
         }                                                                    \
       }                                                                      \
-      ASSERT_NEAR(actual[i], expect, 0.01);                                  \
+      ASSERT_NEAR(input->Get##device##Diff(i), expect, 0.01);                                  \
     }                                                                        \
   }
 
@@ -144,8 +140,6 @@ CONVOLUTION_BACKWARD_BOTTOM(GPU)
   TEST_F(Convolution##device##Test, BackwardKernelTest) {                     \
     conv->Forward##device(bottom, top);                                       \
     conv->Backward##device(top, bottom);                                      \
-    std::vector<float> actual(kernels->Get##device##Diff().begin(),           \
-                              kernels->Get##device##Diff().end());            \
     for (int i = 0; i < 405; i++) {                                           \
       int c_out = i / 45;                                                     \
       int c_in = (i % 45) / 9;                                                \
@@ -168,7 +162,7 @@ CONVOLUTION_BACKWARD_BOTTOM(GPU)
           input_row++;                                                        \
         }                                                                     \
       }                                                                       \
-      ASSERT_NEAR(actual[i], expect, 0.1);                                    \
+      ASSERT_NEAR(kernels->Get##device##Diff(i), expect, 0.1);                                    \
     }                                                                         \
   }
 
@@ -179,8 +173,6 @@ CONVOLUTION_BACKWARD_KERNEL(GPU)
   TEST_F(Convolution##device##Test, BackwardBiasTest) {          \
     conv->Forward##device(bottom, top);                          \
     conv->Backward##device(top, bottom);                         \
-    std::vector<float> actual(bias->Get##device##Diff().begin(), \
-                              bias->Get##device##Diff().end());  \
     for (int i = 0; i < 9; i++) {                                \
       float expect = 0.0f;                                       \
       for (int t = 0; t < 10; t++) {                             \
@@ -188,7 +180,7 @@ CONVOLUTION_BACKWARD_KERNEL(GPU)
           expect += output_diff[t * 18432 + i * 2048 + j];       \
         }                                                        \
       }                                                          \
-      ASSERT_NEAR(actual[i] / expect, 1.0f, 0.01);               \
+      ASSERT_NEAR(bias->Get##device##Diff(i) / expect, 1.0f, 0.01);               \
     }                                                            \
   }
 

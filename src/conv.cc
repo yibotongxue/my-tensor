@@ -74,16 +74,16 @@ template <typename T>
 void Convolution<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                                 const std::vector<TensorPtr<T>>& top) {
   CheckShape(bottom[0], top[0]);
-  const auto& kernel_data = kernel_->GetCPUData();
-  const auto& bias_data = bias_->GetCPUData();
-  const auto& bottom_data = bottom[0]->GetCPUData();
-  auto& top_data = top[0]->GetCPUData();
+  const T* kernel_data = kernel_->GetCPUDataPtr();
+  const T* bias_data = bias_->GetCPUDataPtr();
+  const T* bottom_data = bottom[0]->GetCPUDataPtr();
+  T* top_data = top[0]->GetCPUDataPtr();
   int kernel_size = kernel_height_ * kernel_width_;
   int im_size = height_ * width_;
   Im2col_CPU(batch_size_, bottom[0]->GetCPUDataPtr(), input_channels_, height_,
              width_, kernel_height_, kernel_width_,
              col_cache_->GetCPUDataPtr());
-  const auto& col_data = col_cache_->GetCPUData();
+  const T* col_data = col_cache_->GetCPUDataPtr();
   for (int t = 0; t < batch_size_; t++) {
     for (int i = 0; i < output_channels_; i++) {
       for (int j = 0; j < im_size; j++) {
@@ -103,16 +103,16 @@ template <typename T>
 void Convolution<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
                                  const std::vector<TensorPtr<T>>& bottom) {
   CheckShape(bottom[0], top[0]);
-  const auto& kernel_data = kernel_->GetCPUData();
-  const auto& top_diff = top[0]->GetCPUDiff();
-  const auto& bottom_data = bottom[0]->GetCPUData();
-  auto& bottom_diff = bottom[0]->GetCPUDiff();
-  auto& kernel_diff = kernel_->GetCPUDiff();
+  const T* kernel_data = kernel_->GetCPUDataPtr();
+  const T* top_diff = top[0]->GetCPUDiffPtr();
+  const T* bottom_data = bottom[0]->GetCPUDataPtr();
+  T* bottom_diff = bottom[0]->GetCPUDiffPtr();
+  T* kernel_diff = kernel_->GetCPUDiffPtr();
   int kernel_size = kernel_height_ * kernel_width_;
   int im_size = height_ * width_;
-  const auto& col_data = col_cache_->GetCPUData();
-  auto& col_diff = col_cache_->GetCPUDiff();
-  auto& bias_diff = bias_->GetCPUDiff();
+  const T* col_data = col_cache_->GetCPUDataPtr();
+  T* col_diff = col_cache_->GetCPUDiffPtr();
+  T* bias_diff = bias_->GetCPUDiffPtr();
   // top = kernel * temp
   // [n * output_channels_ * im_size] = [(n *) output_channels_ *
   // (input_channels_ * kernel_size)]

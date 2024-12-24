@@ -6,7 +6,7 @@
 #include <memory>
 
 // #include "accuracy.hpp"
-// #include "conv.hpp"
+#include "conv.hpp"
 #include "error.hpp"
 // #include "flatten.hpp"
 // #include "layer-parameter.hpp"
@@ -30,8 +30,8 @@ inline LayerPtr<T> CreateLayer(const LayerParameterPtr param) {
     //   return std::make_shared<Flatten<T>>(param);
     case ParamType::kLinear:
       return std::make_shared<Linear<T>>(param);
-    // case ParamType::kConvolution:
-    //   return std::make_shared<Convolution<T>>(param);
+    case ParamType::kConvolution:
+      return std::make_shared<Convolution<T>>(param);
     // case ParamType::kPooling:
     //   return std::make_shared<Pooling<T>>(param);
     // case ParamType::kSoftmax:
