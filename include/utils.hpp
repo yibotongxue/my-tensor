@@ -101,4 +101,6 @@ inline int CudaGetBlocks(const int N) {
 #define SPAN_DIFF(tensor, T) \
   std::span<T>(tensor->GetCPUDiffPtr(), tensor->GetSize())
 
+#define PTR_CAST(raw_ptr) thrust::device_pointer_cast(raw_ptr)
+
 #endif  // INCLUDE_UTILS_HPP_

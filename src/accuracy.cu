@@ -48,8 +48,8 @@ void Accuracy<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
       bottom_ptr, label_ptr, batch_size_, features_, correct_ptr);
   int correct = thrust::reduce(correct_vec.begin(), correct_vec.end(), 0,
                                thrust::plus<int>());
-  thrust::device_ptr<T>(top[0]->GetGPUDataPtr())[0] =
-      static_cast<T>(correct) / static_cast<T>(batch_size_);
+  PTR_CAST(top[0]->GetGPUDataPtr())
+  [0] = static_cast<T>(correct) / static_cast<T>(batch_size_);
 }
 
 template <typename T>

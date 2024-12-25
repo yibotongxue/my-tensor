@@ -1,5 +1,7 @@
 // Copyright 2024 yibotongxue
 
+#include "linear.hpp"
+
 #include <gtest/gtest.h>
 
 #include <algorithm>
@@ -13,7 +15,6 @@
 #include "layer-factory.hpp"
 #include "layer-parameter.hpp"
 #include "layer/layer-utils.hpp"
-#include "linear.hpp"
 
 // TEST(TrivialTest, always_succeed) {
 //   EXPECT_TRUE(true);
@@ -47,7 +48,7 @@
       Y.reset();                                                          \
       X = std::make_shared<my_tensor::Tensor<>>(x_shape);                 \
       Y = std::make_shared<my_tensor::Tensor<>>(y_shape);                 \
-      X->Set##device##Data(x_data.data(), x_data.size());                                       \
+      X->Set##device##Data(x_data.data(), x_data.size());                 \
       linear.reset();                                                     \
       linear = my_tensor::CreateLayer<>(layer_parameters[0]);             \
       auto temp = std::dynamic_pointer_cast<my_tensor::Linear<>>(linear); \
@@ -58,10 +59,10 @@
       linear->SetUp(bottom, top);                                         \
       weight = temp->GetWeight();                                         \
       bias = temp->GetBias();                                             \
-      weight->Set##device##Data(weight_data.data(), weight_data.size());                             \
-      bias->Set##device##Data(bias_data.data(), bias_data.size());                                 \
+      weight->Set##device##Data(weight_data.data(), weight_data.size());  \
+      bias->Set##device##Data(bias_data.data(), bias_data.size());        \
       linear->Forward##device(bottom, top);                               \
-      Y->Set##device##Diff(y_diff.data(), y_diff.size());                                       \
+      Y->Set##device##Diff(y_diff.data(), y_diff.size());                 \
       linear->Backward##device(top, bottom);                              \
     }                                                                     \
     const std::vector<int> weight_shape{200, 400};                        \
@@ -87,17 +88,17 @@
 LINEAR_TEST(CPU)
 LINEAR_TEST(GPU)
 
-#define LINEAR_FORWARD_TEST(device)                                  \
-  TEST_F(Linear##device##Test, Linear_Forward##device##Test) {       \
-    for (int i = 0; i < 120000; i++) {                               \
-      int row = i / 400;                                             \
-      int col = i % 400;                                             \
-      float temp = bias_data[col];                                   \
-      for (int j = 0; j < 200; j++) {                                \
-        temp += x_data[row * 200 + j] * weight_data[j * 400 + col];  \
-      }                                                              \
-      ASSERT_NEAR(temp, Y->Get##device##Data(i), 0.01);                     \
-    }                                                                \
+#define LINEAR_FORWARD_TEST(device)                                 \
+  TEST_F(Linear##device##Test, Linear_Forward##device##Test) {      \
+    for (int i = 0; i < 120000; i++) {                              \
+      int row = i / 400;                                            \
+      int col = i % 400;                                            \
+      float temp = bias_data[col];                                  \
+      for (int j = 0; j < 200; j++) {                               \
+        temp += x_data[row * 200 + j] * weight_data[j * 400 + col]; \
+      }                                                             \
+      ASSERT_NEAR(temp, Y->Get##device##Data(i), 0.01);             \
+    }                                                               \
   }
 
 LINEAR_FORWARD_TEST(CPU)
@@ -112,7 +113,7 @@ LINEAR_FORWARD_TEST(GPU)
       for (int j = 0; j < 400; j++) {                                 \
         expect += weight_data[col * 400 + j] * y_diff[row * 400 + j]; \
       }                                                               \
-      ASSERT_NEAR(X->Get##device##Diff(i), expect, 0.01);                           \
+      ASSERT_NEAR(X->Get##device##Diff(i), expect, 0.01);             \
     }                                                                 \
   }
 
@@ -128,7 +129,7 @@ LINEAR_BACKWARD_BOTTOM_TEST(GPU)
       for (int j = 0; j < 300; j++) {                                 \
         expect += y_diff[j * 400 + col] * x_data[j * 200 + row];      \
       }                                                               \
-      ASSERT_NEAR(weight->Get##device##Diff(i), expect, 0.01);                           \
+      ASSERT_NEAR(weight->Get##device##Diff(i), expect, 0.01);        \
     }                                                                 \
   }
 
@@ -142,7 +143,7 @@ LINEAR_BACKWARD_WEIGHT_TEST(GPU)
       for (int j = 0; j < 300; j++) {                               \
         expect += y_diff[j * 400 + i];                              \
       }                                                             \
-      ASSERT_NEAR(bias->Get##device##Diff(i), expect, 0.01);                         \
+      ASSERT_NEAR(bias->Get##device##Diff(i), expect, 0.01);        \
     }                                                               \
   }
 
@@ -151,5 +152,7 @@ LINEAR_BACKWARD_BIAS_TEST(GPU)
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
+  ::testing::GTEST_FLAG(print_time) = false;
+  ::testing::GTEST_FLAG(catch_exceptions) = false;
   return RUN_ALL_TESTS();
 }

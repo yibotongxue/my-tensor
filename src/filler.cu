@@ -3,6 +3,7 @@
 #include <thrust/device_ptr.h>
 
 #include "filler.hpp"
+#include "utils.hpp"
 
 namespace my_tensor {
 
@@ -14,7 +15,7 @@ void ZeroFiller<T>::FillGPU(TensorPtr<T> tensor) {
 
 template <typename T>
 void ConstantFiller<T>::FillGPU(TensorPtr<T> tensor) {
-  auto data_ptr = thrust::device_ptr<T>(tensor->GetGPUDataPtr());
+  auto data_ptr = PTR_CAST(tensor->GetGPUDataPtr());
   thrust::fill(data_ptr, data_ptr + tensor->GetSize(), val_);
 }
 

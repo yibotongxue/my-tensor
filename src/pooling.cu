@@ -66,9 +66,9 @@ template <typename T>
 void Pooling<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
                              const std::vector<TensorPtr<T>>& bottom) {
   CheckShape(bottom[0], top[0]);
-  auto top_diff_ptr = thrust::device_ptr<T>(top[0]->GetGPUDiffPtr());
-  auto mask_data_ptr = thrust::device_ptr<int>(mask_->GetGPUDataPtr());
-  auto bottom_diff_ptr = thrust::device_ptr<T>(bottom[0]->GetGPUDiffPtr());
+  auto top_diff_ptr = PTR_CAST(top[0]->GetGPUDiffPtr());
+  auto mask_data_ptr = PTR_CAST(mask_->GetGPUDataPtr());
+  auto bottom_diff_ptr = PTR_CAST(bottom[0]->GetGPUDiffPtr());
   thrust::fill(bottom_diff_ptr, bottom_diff_ptr + bottom[0]->GetSize(), 0);
   thrust::scatter(top_diff_ptr, top_diff_ptr + top[0]->GetSize(), mask_data_ptr,
                   bottom_diff_ptr);

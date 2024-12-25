@@ -21,8 +21,8 @@ namespace my_tensor {
 template <typename T>
 void Softmax<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                             const std::vector<TensorPtr<T>>& top) {
-  auto bottom_data = thrust::device_ptr<T>(bottom[0]->GetGPUDataPtr());
-  auto top_data = thrust::device_ptr<T>(top[0]->GetGPUDataPtr());
+  auto bottom_data = PTR_CAST(bottom[0]->GetGPUDataPtr());
+  auto top_data = PTR_CAST(top[0]->GetGPUDataPtr());
   thrust::device_vector<int> keys(batch_size_ * channels_);
   int channels = channels_;
   // generate key
