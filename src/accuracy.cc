@@ -65,7 +65,6 @@ void Accuracy<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                     std::views::take(features_);
     int predict = std::ranges::max_element(row_view) - row_view.begin();
     if (predict == label[i]) {
-      // std::cout << predict << std::endl;
       correct++;
     }
   }

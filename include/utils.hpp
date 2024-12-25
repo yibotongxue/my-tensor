@@ -3,7 +3,9 @@
 #ifndef INCLUDE_UTILS_HPP_
 #define INCLUDE_UTILS_HPP_
 
+#include <algorithm>
 #include <iostream>
+#include <ranges>  // NOLINT
 
 constexpr int kCudaThreadNum = 512;
 
@@ -102,5 +104,15 @@ inline int CudaGetBlocks(const int N) {
   std::span<T>(tensor->GetCPUDiffPtr(), tensor->GetSize())
 
 #define PTR_CAST(raw_ptr) thrust::device_pointer_cast(raw_ptr)
+
+#define PRINT_DATA(tensor, T)                                  \
+  std::ranges::copy(SPAN_DATA(tensor, T),                      \
+                    std::ostream_iterator<T>(std::cout, " ")); \
+  std::cout << std::endl;
+
+#define PRINT_DIFF(tensor, T)                                  \
+  std::ranges::copy(SPAN_DIFF(tensor, T),                      \
+                    std::ostream_iterator<T>(std::cout, " ")); \
+  std::cout << std::endl;
 
 #endif  // INCLUDE_UTILS_HPP_

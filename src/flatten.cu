@@ -55,8 +55,8 @@ void Flatten<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
   if (inplace_) {
     bottom[0]->Reshape(top_shape_);
   } else {
-    MyMemcpyCPU2CPU(bottom[0]->GetCPUDataPtr(), top[0]->GetCPUDataPtr(),
-                    bottom[0]->GetSize());
+    MyMemcpyCPU2CPU(top[0]->GetCPUDataPtr(), bottom[0]->GetCPUDataPtr(),
+                    bottom[0]->GetSize() * sizeof(T));
   }
 }
 
@@ -66,8 +66,8 @@ void Flatten<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
   if (inplace_) {
     bottom[0]->Reshape(bottom_shape_);
   } else {
-    MyMemcpyCPU2CPU(top[0]->GetCPUDiffPtr(), bottom[0]->GetCPUDiffPtr(),
-                    top[0]->GetSize());
+    MyMemcpyCPU2CPU(bottom[0]->GetCPUDiffPtr(), top[0]->GetCPUDiffPtr(),
+                    top[0]->GetSize() * sizeof(T));
   }
 }
 
@@ -77,8 +77,8 @@ void Flatten<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
   if (inplace_) {
     bottom[0]->Reshape(top_shape_);
   } else {
-    MyMemcpyGPU2GPU(bottom[0]->GetGPUDataPtr(), top[0]->GetGPUDataPtr(),
-                    bottom[0]->GetSize());
+    MyMemcpyGPU2GPU(top[0]->GetGPUDataPtr(), bottom[0]->GetGPUDataPtr(),
+                    bottom[0]->GetSize() * sizeof(T));
   }
 }
 
@@ -88,8 +88,8 @@ void Flatten<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
   if (inplace_) {
     bottom[0]->Reshape(bottom_shape_);
   } else {
-    MyMemcpyGPU2GPU(top[0]->GetGPUDiffPtr(), bottom[0]->GetGPUDiffPtr(),
-                    top[0]->GetSize());
+    MyMemcpyGPU2GPU(bottom[0]->GetGPUDiffPtr(), top[0]->GetGPUDiffPtr(),
+                    top[0]->GetSize() * sizeof(T));
   }
 }
 

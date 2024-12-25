@@ -49,7 +49,6 @@ void LossWithSoftmax<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
   T batch_size = static_cast<T>(batch_size_);
   thrust::copy(softmax_top_data, softmax_top_data + softmax_top_[0]->GetSize(),
                bottom_diff);
-  std::cout << std::endl;
   T* bottom_ptr = bottom[0]->GetGPUDiffPtr();
 
   int channels = channels_;

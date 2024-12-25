@@ -3,6 +3,7 @@
 #include "sgd-with-momentum-solver.hpp"
 
 #include "blas.hpp"
+#include "memory-util.hpp"
 
 namespace my_tensor {
 
@@ -33,6 +34,15 @@ void SgdWithMomentumSolver<T>::SpecialSetUp() {
   auto sgd_with_momentum_param =
       std::dynamic_pointer_cast<SgdWithMomentumSolverParameter>(this->param_);
   momentum_ = sgd_with_momentum_param->momentum_;
+  if (MyTensorContext::on_cpu()) {
+    for (auto& history : history_data_) {
+      Fill_CPU<T>(history->GetDataPtr(), history->GetSize(), 0.0f);
+    }
+  } else {
+    for (auto& history : history_data_) {
+      Fill_GPU<T>(history->GetDataPtr(), history->GetSize(), 0.0f);
+    }
+  }
 }
 
 template class SgdWithMomentumSolver<float>;

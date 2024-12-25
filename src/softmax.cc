@@ -68,7 +68,6 @@ void Softmax<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
     auto norm_view = exp_view | std::views::transform([sum_value](T val) -> T {
                        return static_cast<T>(val / sum_value);
                      });
-    std::ranges::copy(norm_view, top_data.begin() + i * channels_);
   }
 }
 
