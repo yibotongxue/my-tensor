@@ -1,5 +1,7 @@
 // Copyright 2024 yibotongxue
 
+#include "loss-with-softmax.hpp"
+
 #include <algorithm>
 #include <iostream>
 #include <memory>
@@ -10,7 +12,6 @@
 #include "json-loader.hpp"
 #include "layer-factory.hpp"
 #include "layer-parameter.hpp"
-#include "loss-with-softmax.hpp"
 #include "tensor.hpp"
 
 // TEST(TrivialTest, always_succeed) {
@@ -26,7 +27,8 @@
    protected:                                                               \
     void SetUp() override {                                                 \
       my_tensor::JsonLoader loader(                                         \
-          "../test/json-test/loss-with-softmax.json");                      \
+          "/home/linyibo/Code/my-tensor/test/json-test/"                    \
+          "loss-with-softmax.json");                                        \
       loss_with_softmax.reset();                                            \
       loss_with_softmax = my_tensor::CreateLayer<>(loader.LoadLayers()[0]); \
       const std::vector<int> input_shape{1024, 10};                         \
@@ -50,8 +52,8 @@
       input = std::make_shared<my_tensor::Tensor<>>(input_shape);           \
       label = std::make_shared<my_tensor::Tensor<>>(label_shape);           \
       loss = std::make_shared<my_tensor::Tensor<>>(loss_shape);             \
-      input->Set##device##Data(input_data.data(), input_data.size());                                 \
-      label->Set##device##Data(label_data.data(), label_data.size());                                 \
+      input->Set##device##Data(input_data.data(), input_data.size());       \
+      label->Set##device##Data(label_data.data(), label_data.size());       \
       loss_with_softmax->SetUp({input, label}, {loss});                     \
     }                                                                       \
     std::vector<float> input_data;                                          \
@@ -68,7 +70,7 @@ LOSS_WITH_SOFTMAX_TEST_CLASS(GPU)
 #define LOSS_WITH_SOFTMAX_TEST_FORWARD_LOSS(device)                           \
   TEST_F(LossWithSoftmax##device##Test, ForwardLoss) {                        \
     loss_with_softmax->Forward##device({input, label}, {loss});               \
-    float actual = loss->Get##device##Data(0);                              \
+    float actual = loss->Get##device##Data(0);                                \
     std::vector<float> max_values(1024, -11);                                 \
     for (int i = 0; i < 1024; i++) {                                          \
       for (int j = 0; j < 10; j++) {                                          \
@@ -129,7 +131,7 @@ LOSS_WITH_SOFTMAX_TEST_FORWARD_LOSS(GPU)
           expect -= 1;                                                   \
         }                                                                \
         expect /= 1024;                                                  \
-        ASSERT_NEAR(input->Get##device##Diff(i * 10 + j), expect, 0.01);                   \
+        ASSERT_NEAR(input->Get##device##Diff(i * 10 + j), expect, 0.01); \
       }                                                                  \
     }                                                                    \
   }

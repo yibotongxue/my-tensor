@@ -28,7 +28,8 @@
   class Linear##device##Test : public ::testing::Test {                   \
    protected:                                                             \
     void SetUp() override {                                               \
-      my_tensor::JsonLoader loader("../test/json-test/linear.json");      \
+      my_tensor::JsonLoader loader(                                       \
+          "/home/linyibo/Code/my-tensor/test/json-test/linear.json");     \
       auto&& layer_parameters = loader.LoadLayers();                      \
       weight_data.resize(80000);                                          \
       x_data.resize(60000);                                               \

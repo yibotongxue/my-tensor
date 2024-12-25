@@ -10,12 +10,15 @@
 #include "error.hpp"
 
 TEST(JsonTest, NotExistFile) {
-  EXPECT_THROW(my_tensor::JsonLoader loader("../test/json-test/not-exist.json"),
-               my_tensor::FileError);
+  EXPECT_THROW(
+      my_tensor::JsonLoader loader(
+          "/home/linyibo/Code/my-tensor/test/json-test/json-loader.json"),
+      my_tensor::FileError);
 }
 
 TEST(JsonTest, UnimplementedLayer) {
-  my_tensor::JsonLoader loader("../test/json-test/unimplemented.json");
+  my_tensor::JsonLoader loader(
+      "/home/linyibo/Code/my-tensor/test/json-test/json-loader.json");
   EXPECT_THROW(auto params = loader.LoadLayers(), my_tensor::FileError);
   try {
     auto params = loader.LoadLayers();
@@ -25,7 +28,8 @@ TEST(JsonTest, UnimplementedLayer) {
 }
 
 TEST(JsonTest, WithoutName) {
-  my_tensor::JsonLoader loader("../test/json-test/without-name.json");
+  my_tensor::JsonLoader loader(
+      "/home/linyibo/Code/my-tensor/test/json-test/json-loader.json");
   EXPECT_THROW(auto params = loader.LoadLayers(), my_tensor::FileError);
   try {
     auto params = loader.LoadLayers();
@@ -35,7 +39,8 @@ TEST(JsonTest, WithoutName) {
 }
 
 TEST(JsonTest, WithoutType) {
-  my_tensor::JsonLoader loader("../test/json-test/without-type.json");
+  my_tensor::JsonLoader loader(
+      "/home/linyibo/Code/my-tensor/test/json-test/json-loader.json");
   EXPECT_THROW(auto params = loader.LoadLayers(), my_tensor::FileError);
   try {
     auto params = loader.LoadLayers();
@@ -45,7 +50,8 @@ TEST(JsonTest, WithoutType) {
 }
 
 TEST(JsonTest, ReluSuccess) {
-  my_tensor::JsonLoader loader("../test/json-test/example.json");
+  my_tensor::JsonLoader loader(
+      "/home/linyibo/Code/my-tensor/test/json-test/json-loader.json");
   ASSERT_NO_THROW(loader.LoadLayers());
   auto params = loader.LoadLayers();
   auto param = params[2];
@@ -56,7 +62,8 @@ TEST(JsonTest, ReluSuccess) {
 }
 
 TEST(JsonTest, SigmoidSuccess) {
-  my_tensor::JsonLoader loader("../test/json-test/example.json");
+  my_tensor::JsonLoader loader(
+      "/home/linyibo/Code/my-tensor/test/json-test/json-loader.json");
   ASSERT_NO_THROW(loader.LoadLayers());
   auto params = loader.LoadLayers();
   auto param = params[5];
@@ -67,7 +74,8 @@ TEST(JsonTest, SigmoidSuccess) {
 }
 
 TEST(JsonTest, FlattenSuccess) {
-  my_tensor::JsonLoader loader("../test/json-test/example.json");
+  my_tensor::JsonLoader loader(
+      "/home/linyibo/Code/my-tensor/test/json-test/json-loader.json");
   ASSERT_NO_THROW(loader.LoadLayers());
   auto params = loader.LoadLayers();
   auto param = params[6];
@@ -79,7 +87,8 @@ TEST(JsonTest, FlattenSuccess) {
 }
 
 TEST(JsonTest, LinearSuccess) {
-  my_tensor::JsonLoader loader("../test/json-test/example.json");
+  my_tensor::JsonLoader loader(
+      "/home/linyibo/Code/my-tensor/test/json-test/json-loader.json");
   ASSERT_NO_THROW(loader.LoadLayers());
   auto params = loader.LoadLayers();
   auto param = params[7];
@@ -100,7 +109,8 @@ TEST(JsonTest, LinearSuccess) {
 }
 
 TEST(JsonTest, ConvolutionSuccess) {
-  my_tensor::JsonLoader loader("../test/json-test/example.json");
+  my_tensor::JsonLoader loader(
+      "/home/linyibo/Code/my-tensor/test/json-test/json-loader.json");
   ASSERT_NO_THROW(loader.LoadLayers());
   auto params = loader.LoadLayers();
   auto param = params[0];
@@ -118,7 +128,8 @@ TEST(JsonTest, ConvolutionSuccess) {
 }
 
 TEST(JsonTest, PoolingSuccess) {
-  my_tensor::JsonLoader loader("../test/json-test/example.json");
+  my_tensor::JsonLoader loader(
+      "/home/linyibo/Code/my-tensor/test/json-test/json-loader.json");
   ASSERT_NO_THROW(loader.LoadLayers());
   auto params = loader.LoadLayers();
   auto param = params[1];
@@ -134,7 +145,8 @@ TEST(JsonTest, PoolingSuccess) {
 }
 
 TEST(JsonTest, SoftmaxSuccess) {
-  my_tensor::JsonLoader loader("../test/json-test/example.json");
+  my_tensor::JsonLoader loader(
+      "/home/linyibo/Code/my-tensor/test/json-test/json-loader.json");
   ASSERT_NO_THROW(loader.LoadLayers());
   auto params = loader.LoadLayers();
   auto param = params[12];
@@ -146,7 +158,8 @@ TEST(JsonTest, SoftmaxSuccess) {
 }
 
 TEST(JsonTest, LossWithSoftmaxSuccess) {
-  my_tensor::JsonLoader loader("../test/json-test/example.json");
+  my_tensor::JsonLoader loader(
+      "/home/linyibo/Code/my-tensor/test/json-test/json-loader.json");
   ASSERT_NO_THROW(loader.LoadLayers());
   auto params = loader.LoadLayers();
   auto param = params[13];

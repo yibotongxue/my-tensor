@@ -1,5 +1,7 @@
 // Copyright 2024 yibotongxue
 
+#include "conv.hpp"
+
 #include <gtest/gtest.h>
 
 #include <algorithm>
@@ -8,7 +10,6 @@
 #include <ranges>  //NOLINT
 #include <vector>
 
-#include "conv.hpp"
 #include "json-loader.hpp"
 #include "layer-factory.hpp"
 #include "layer-parameter.hpp"
@@ -25,7 +26,8 @@
   class Convolution##device##Test : public ::testing::Test {                 \
    protected:                                                                \
     void SetUp() override {                                                  \
-      my_tensor::JsonLoader loader("../test/json-test/conv.json");           \
+      my_tensor::JsonLoader loader(                                          \
+          "/home/linyibo/Code/my-tensor/test/json-test/conv.json");          \
       auto&& layer_parameters = loader.LoadLayers();                         \
       input_data.resize(102400);                                             \
       output_diff.resize(184320);                                            \
@@ -40,9 +42,9 @@
       std::ranges::generate(kernels_data, random_func);                      \
       std::ranges::generate(bias_data, random_func);                         \
       input = std::make_shared<my_tensor::Tensor<>>(input_shape);            \
-      input->Set##device##Data(input_data.data(), input_data.size());                                  \
+      input->Set##device##Data(input_data.data(), input_data.size());        \
       output = std::make_shared<my_tensor::Tensor<>>(output_shape);          \
-      output->Set##device##Diff(output_diff.data(), output_diff.size());                                \
+      output->Set##device##Diff(output_diff.data(), output_diff.size());     \
       bottom.clear();                                                        \
       top.clear();                                                           \
       bottom.push_back(input);                                               \
@@ -51,9 +53,9 @@
       conv->SetUp(bottom, top);                                              \
       auto temp = std::dynamic_pointer_cast<my_tensor::Convolution<>>(conv); \
       kernels = temp->GetKernel();                                           \
-      kernels->Set##device##Data(kernels_data.data(), kernels_data.size());                              \
+      kernels->Set##device##Data(kernels_data.data(), kernels_data.size());  \
       bias = temp->GetBias();                                                \
-      bias->Set##device##Data(bias_data.data(), bias_data.size());                                    \
+      bias->Set##device##Data(bias_data.data(), bias_data.size());           \
     }                                                                        \
     const std::vector<int> input_shape{10, 5, 32, 64};                       \
     const std::vector<int> output_shape{10, 9, 32, 64};                      \
@@ -98,7 +100,7 @@ CONVOLUTION_TEST_CLASS(GPU)
           }                                                                \
         }                                                                  \
       }                                                                    \
-      ASSERT_NEAR(output->Get##device##Data(i), expect, 0.01);                                \
+      ASSERT_NEAR(output->Get##device##Data(i), expect, 0.01);             \
     }                                                                      \
   }
 
@@ -129,7 +131,7 @@ CONVOLUTION_FORWARD_TEST(GPU)
           }                                                                  \
         }                                                                    \
       }                                                                      \
-      ASSERT_NEAR(input->Get##device##Diff(i), expect, 0.01);                                  \
+      ASSERT_NEAR(input->Get##device##Diff(i), expect, 0.01);                \
     }                                                                        \
   }
 
@@ -162,26 +164,26 @@ CONVOLUTION_BACKWARD_BOTTOM(GPU)
           input_row++;                                                        \
         }                                                                     \
       }                                                                       \
-      ASSERT_NEAR(kernels->Get##device##Diff(i), expect, 0.1);                                    \
+      ASSERT_NEAR(kernels->Get##device##Diff(i), expect, 0.1);                \
     }                                                                         \
   }
 
 CONVOLUTION_BACKWARD_KERNEL(CPU)
 CONVOLUTION_BACKWARD_KERNEL(GPU)
 
-#define CONVOLUTION_BACKWARD_BIAS(device)                        \
-  TEST_F(Convolution##device##Test, BackwardBiasTest) {          \
-    conv->Forward##device(bottom, top);                          \
-    conv->Backward##device(top, bottom);                         \
-    for (int i = 0; i < 9; i++) {                                \
-      float expect = 0.0f;                                       \
-      for (int t = 0; t < 10; t++) {                             \
-        for (int j = 0; j < 2048; j++) {                         \
-          expect += output_diff[t * 18432 + i * 2048 + j];       \
-        }                                                        \
-      }                                                          \
-      ASSERT_NEAR(bias->Get##device##Diff(i) / expect, 1.0f, 0.01);               \
-    }                                                            \
+#define CONVOLUTION_BACKWARD_BIAS(device)                           \
+  TEST_F(Convolution##device##Test, BackwardBiasTest) {             \
+    conv->Forward##device(bottom, top);                             \
+    conv->Backward##device(top, bottom);                            \
+    for (int i = 0; i < 9; i++) {                                   \
+      float expect = 0.0f;                                          \
+      for (int t = 0; t < 10; t++) {                                \
+        for (int j = 0; j < 2048; j++) {                            \
+          expect += output_diff[t * 18432 + i * 2048 + j];          \
+        }                                                           \
+      }                                                             \
+      ASSERT_NEAR(bias->Get##device##Diff(i) / expect, 1.0f, 0.01); \
+    }                                                               \
   }
 
 CONVOLUTION_BACKWARD_BIAS(CPU)

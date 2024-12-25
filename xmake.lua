@@ -32,7 +32,7 @@ local layer_src = {
     "src/relu.cc",
     "src/sigmoid.cu",
     "src/sigmoid.cc",
-    "src/flatten.cu",
+    "src/flatten.cc",
     "src/linear.cu",
     "src/linear.cc",
     "src/conv.cu",
@@ -202,3 +202,31 @@ target("mnist")
     add_deps("solver_lib")
     add_files("src/json-loader.cc")
     add_files("src/mnist.cc")
+
+-- from ChatGPT
+-- 添加一个目标用于批量运行测试
+target("run_tests")
+    set_kind("phony") -- 表示这是一个伪目标
+    on_run(function ()
+        -- 定义需要运行的测试列表
+        local tests = {
+            "tensor_test",
+            "blas_test",
+            "im2col_test",
+            "relu_test",
+            "sigmoid_test",
+            "linear_test",
+            "conv_test",
+            "pooling_test",
+            "softmax_test",
+            "loss_with_softmax_test",
+            "accuracy_test"
+        }
+
+        -- 遍历运行每个测试
+        for _, test in ipairs(tests) do
+            os.exec("pwd")
+            os.exec("xmake run %s", test)
+        end
+    end)
+

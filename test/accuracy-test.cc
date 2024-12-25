@@ -1,5 +1,7 @@
 // Copyright 2024 yibotongxue
 
+#include "accuracy.hpp"
+
 #include <gtest/gtest.h>
 
 #include <algorithm>
@@ -8,7 +10,6 @@
 #include <ranges>  //NOLINT
 #include <vector>
 
-#include "accuracy.hpp"
 #include "json-loader.hpp"
 #include "layer-factory.hpp"
 #include "layer.hpp"
@@ -24,7 +25,8 @@
 
 #define ACCURACY_TEST(device)                                          \
   TEST(AccuracyTest, Forward##device##Test) {                          \
-    my_tensor::JsonLoader loader("../test/json-test/accuracy.json");   \
+    my_tensor::JsonLoader loader(                                      \
+        "/home/linyibo/Code/my-tensor/test/json-test/accuracy.json");  \
     auto accuracy = my_tensor::CreateLayer<>(loader.LoadLayers()[0]);  \
     const std::vector<int> bottom_shape{1024, 10};                     \
     const std::vector<int> label_shape{1024};                          \
@@ -45,8 +47,8 @@
     };                                                                 \
     std::ranges::generate(label_data, label_random);                   \
     accuracy->SetUp({bottom, label}, {top});                           \
-    bottom->Set##device##Data(bottom_data.data(), bottom_data.size());                            \
-    label->Set##device##Data(label_data.data(), label_data.size());                              \
+    bottom->Set##device##Data(bottom_data.data(), bottom_data.size()); \
+    label->Set##device##Data(label_data.data(), label_data.size());    \
     accuracy->Forward##device({bottom, label}, {top});                 \
     int correct = 0;                                                   \
     for (int i = 0; i < 1024; i++) {                                   \
@@ -63,7 +65,7 @@
       }                                                                \
     }                                                                  \
     float actual = static_cast<float>(correct) / 1024.0f;              \
-    ASSERT_NEAR(top->Get##device##Data(0), actual, 0.001);           \
+    ASSERT_NEAR(top->Get##device##Data(0), actual, 0.001);             \
   }
 
 ACCURACY_TEST(CPU)

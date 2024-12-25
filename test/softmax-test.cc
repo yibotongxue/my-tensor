@@ -1,5 +1,7 @@
 // Copyright 2024 yibotongxue
 
+#include "softmax.hpp"
+
 #include <gtest/gtest.h>
 
 #include <algorithm>
@@ -11,7 +13,6 @@
 #include "json-loader.hpp"
 #include "layer-factory.hpp"
 #include "layer.hpp"
-#include "softmax.hpp"
 #include "tensor.hpp"
 
 // TEST(TrivialTest, always_succeed) {
@@ -24,7 +25,8 @@
 
 #define SOFTMAX_TEST(device)                                              \
   TEST(SoftmaxTest, Forward##device##Test) {                              \
-    my_tensor::JsonLoader loader("../test/json-test/softmax.json");       \
+    my_tensor::JsonLoader loader(                                         \
+        "/home/linyibo/Code/my-tensor/test/json-test/softmax.json");      \
     auto softmax = my_tensor::CreateLayer<>(loader.LoadLayers()[0]);      \
     const std::vector<int> bottom_shape{1024, 10};                        \
     auto bottom = std::make_shared<my_tensor::Tensor<>>(bottom_shape);    \
@@ -36,7 +38,7 @@
     std::uniform_real_distribution<float> dis(-10.0f, 10.0f);             \
     auto random_func = [&gen, &dis]() -> float { return dis(gen); };      \
     std::ranges::generate(bottom_data, random_func);                      \
-    bottom->Set##device##Data(bottom_data.data(), bottom_data.size());                               \
+    bottom->Set##device##Data(bottom_data.data(), bottom_data.size());    \
     softmax->Forward##device({bottom}, {top});                            \
     std::vector<float> max_values(1024, -11);                             \
     for (int i = 0; i < 1024; i++) {                                      \
@@ -60,7 +62,7 @@
     for (int i = 0; i < 1024; i++) {                                      \
       for (int j = 0; j < 10; j++) {                                      \
         float expect = bottom_data[i * 10 + j] / max_values[i];           \
-        ASSERT_NEAR(top->Get##device##Data(i * 10 + j), expect, 0.01);                    \
+        ASSERT_NEAR(top->Get##device##Data(i * 10 + j), expect, 0.01);    \
       }                                                                   \
     }                                                                     \
   }
