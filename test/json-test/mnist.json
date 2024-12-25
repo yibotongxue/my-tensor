@@ -1,11 +1,11 @@
 {
   "name": "lenet",
   "batch_size": 1024,
-  "base_lr": 0.3,
-  "l2": 1.5e-4,
+  "base_lr": 8e-3,
+  "l2": 1e-3,
   "solver_type": "sgd_with_momentum",
   "momentum": 0.9,
-  "max_iter": 100,
+  "max_iter": 200,
   "test_step": 10,
   "scheduler": {
     "type": "step",

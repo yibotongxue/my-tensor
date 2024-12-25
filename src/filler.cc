@@ -27,7 +27,7 @@ void XavierFiller<>::FillCPU(TensorPtr<> tensor) {
   std::uniform_real_distribution<float> dis(-limit, limit);
   auto func = [&dis, &gen]() -> float { return dis(gen); };
   std::ranges::generate(SPAN_DATA(tensor, float), func);
-  PRINT_DATA(tensor, float);
+  // PRINT_DATA(tensor, float);
 }
 
 template <>
