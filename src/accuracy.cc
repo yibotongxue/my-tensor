@@ -56,8 +56,8 @@ template <typename T>
 void Accuracy<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                              const std::vector<TensorPtr<T>>& top) {
   CheckShape(bottom[0], bottom[1], top[0]);
-  const auto& bottom_data = bottom[0]->GetCPUDataSpan();
-  const auto& label = bottom[1]->GetCPUDataSpan();
+  const auto& bottom_data = SPAN_DATA(bottom[0], T);
+  const auto& label = SPAN_DATA(bottom[1], T);
   auto bottom_data_view = std::views::all(bottom_data);
   int correct{0};
   for (int i : std::views::iota(0, batch_size_)) {

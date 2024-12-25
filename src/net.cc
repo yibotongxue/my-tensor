@@ -68,7 +68,7 @@ template <typename T>
 std::vector<std::vector<T>> Net<T>::GetModelData() const {
   std::vector<std::vector<T>> result;
   for (auto&& learnable_param : GetLearnableParams()) {
-    auto&& temp_span = learnable_param->GetCPUDataSpan();
+    auto&& temp_span = SPAN_DATA(learnable_param, T);
     result.emplace_back(std::vector<T>(temp_span.begin(), temp_span.end()));
   }
   return result;

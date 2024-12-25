@@ -26,7 +26,7 @@
     layer_name->Forward##device({new_bottom}, {new_top});                      \
     std::vector<float> results(new_top->GetSize());                            \
                                                                                \
-    std::ranges::transform(new_top->GetCPUDataSpan(), top->GetCPUDataSpan(),   \
+    std::ranges::transform(SPAN_DATA(new_top, float), SPAN_DATA(top, float),   \
                            results.begin(),                                    \
                            [](float x, float y) { return (x - y) / 0.001f; }); \
     std::ranges::transform(results, diff, results.begin(),                     \

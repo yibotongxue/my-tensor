@@ -95,4 +95,10 @@ inline int CudaGetBlocks(const int N) {
 
 #define RAW_PTR(vec) thrust::raw_pointer_cast(vec.data())
 
+#define SPAN_DATA(tensor, T) \
+  std::span<T>(tensor->GetCPUDataPtr(), tensor->GetSize())
+
+#define SPAN_DIFF(tensor, T) \
+  std::span<T>(tensor->GetCPUDiffPtr(), tensor->GetSize())
+
 #endif  // INCLUDE_UTILS_HPP_

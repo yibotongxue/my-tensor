@@ -29,7 +29,7 @@ void Relu<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
 template <typename T>
 void Relu<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                          const std::vector<TensorPtr<T>>& top) {
-  auto&& bottom_data = bottom[0]->GetCPUDataSpan();
+  auto&& bottom_data = SPAN_DATA(bottom[0], T);
   std::ranges::transform(bottom_data, top[0]->GetCPUDataPtr(), [](T val) -> T {
     return std::max(val, static_cast<T>(0));
   });
@@ -38,8 +38,8 @@ void Relu<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
 template <typename T>
 void Relu<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
                           const std::vector<TensorPtr<T>>& bottom) {
-  auto&& bottom_data = bottom[0]->GetCPUDataSpan();
-  auto&& top_diff = top[0]->GetCPUDiffSpan();
+  auto&& bottom_data = SPAN_DATA(bottom[0], T);
+  auto&& top_diff = SPAN_DIFF(top[0], T);
   std::ranges::transform(
       bottom_data, top_diff, bottom[0]->GetCPUDiffPtr(),
       [](T val1, T val2) -> T { return val1 > 0 ? val2 : 0; });

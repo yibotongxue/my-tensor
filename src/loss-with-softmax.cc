@@ -69,9 +69,9 @@ void LossWithSoftmax<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                                     const std::vector<TensorPtr<T>>& top) {
   CheckShape(bottom[0], bottom[1], top[0]);
   softmax_->ForwardCPU(softmax_bottom_, softmax_top_);
-  auto&& softmax_top_data = softmax_top_[0]->GetCPUDataSpan();
-  auto&& label_data = bottom[1]->GetCPUDataSpan();
-  auto&& top_data = top[0]->GetCPUDataSpan();
+  auto&& softmax_top_data = SPAN_DATA(softmax_top_[0], T);
+  auto&& label_data = SPAN_DATA(bottom[1], T);
+  auto&& top_data = SPAN_DATA(top[0], T);
   T result{0};
   for (int i = 0; i < batch_size_; i++) {
     result -= std::log(softmax_top_data[i * channels_ + label_data[i]]);
@@ -83,9 +83,9 @@ template <typename T>
 void LossWithSoftmax<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
                                      const std::vector<TensorPtr<T>>& bottom) {
   CheckShape(bottom[0], bottom[1], top[0]);
-  auto&& softmax_top_data = softmax_top_[0]->GetCPUDataSpan();
-  auto&& label_data = bottom[1]->GetCPUDataSpan();
-  auto&& bottom_diff = bottom[0]->GetCPUDiffSpan();
+  auto&& softmax_top_data = SPAN_DATA(softmax_top_[0], T);
+  auto&& label_data = SPAN_DATA(bottom[1], T);
+  auto&& bottom_diff = SPAN_DIFF(bottom[0], T);
   float batch_size = static_cast<float>(batch_size_);
   std::ranges::transform(softmax_top_data, bottom_diff.begin(),
                          [batch_size](T val) -> T { return val / batch_size; });

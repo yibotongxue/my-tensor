@@ -4,7 +4,6 @@
 #define INCLUDE_SYNCED_VECTOR_HPP_
 
 #include <memory>
-#include <span>  // NOLINT
 
 #include "error.hpp"
 
@@ -30,11 +29,6 @@ class SyncedVector {
   void SetGPUData(const T* const data, size_t size);
   const T* GetGPUPtr();
   T* GetMutableGPUPtr();
-
-  std::span<T> GetCPUSpan() {
-    ToCPU();
-    return std::span<T>(cpu_data_, size_);
-  }
 
   T host(size_t index);
   T device(size_t index);
