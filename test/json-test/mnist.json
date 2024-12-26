@@ -5,7 +5,7 @@
   "l2": 1e-3,
   "solver_type": "sgd_with_momentum",
   "momentum": 0.9,
-  "max_iter": 200,
+  "max_iter": 1000,
   "test_step": 10,
   "scheduler": {
     "type": "step",

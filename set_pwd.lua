@@ -1,3 +1,5 @@
+#! /usr/bin/lua
+
 local handle = io.popen("pwd") -- 在类 Unix 系统上
 if (handle == nil) then
     print("Error to set handle")

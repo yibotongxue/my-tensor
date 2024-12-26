@@ -38,9 +38,11 @@ SyncedVector<T>::SyncedVector(const SyncedVector<T>& vec)
       cpu_data_(nullptr),
       gpu_data_(nullptr) {
   if (state_ == kHeadAtCPU) {
+    MyMemFreeCPU(cpu_data_);
     MyMallocCPU(reinterpret_cast<void**>(&cpu_data_), size_ * sizeof(T));
     MyMemcpyCPU2CPU(cpu_data_, vec.cpu_data_, size_ * sizeof(T));
   } else if (state_ == kHeadAtGPU) {
+    MyMemFreeGPU(gpu_data_);
     MyMallocGPU(reinterpret_cast<void**>(&gpu_data_), size_ * sizeof(T));
     MyMemcpyGPU2GPU(gpu_data_, vec.gpu_data_, size_ * sizeof(T));
   } else if (state_ == kSynced) {
@@ -167,6 +169,7 @@ template <typename T>
 inline void SyncedVector<T>::ToCPU() {
   switch (state_) {
     case kUninitialized:
+      MyMemFreeCPU(cpu_data_);
       MyMallocCPU(reinterpret_cast<void**>(&cpu_data_), size_ * sizeof(T));
       state_ = kHeadAtCPU;
       break;
@@ -188,6 +191,7 @@ template <typename T>
 void SyncedVector<T>::ToGPU() {
   switch (state_) {
     case kUninitialized:
+      MyMemFreeGPU(gpu_data_);
       MyMallocGPU(reinterpret_cast<void**>(&gpu_data_), size_ * sizeof(T));
       state_ = kHeadAtGPU;
       break;
