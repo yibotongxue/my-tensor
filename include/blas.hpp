@@ -219,6 +219,7 @@ void add_two_vec_gpu(float *lhs, const float *rhs, const float k, const int n);
 template <>
 void add_two_vec_cpu(float *lhs, const float *rhs, const float k, const int n);
 
+// lhs = lhs + rhs * k
 template <typename T>
 inline void add_two_vec(float *lhs, const float *rhs, const float k,
                         const int n) {
@@ -251,6 +252,25 @@ inline void scale(T *x, const int n, const T k) {
     scale_cpu(x, n, k);
   } else {
     scale_gpu(x, n, k);
+  }
+}
+
+template <typename T>
+void square_cpu(const T *x, T *y, const int n);
+
+extern template void square_cpu(const float *x, float *y, const int n);
+
+template <typename T>
+void square_gpu(const T *x, T *y, const int n);
+
+extern template void square_gpu(const float *x, float *y, const int n);
+
+template <typename T>
+inline void square(const T *x, T *y, const int n) {
+  if (MyTensorContext::on_cpu()) {
+    square_cpu(x, y, n);
+  } else {
+    square_gpu(x, y, n);
   }
 }
 }  // namespace my_tensor

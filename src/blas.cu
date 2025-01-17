@@ -244,6 +244,16 @@ void scale_gpu(float *x, const int n, const float k) {
   CUBLAS_CHECK(cublasSscal(CudaContext::cublas_handle(), n, &k, x, 1));
 }
 
+template <typename T>
+void square_gpu(const T *x, T *y, const int n) {
+  thrust::device_ptr<const T> x_ptr(x);
+  thrust::device_ptr<T> y_ptr(y);
+  thrust::transform(x_ptr, x_ptr + n, y_ptr,
+                    thrust::placeholders::_1 * thrust::placeholders::_1);
+}
+
+template void square_gpu<float>(const float *x, float *y, const int n);
+
 #undef DEFINE_ABC_VEC
 
 }  // namespace my_tensor

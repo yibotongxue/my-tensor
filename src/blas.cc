@@ -127,4 +127,13 @@ void scale_cpu(float *x, const int n, const float k) {
   cblas_sscal(n, k, x, 1);
 }
 
+template <typename T>
+void square_cpu(const T *x, T *y, const int n) {
+  for (int i = 0; i < n; i++) {
+    y[i] = x[i] * x[i];
+  }
+}
+
+template void square_cpu(const float *x, float *y, const int n);
+
 }  // namespace my_tensor
