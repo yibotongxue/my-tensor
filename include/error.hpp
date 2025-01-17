@@ -95,6 +95,16 @@ class DataError : public std::runtime_error {
  public:
   using runtime_error::runtime_error;
 };  // class DataError
+
+class SolverError : public std::runtime_error {
+ public:
+  using runtime_error::runtime_error;
+};  // class SolverError
+
+class SchedulerError : public std::runtime_error {
+ public:
+  using runtime_error::runtime_error;
+};  // class SchedulerError
 }  // namespace my_tensor
 
 #endif  // INCLUDE_ERROR_HPP_

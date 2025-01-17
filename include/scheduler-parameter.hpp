@@ -78,8 +78,7 @@ inline SchedulerParameterPtr CreateSchedulerParameterPtr(
   } else if (type == "cosine_annealing") {
     return std::make_shared<CosineAnnealingSchuduelerParameter>();
   } else {
-    // TODO(yibotongxue) Add specific exception type and description.
-    throw std::runtime_error("");
+    throw SchedulerError("Unknown scheduler type" + type);
   }
 }
 

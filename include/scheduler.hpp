@@ -43,8 +43,7 @@ inline lr_scheduler CreateScheduler(SchedulerParameterPtr param) {
                               std::numbers::pi_v<float>));
     };
   } else {
-    // TODO(yibotongxue) add specific exception type and description.
-    throw std::runtime_error("");
+    throw SchedulerError("Unknown scheduler type");
   }
 }
 
