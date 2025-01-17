@@ -12,7 +12,11 @@
 
 namespace my_tensor {
 
-enum class SolverType { kSgd, kSgdWithMomentum };  // enum class SolverType
+enum class SolverType {
+  kSgd,
+  kSgdWithMomentum,
+  kAdamW
+};  // enum class SolverType
 
 class SolverParameter {
  public:
@@ -70,6 +74,24 @@ class SgdWithMomentumSolverParameter final : public SolverParameter {
   }
 };  // class SgdWithMomentumSolverParameter
 
+class AdamWSolverParameter final : public SolverParameter {
+ public:
+  AdamWSolverParameter(SchedulerParameterPtr scheduler_param,
+                       NetParameterPtr net_param)
+      : SolverParameter(SolverType::kAdamW, scheduler_param, net_param) {}
+
+  float beta1_;
+  float beta2_;
+  float epsilon_;
+
+ private:
+  void ParseSettingParameters(const nlohmann::json& js) override {
+    beta1_ = LoadWithKey<float>(js, "beta1");
+    beta2_ = LoadWithKey<float>(js, "beta2");
+    epsilon_ = LoadWithKey<float>(js, "epsilon");
+  }
+};  // class AdamWSolver
+
 using SolverParameterPtr = std::shared_ptr<SolverParameter>;
 
 inline std::function<SolverParameterPtr(SchedulerParameterPtr, NetParameterPtr)>
@@ -85,9 +107,13 @@ GetSolverParameterCreater(const std::string& type) {
       return std::make_shared<SgdWithMomentumSolverParameter>(scheduler_param,
                                                               net_param);
     };
+  } else if (type == "adamw") {
+    return [](SchedulerParameterPtr scheduler_param,
+              NetParameterPtr net_param) -> SolverParameterPtr {
+      return std::make_shared<AdamWSolverParameter>(scheduler_param, net_param);
+    };
   } else {
-    // TODO(yibotongxue) Add specific exception type and description.
-    throw std::runtime_error("");
+    throw SolverError("Unknown solver type: " + type);
   }
 }
 

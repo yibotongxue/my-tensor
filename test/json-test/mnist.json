@@ -3,8 +3,10 @@
   "batch_size": 1024,
   "base_lr": 8e-3,
   "l2": 1e-3,
-  "solver_type": "sgd_with_momentum",
-  "momentum": 0.9,
+  "solver_type": "adamw",
+  "beta1": 0.9,
+  "beta2": 0.999,
+  "epsilon": 1e-8,
   "max_iter": 1000,
   "test_step": 10,
   "scheduler": {
