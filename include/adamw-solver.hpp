@@ -1,4 +1,4 @@
-// Copyright 2024 yibotongxue
+// Copyright 2025 yibotongxue
 
 #ifndef INCLUDE_ADAMW_SOLVER_HPP_
 #define INCLUDE_ADAMW_SOLVER_HPP_

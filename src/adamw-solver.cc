@@ -1,4 +1,4 @@
-// Copyright 2024 yibotongxue
+// Copyright 2025 yibotongxue
 
 #include "adamw-solver.hpp"
 
