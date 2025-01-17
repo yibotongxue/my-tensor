@@ -248,11 +248,55 @@ template <typename T>
 void square_gpu(const T *x, T *y, const int n) {
   thrust::device_ptr<const T> x_ptr(x);
   thrust::device_ptr<T> y_ptr(y);
-  thrust::transform(x_ptr, x_ptr + n, y_ptr,
-                    thrust::placeholders::_1 * thrust::placeholders::_1);
+  thrust::transform(x_ptr, x_ptr + n, y_ptr, thrust::square<T>());
 }
 
 template void square_gpu<float>(const float *x, float *y, const int n);
+
+template <typename T>
+void sqrt_gpu(const T *x, T *y, const int n) {
+  thrust::device_ptr<const T> x_ptr(x);
+  thrust::device_ptr<T> y_ptr(y);
+  thrust::transform(x_ptr, x_ptr + n, y_ptr, [] __device__(T a) {
+    return static_cast<T>(std::sqrt(a));
+  });
+}
+
+template void sqrt_gpu<float>(const float *x, float *y, const int n);
+
+template <typename T>
+void divide_two_vec_gpu(const T *lhs, const T *rhs, T *result, const int n) {
+  thrust::device_ptr<const T> lhs_ptr(lhs);
+  thrust::device_ptr<const T> rhs_ptr(rhs);
+  thrust::device_ptr<T> result_ptr(result);
+  thrust::transform(lhs_ptr, lhs_ptr + n, rhs_ptr, result_ptr,
+                    thrust::divides<T>());
+}
+
+template void divide_two_vec_gpu<float>(const float *lhs, const float *rhs,
+                                        float *result, const int n);
+
+template <typename T>
+void vec_add_num_gpu(const T *vec, T *result, const T num, const int n) {
+  thrust::device_ptr<const T> vec_ptr(vec);
+  thrust::device_ptr<T> result_ptr(result);
+  thrust::transform(vec_ptr, vec_ptr + n, result_ptr,
+                    [num] __device__(T a) { return a + num; });
+}
+
+template void vec_add_num_gpu<float>(const float *vec, float *result,
+                                     const float num, const int n);
+
+template <typename T>
+void vec_divide_num_gpu(const T *vec, T *result, const T num, const int n) {
+  thrust::device_ptr<const T> vec_ptr(vec);
+  thrust::device_ptr<T> result_ptr(result);
+  thrust::transform(vec_ptr, vec_ptr + n, result_ptr,
+                    [num] __device__(T a) { return a / num; });
+}
+
+template void vec_divide_num_gpu<float>(const float *vec, float *result,
+                                        const float num, const int n);
 
 #undef DEFINE_ABC_VEC
 

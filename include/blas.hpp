@@ -273,6 +273,88 @@ inline void square(const T *x, T *y, const int n) {
     square_gpu(x, y, n);
   }
 }
+
+template <typename T>
+void sqrt_cpu(const T *x, T *y, const int n);
+
+extern template void sqrt_cpu(const float *x, float *y, const int n);
+
+template <typename T>
+void sqrt_gpu(const T *x, T *y, const int n);
+
+extern template void sqrt_gpu(const float *x, float *y, const int n);
+
+template <typename T>
+inline void sqrt(const T *x, T *y, const int n) {
+  if (MyTensorContext::on_cpu()) {
+    sqrt_cpu(x, y, n);
+  } else {
+    sqrt_gpu(x, y, n);
+  }
+}
+
+template <typename T>
+void divide_two_vec_cpu(const T *lhs, const T *rhs, T *result, const int n);
+
+extern template void divide_two_vec_cpu(const float *lhs, const float *rhs,
+                                        float *result, const int n);
+
+template <typename T>
+void divide_two_vec_gpu(const T *lhs, const T *rhs, T *result, const int n);
+
+extern template void divide_two_vec_gpu(const float *lhs, const float *rhs,
+                                        float *result, const int n);
+
+template <typename T>
+inline void divide_two_vec(const T *lhs, const T *rhs, T *result, const int n) {
+  if (MyTensorContext::on_cpu()) {
+    divide_two_vec_cpu(lhs, rhs, result, n);
+  } else {
+    divide_two_vec_gpu(lhs, rhs, result, n);
+  }
+}
+
+template <typename T>
+void vec_add_num_cpu(const T *vec, T *result, const T num, const int n);
+
+extern template void vec_add_num_cpu(const float *vec, float *result,
+                                     const float num, const int n);
+
+template <typename T>
+void vec_add_num_gpu(const T *vec, T *result, const T num, const int n);
+
+extern template void vec_add_num_gpu(const float *vec, float *result,
+                                     const float num, const int n);
+
+template <typename T>
+inline void vec_add_num(const T *vec, T *result, const T num, const int n) {
+  if (MyTensorContext::on_cpu()) {
+    vec_add_num_cpu(vec, result, num, n);
+  } else {
+    vec_add_num_gpu(vec, result, num, n);
+  }
+}
+
+template <typename T>
+void vec_divide_num_cpu(const T *vec, T *result, const T num, const int n);
+
+extern template void vec_divide_num_cpu(const float *vec, float *result,
+                                        const float num, const int n);
+
+template <typename T>
+void vec_divide_num_gpu(const T *vec, T *result, const T num, const int n);
+
+extern template void vec_divide_num_gpu(const float *vec, float *result,
+                                        const float num, const int n);
+
+template <typename T>
+inline void vec_divide_num(const T *vec, T *result, const T num, const int n) {
+  if (MyTensorContext::on_cpu()) {
+    vec_divide_num_cpu(vec, result, num, n);
+  } else {
+    vec_divide_num_gpu(vec, result, num, n);
+  }
+}
 }  // namespace my_tensor
 
 #endif  // INCLUDE_BLAS_HPP_

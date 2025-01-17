@@ -722,6 +722,162 @@ TEST(SquareTest, SquareGPUTest) {
   }
 }
 
+TEST(SqrtTest, SqrtCPUTest) {
+  std::vector<float> data(200000);
+  std::vector<float> result_expect(200000);
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<float> dis(0.0f, 10.0f);
+  auto random_func = [&gen, &dis]() -> float { return dis(gen); };
+  std::ranges::generate(data, random_func);
+  for (int i = 0; i < 200000; i++) {
+    result_expect[i] = std::sqrt(data[i]);
+  }
+  my_tensor::sqrt_cpu<float>(data.data(), data.data(), 200000);
+  for (int i = 0; i < 200000; i++) {
+    ASSERT_NEAR(result_expect[i], data[i], 0.01);
+  }
+}
+
+TEST(SqrtTest, SqrtGPUTest) {
+  std::vector<float> data(200000);
+  std::vector<float> result_expect(200000);
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<float> dis(0.0f, 10.0f);
+  auto random_func = [&gen, &dis]() -> float { return dis(gen); };
+  std::ranges::generate(data, random_func);
+  for (int i = 0; i < 200000; i++) {
+    result_expect[i] = std::sqrt(data[i]);
+  }
+  my_tensor::Tensor<float> tensor({200000});
+  tensor.SetGPUData(data.data(), data.size());
+  my_tensor::sqrt_gpu<float>(tensor.GetGPUDataPtr(), tensor.GetGPUDataPtr(),
+                             200000);
+  for (int i = 0; i < 200000; i++) {
+    ASSERT_NEAR(result_expect[i], tensor.GetCPUData(i), 0.01);
+  }
+}
+
+TEST(DivideTest, DivideCPUTest) {
+  std::vector<float> lhs_data(200000);
+  std::vector<float> rhs_data(200000);
+  std::vector<float> result_expect(200000);
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<float> dis(-10.0f, 10.0f);
+  auto random_func = [&gen, &dis]() -> float { return dis(gen); };
+  std::ranges::generate(lhs_data, random_func);
+  std::ranges::generate(rhs_data, random_func);
+  for (int i = 0; i < 200000; i++) {
+    result_expect[i] = lhs_data[i] / rhs_data[i];
+  }
+  my_tensor::divide_two_vec_cpu<float>(lhs_data.data(), rhs_data.data(),
+                                       lhs_data.data(), 200000);
+  for (int i = 0; i < 200000; i++) {
+    ASSERT_NEAR(result_expect[i], lhs_data[i], 0.01);
+  }
+}
+
+TEST(DivideTest, DivideGPUTest) {
+  std::vector<float> lhs_data(200000);
+  std::vector<float> rhs_data(200000);
+  std::vector<float> result_expect(200000);
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<float> dis(-10.0f, 10.0f);
+  auto random_func = [&gen, &dis]() -> float { return dis(gen); };
+  std::ranges::generate(lhs_data, random_func);
+  std::ranges::generate(rhs_data, random_func);
+  for (int i = 0; i < 200000; i++) {
+    result_expect[i] = lhs_data[i] / rhs_data[i];
+  }
+  my_tensor::Tensor<float> lhs_tensor({200000});
+  my_tensor::Tensor<float> rhs_tensor({200000});
+  lhs_tensor.SetGPUData(lhs_data.data(), lhs_data.size());
+  rhs_tensor.SetGPUData(rhs_data.data(), rhs_data.size());
+  my_tensor::divide_two_vec_gpu<float>(lhs_tensor.GetGPUDataPtr(),
+                                       rhs_tensor.GetGPUDataPtr(),
+                                       lhs_tensor.GetGPUDataPtr(), 200000);
+  for (int i = 0; i < 200000; i++) {
+    ASSERT_NEAR(result_expect[i], lhs_tensor.GetCPUData(i), 0.01);
+  }
+}
+
+TEST(VecAddNumTest, VecAddNumCPUTest) {
+  std::vector<float> data(200000);
+  std::vector<float> result_expect(200000);
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<float> dis(-10.0f, 10.0f);
+  auto random_func = [&gen, &dis]() -> float { return dis(gen); };
+  std::ranges::generate(data, random_func);
+  for (int i = 0; i < 200000; i++) {
+    result_expect[i] = data[i] + 1.0f;
+  }
+  my_tensor::vec_add_num_cpu<float>(data.data(), data.data(), 1.0f, 200000);
+  for (int i = 0; i < 200000; i++) {
+    ASSERT_NEAR(result_expect[i], data[i], 0.01);
+  }
+}
+
+TEST(VecAddNumTest, VecAddNumGPUTest) {
+  std::vector<float> data(200000);
+  std::vector<float> result_expect(200000);
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<float> dis(-10.0f, 10.0f);
+  auto random_func = [&gen, &dis]() -> float { return dis(gen); };
+  std::ranges::generate(data, random_func);
+  for (int i = 0; i < 200000; i++) {
+    result_expect[i] = data[i] + 1.0f;
+  }
+  my_tensor::Tensor<float> tensor({200000});
+  tensor.SetGPUData(data.data(), data.size());
+  my_tensor::vec_add_num_gpu<float>(tensor.GetGPUDataPtr(),
+                                    tensor.GetGPUDataPtr(), 1.0f, 200000);
+  for (int i = 0; i < 200000; i++) {
+    ASSERT_NEAR(result_expect[i], tensor.GetCPUData(i), 0.01);
+  }
+}
+
+TEST(VecDivideNumTest, VecDivideNumCPUTest) {
+  std::vector<float> data(200000);
+  std::vector<float> result_expect(200000);
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<float> dis(1.0f, 10.0f);
+  auto random_func = [&gen, &dis]() -> float { return dis(gen); };
+  std::ranges::generate(data, random_func);
+  for (int i = 0; i < 200000; i++) {
+    result_expect[i] = data[i] / 2.0f;
+  }
+  my_tensor::vec_divide_num_cpu<float>(data.data(), data.data(), 2.0f, 200000);
+  for (int i = 0; i < 200000; i++) {
+    ASSERT_NEAR(result_expect[i], data[i], 0.01);
+  }
+}
+
+TEST(VecDivideNumTest, VecDivideNumGPUTest) {
+  std::vector<float> data(200000);
+  std::vector<float> result_expect(200000);
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<float> dis(1.0f, 10.0f);
+  auto random_func = [&gen, &dis]() -> float { return dis(gen); };
+  std::ranges::generate(data, random_func);
+  for (int i = 0; i < 200000; i++) {
+    result_expect[i] = data[i] / 2.0f;
+  }
+  my_tensor::Tensor<float> tensor({200000});
+  tensor.SetGPUData(data.data(), data.size());
+  my_tensor::vec_divide_num_gpu<float>(tensor.GetGPUDataPtr(),
+                                       tensor.GetGPUDataPtr(), 2.0f, 200000);
+  for (int i = 0; i < 200000; i++) {
+    ASSERT_NEAR(result_expect[i], tensor.GetCPUData(i), 0.01);
+  }
+}
+
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

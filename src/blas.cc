@@ -136,4 +136,43 @@ void square_cpu(const T *x, T *y, const int n) {
 
 template void square_cpu(const float *x, float *y, const int n);
 
+template <typename T>
+void sqrt_cpu(const T *x, T *y, const int n) {
+  for (int i = 0; i < n; i++) {
+    y[i] = std::sqrt(x[i]);
+  }
+}
+
+template void sqrt_cpu(const float *x, float *y, const int n);
+
+template <typename T>
+void divide_two_vec_cpu(const T *lhs, const T *rhs, T *result, const int n) {
+  for (int i = 0; i < n; i++) {
+    result[i] = lhs[i] / rhs[i];
+  }
+}
+
+template void divide_two_vec_cpu(const float *lhs, const float *rhs,
+                                 float *result, const int n);
+
+template <typename T>
+void vec_add_num_cpu(const T *vec, T *result, const T num, const int n) {
+  for (int i = 0; i < n; i++) {
+    result[i] = vec[i] + num;
+  }
+}
+
+template void vec_add_num_cpu(const float *vec, float *result, const float num,
+                              const int n);
+
+template <typename T>
+void vec_divide_num_cpu(const T *vec, T *result, const T num, const int n) {
+  for (int i = 0; i < n; i++) {
+    result[i] = vec[i] / num;
+  }
+}
+
+template void vec_divide_num_cpu(const float *vec, float *result,
+                                 const float num, const int n);
+
 }  // namespace my_tensor
