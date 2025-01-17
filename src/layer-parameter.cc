@@ -228,4 +228,12 @@ void AccuracyParameter::ParseSettingParameter(const nlohmann::json& js) {
   features_ = js["features"].get<int>();
 }
 
+void BatchNormParameter::ParseSettingParameter(const nlohmann::json& js) {
+  if (!js.contains("channels") || !js["channels"].is_number_integer()) {
+    throw FileError(
+        "The batchnorm layer should have an integer number as channels.");
+  }
+  channels_ = js["channels"].get<int>();
+}
+
 }  // namespace my_tensor

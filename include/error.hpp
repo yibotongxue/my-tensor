@@ -81,6 +81,11 @@ class AccuracyError : public std::runtime_error {
   using runtime_error::runtime_error;
 };  // class AccuracyError
 
+class BatchNormError : public std::runtime_error {
+ public:
+  using runtime_error::runtime_error;
+};  // class BatchNormError
+
 class FillerError : public std::runtime_error {
  public:
   using runtime_error::runtime_error;

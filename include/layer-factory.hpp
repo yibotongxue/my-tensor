@@ -40,6 +40,8 @@ inline LayerPtr<T> CreateLayer(const LayerParameterPtr param) {
       return std::make_shared<LossWithSoftmax<T>>(param);
     case ParamType::kAccuracy:
       return std::make_shared<Accuracy<T>>(param);
+    case ParamType::kBatchNorm:
+      return std::make_shared<BatchNorm<T>>(param);
     default:
       throw LayerError("Unimplemented layer.");
   }

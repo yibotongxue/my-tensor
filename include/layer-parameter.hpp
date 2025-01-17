@@ -22,7 +22,8 @@ enum class ParamType {
   kPooling,
   kSoftmax,
   kLossWithSoftmax,
-  kAccuracy
+  kAccuracy,
+  kBatchNorm
 };  // enum class ParamType
 
 class LayerParameter;
@@ -182,6 +183,16 @@ class AccuracyParameter final : public LayerParameter {
   void ParseSettingParameter(const nlohmann::json& js) override;
 };  // class AccuracyParameter
 
+class BatchNormParameter final : public LayerParameter {
+ public:
+  int channels_;
+
+  explicit BatchNormParameter() : LayerParameter(ParamType::kBatchNorm) {}
+
+ private:
+  void ParseSettingParameter(const nlohmann::json& js) override;
+};  // class BatchNormParameter
+
 inline LayerParameterPtr CreateLayerParameter(const std::string& type) {
   if (type == "Relu") {
     return std::make_shared<ReluParameter>();
@@ -201,6 +212,8 @@ inline LayerParameterPtr CreateLayerParameter(const std::string& type) {
     return std::make_shared<LossWithSoftmaxParameter>();
   } else if (type == "Accuracy") {
     return std::make_shared<AccuracyParameter>();
+  } else if (type == "BatchNorm") {
+    return std::make_shared<BatchNormParameter>();
   } else {
     throw LayerError("Unimplemented layer type.");
   }
