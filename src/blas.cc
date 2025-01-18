@@ -3,6 +3,7 @@
 #include "blas.hpp"
 
 #include <cblas.h>
+#include <string.h>
 
 namespace my_tensor {
 
@@ -90,31 +91,56 @@ void transpose_matmul_transpose_cpu(const float *A, const float *B, float *C,
 template <>
 void add_row_vector_cpu(float *mat, const float *vec, const int m, const int n,
                         const int batch_count) {
-  // TODO(yibotongxue)
+  for (int i = 0; i < batch_count; i++) {
+    for (int j = 0; j < m; j++) {
+      for (int k = 0; k < n; k++) {
+        mat[i * m * n + j * n + k] += vec[j];
+      }
+    }
+  }
 }
 
 template <>
 void add_col_vector_cpu(float *mat, const float *vec, const int m, const int n,
                         const int batch_count) {
-  // TODO(yibotongxue)
+  for (int i = 0; i < batch_count * m; i++) {
+    for (int j = 0; j < n; j++) {
+      mat[i * n + j] += vec[j];
+    }
+  }
 }
 
 template <>
 float tensor_sum_cpu(const float *tensor, const int cnt) {
-  // TODO(yibotongxue)
-  return 0.0f;
+  float sum = 0.0f;
+  for (int i = 0; i < cnt; i++) {
+    sum += tensor[i];
+  }
+  return sum;
 }
 
 template <>
 void row_sum_cpu(const float *mat, float *result, const int m, const int n,
                  const int batch_count) {
-  // TODO(yibotongxue)
+  memset(result, 0, sizeof(float) * batch_count * m);
+  for (int i = 0; i < batch_count * m; i++) {
+    for (int j = 0; j < n; j++) {
+      result[i] += mat[i * n + j];
+    }
+  }
 }
 
 template <>
 void col_sum_cpu(const float *mat, float *result, const int m, const int n,
                  const int batch_count) {
-  // TODO(yibotongxue)
+  memset(result, 0, sizeof(float) * batch_count * n);
+  for (int i = 0; i < batch_count; i++) {
+    for (int j = 0; j < m; j++) {
+      for (int k = 0; k < n; k++) {
+        result[i * n + k] += mat[i * m * n + j * n + k];
+      }
+    }
+  }
 }
 
 template <>

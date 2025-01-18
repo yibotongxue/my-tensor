@@ -572,42 +572,42 @@ class BlasAddVecTest : public ::testing::Test {
   const std::vector<int> vec_shape{1000, 1};
 };
 
-#define BLAS_ADD_ROW_VEC_TEST(data_diff)                                    \
-  TEST_F(BlasAddVecTest, Blas_AddRowVec##data_diff##Test) {                 \
-    for (int i = 0; i < 2000000; i++) {                                     \
-      result_expect[i] = tensor_data[i] + vec_data[(i % 200000) / 200];     \
-    }                                                                       \
-    tensor->SetGPU##data_diff(tensor_data.data(), tensor_data.size());      \
-    vec->SetGPU##data_diff(vec_data.data(), vec_data.size());               \
-    my_tensor::add_row_vector_gpu(tensor->GetGPU##data_diff##Ptr(),         \
-                                  vec->GetGPU##data_diff##Ptr(), 1000, 200, \
-                                  10);                                      \
-    for (int i = 0; i < 2000000; i++) {                                     \
-      ASSERT_NEAR(result_expect[i], tensor->GetCPU##data_diff(i), 0.01);    \
-    }                                                                       \
+#define BLAS_ADD_ROW_VEC_TEST(device, device_low)                             \
+  TEST_F(BlasAddVecTest, Blas_AddRowVec##device##Test) {                      \
+    for (int i = 0; i < 2000000; i++) {                                       \
+      result_expect[i] = tensor_data[i] + vec_data[(i % 200000) / 200];       \
+    }                                                                         \
+    tensor->Set##device##Data(tensor_data.data(), tensor_data.size());        \
+    vec->Set##device##Data(vec_data.data(), vec_data.size());                 \
+    my_tensor::add_row_vector_##device_low(tensor->Get##device##DataPtr(),    \
+                                           vec->Get##device##DataPtr(), 1000, \
+                                           200, 10);                          \
+    for (int i = 0; i < 2000000; i++) {                                       \
+      ASSERT_NEAR(result_expect[i], tensor->GetCPUData(i), 0.01);             \
+    }                                                                         \
   }
 
-BLAS_ADD_ROW_VEC_TEST(Data)
-BLAS_ADD_ROW_VEC_TEST(Diff)
+BLAS_ADD_ROW_VEC_TEST(CPU, cpu)
+BLAS_ADD_ROW_VEC_TEST(GPU, gpu)
 
-#define BLAS_ADD_COL_VEC_TEST(data_diff)                                    \
-  TEST_F(BlasAddVecTest, Blas_AddColVec##data_diff##Test) {                 \
-    tensor->Reshape({10, 200, 1000});                                       \
-    for (int i = 0; i < 2000000; i++) {                                     \
-      result_expect[i] = tensor_data[i] + vec_data[(i % 200000) % 1000];    \
-    }                                                                       \
-    tensor->SetGPU##data_diff(tensor_data.data(), tensor_data.size());      \
-    vec->SetGPU##data_diff(vec_data.data(), vec_data.size());               \
-    my_tensor::add_col_vector_gpu(tensor->GetGPU##data_diff##Ptr(),         \
-                                  vec->GetGPU##data_diff##Ptr(), 200, 1000, \
-                                  10);                                      \
-    for (int i = 0; i < 2000000; i++) {                                     \
-      ASSERT_NEAR(result_expect[i], tensor->GetCPU##data_diff(i), 0.01);    \
-    }                                                                       \
+#define BLAS_ADD_COL_VEC_TEST(device, device_low)                            \
+  TEST_F(BlasAddVecTest, Blas_AddColVec##device##Test) {                     \
+    tensor->Reshape({10, 200, 1000});                                        \
+    for (int i = 0; i < 2000000; i++) {                                      \
+      result_expect[i] = tensor_data[i] + vec_data[(i % 200000) % 1000];     \
+    }                                                                        \
+    tensor->Set##device##Data(tensor_data.data(), tensor_data.size());       \
+    vec->Set##device##Data(vec_data.data(), vec_data.size());                \
+    my_tensor::add_col_vector_##device_low(tensor->Get##device##DataPtr(),   \
+                                           vec->Get##device##DataPtr(), 200, \
+                                           1000, 10);                        \
+    for (int i = 0; i < 2000000; i++) {                                      \
+      ASSERT_NEAR(result_expect[i], tensor->GetCPUData(i), 0.01);            \
+    }                                                                        \
   }
 
-BLAS_ADD_COL_VEC_TEST(Data)
-BLAS_ADD_COL_VEC_TEST(Diff)
+BLAS_ADD_COL_VEC_TEST(CPU, cpu)
+BLAS_ADD_COL_VEC_TEST(GPU, gpu)
 
 class BlasSumTest : public ::testing::Test {
  protected:
@@ -625,65 +625,67 @@ class BlasSumTest : public ::testing::Test {
   my_tensor::TensorPtr<> tensor;
 };
 
-#define BLAS_SUM_TENSOR_SUM_TEST(data_diff)                                  \
-  TEST_F(BlasSumTest, Blas_SumTensorSum##data_diff##Test) {                  \
-    tensor->SetGPU##data_diff(data.data(), data.size());                     \
-    float sum_actual =                                                       \
-        my_tensor::tensor_sum_gpu(tensor->GetGPU##data_diff##Ptr(), 200000); \
+#define BLAS_SUM_TENSOR_SUM_TEST(device, device_low)                         \
+  TEST_F(BlasSumTest, Blas_SumTensorSum##device##Test) {                     \
+    tensor->Set##device##Data(data.data(), data.size());                     \
+    float sum_actual = my_tensor::tensor_sum_##device_low(                   \
+        tensor->Get##device##DataPtr(), 200000);                             \
     float sum_expect =                                                       \
         std::accumulate(data.begin(), data.end(), 0.0f, std::plus<float>()); \
     ASSERT_NEAR(sum_actual, sum_expect, 0.1);                                \
   }
 
-BLAS_SUM_TENSOR_SUM_TEST(Data)
-BLAS_SUM_TENSOR_SUM_TEST(Diff)
+BLAS_SUM_TENSOR_SUM_TEST(CPU, cpu)
+BLAS_SUM_TENSOR_SUM_TEST(GPU, gpu)
 
-#define BLAS_SUM_ROW_SUM_TEST(data_diff)                                    \
-  TEST_F(BlasSumTest, Blas_SumRowSum##data_diff##Test) {                    \
-    tensor->SetGPU##data_diff(data.data(), data.size());                    \
-    const std::vector<int> result_shape{10, 100, 1};                        \
-    auto result = std::make_shared<my_tensor::Tensor<>>(result_shape);      \
-    my_tensor::row_sum_gpu(tensor->GetGPU##data_diff##Ptr(),                \
-                           result->GetGPU##data_diff##Ptr(), 100, 200, 10); \
-    std::vector<float> result_expect(1000, 0.0f);                           \
-    for (int t = 0; t < 10; t++) {                                          \
-      for (int i = 0; i < 100; i++) {                                       \
-        for (int j = 0; j < 200; j++) {                                     \
-          result_expect[t * 100 + i] += data[t * 20000 + i * 200 + j];      \
-        }                                                                   \
-      }                                                                     \
-    }                                                                       \
-    for (int i = 0; i < 1000; i++) {                                        \
-      ASSERT_NEAR(result->GetCPU##data_diff(i), result_expect[i], 0.01);    \
-    }                                                                       \
+#define BLAS_SUM_ROW_SUM_TEST(device, device_low)                             \
+  TEST_F(BlasSumTest, Blas_SumRowSum##device##Test) {                         \
+    tensor->Set##device##Data(data.data(), data.size());                      \
+    const std::vector<int> result_shape{10, 100, 1};                          \
+    auto result = std::make_shared<my_tensor::Tensor<>>(result_shape);        \
+    my_tensor::row_sum_##device_low(tensor->Get##device##DataPtr(),           \
+                                    result->Get##device##DataPtr(), 100, 200, \
+                                    10);                                      \
+    std::vector<float> result_expect(1000, 0.0f);                             \
+    for (int t = 0; t < 10; t++) {                                            \
+      for (int i = 0; i < 100; i++) {                                         \
+        for (int j = 0; j < 200; j++) {                                       \
+          result_expect[t * 100 + i] += data[t * 20000 + i * 200 + j];        \
+        }                                                                     \
+      }                                                                       \
+    }                                                                         \
+    for (int i = 0; i < 1000; i++) {                                          \
+      ASSERT_NEAR(result->GetCPUData(i), result_expect[i], 0.01);             \
+    }                                                                         \
   }
 
-BLAS_SUM_ROW_SUM_TEST(Data);
-BLAS_SUM_ROW_SUM_TEST(Diff);
+BLAS_SUM_ROW_SUM_TEST(CPU, cpu);
+BLAS_SUM_ROW_SUM_TEST(GPU, gpu);
 
-#define BLAS_SUM_COL_SUM_TEST(data_diff)                                    \
-  TEST_F(BlasSumTest, Blas_SumColSum##data_diff##Test) {                    \
-    tensor->Reshape({10, 200, 100});                                        \
-    tensor->SetGPU##data_diff(data.data(), data.size());                    \
-    const std::vector<int> result_shape{10, 100, 1};                        \
-    auto result = std::make_shared<my_tensor::Tensor<>>(result_shape);      \
-    my_tensor::col_sum_gpu(tensor->GetGPU##data_diff##Ptr(),                \
-                           result->GetGPU##data_diff##Ptr(), 200, 100, 10); \
-    std::vector<float> result_expect(1000, 0.0f);                           \
-    for (int t = 0; t < 10; t++) {                                          \
-      for (int i = 0; i < 100; i++) {                                       \
-        for (int j = 0; j < 200; j++) {                                     \
-          result_expect[t * 100 + i] += data[t * 20000 + j * 100 + i];      \
-        }                                                                   \
-      }                                                                     \
-    }                                                                       \
-    for (int i = 0; i < 1000; i++) {                                        \
-      ASSERT_NEAR(result->GetCPU##data_diff(i), result_expect[i], 0.01);    \
-    }                                                                       \
+#define BLAS_SUM_COL_SUM_TEST(device, device_low)                             \
+  TEST_F(BlasSumTest, Blas_SumColSum##device##Test) {                         \
+    tensor->Reshape({10, 200, 100});                                          \
+    tensor->Set##device##Data(data.data(), data.size());                      \
+    const std::vector<int> result_shape{10, 100, 1};                          \
+    auto result = std::make_shared<my_tensor::Tensor<>>(result_shape);        \
+    my_tensor::col_sum_##device_low(tensor->Get##device##DataPtr(),           \
+                                    result->Get##device##DataPtr(), 200, 100, \
+                                    10);                                      \
+    std::vector<float> result_expect(1000, 0.0f);                             \
+    for (int t = 0; t < 10; t++) {                                            \
+      for (int i = 0; i < 100; i++) {                                         \
+        for (int j = 0; j < 200; j++) {                                       \
+          result_expect[t * 100 + i] += data[t * 20000 + j * 100 + i];        \
+        }                                                                     \
+      }                                                                       \
+    }                                                                         \
+    for (int i = 0; i < 1000; i++) {                                          \
+      ASSERT_NEAR(result->GetCPUData(i), result_expect[i], 0.01);             \
+    }                                                                         \
   }
 
-BLAS_SUM_COL_SUM_TEST(Data)
-BLAS_SUM_COL_SUM_TEST(Diff)
+BLAS_SUM_COL_SUM_TEST(CPU, cpu)
+BLAS_SUM_COL_SUM_TEST(GPU, gpu)
 
 TEST(SquareTest, SquareCPUTest) {
   std::vector<float> data(200000);
