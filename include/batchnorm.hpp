@@ -59,6 +59,7 @@ class BatchNorm final : public Layer<T> {
 
   T scale_factor_;
   T move_scale_factor_;
+  T temp_cache_;
   int batch_size_;
   int spatial_size_;
 };

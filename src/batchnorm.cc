@@ -141,6 +141,7 @@ void BatchNorm<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                   standarded_cache_->GetSize() * sizeof(T));
   multiply_row_vector_cpu<T>(top_data, gama_data, channels_, spatial_size_,
                              batch_size_);
+  temp_cache_ = tensor_sum_cpu<T>(top_data, channels_);
   add_row_vector_cpu<T>(top_data, beta_data, channels_, spatial_size_,
                         batch_size_);
 }
@@ -155,24 +156,53 @@ void BatchNorm<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
   const T* gama_data = gama_->GetCPUDataPtr();
   T* gama_diff = gama_->GetCPUDiffPtr();
   T* beta_diff = beta_->GetCPUDiffPtr();
-  T* mean_diff = mean_->GetCPUDiffPtr();
-  T* variance_diff = sqrt_variance_->GetCPUDiffPtr();
   const T* mean_data = mean_->GetCPUDataPtr();
   const T* variance_data = sqrt_variance_->GetCPUDataPtr();
-  for (int i = 0; i < batch_size_; i++) {
-    for (int j = 0; j < channels_; j++) {
-      for (int k = 0; k < spatial_size_; k++) {
-        gama_diff[j] +=
-            top_diff[i * channels_ * spatial_size_ + j * spatial_size_ + k] *
-            (bottom_data[i * channels_ * spatial_size_ + j * spatial_size_ +
-                         k] -
-             mean_data[j]) /
-            std::sqrt(variance_data[j] + static_cast<T>(1e-5));
-        beta_diff[j] +=
-            top_diff[i * channels_ * spatial_size_ + j * spatial_size_ + k];
-      }
-    }
-  }
+  // compute beta diff
+  T* temp_data;
+  MyMallocCPU(reinterpret_cast<void**>(&temp_data),
+              sizeof(T) * batch_size_ * channels_);
+  row_sum_cpu(top_diff, temp_data, channels_, spatial_size_, batch_size_);
+  col_sum_cpu(temp_data, beta_diff, batch_size_, channels_, 1);
+  // compute gama diff
+  T* temp_temp_data;
+  MyMallocCPU(reinterpret_cast<void**>(&temp_temp_data),
+              sizeof(T) * batch_size_ * channels_ * spatial_size_);
+  multiply_two_vec_cpu<T>(top_diff, standarded_cache_->GetCPUDataPtr(),
+                          temp_temp_data,
+                          batch_size_ * channels_ * spatial_size_);
+  row_sum_cpu(temp_temp_data, temp_data, channels_, spatial_size_, batch_size_);
+  col_sum_cpu(temp_data, gama_diff, batch_size_, channels_, 1);
+  // MyMemFreeCPU(temp_temp_data);
+  // MyMemFreeCPU(temp_data);
+  // compute bottom diff
+  // temp_temp_data is the partial diff of top_data to standarded_cache
+  int n = batch_size_ * spatial_size_;
+  MyMemcpyCPU2CPU(temp_temp_data, top_diff, sizeof(T) * n * channels_);
+  multiply_row_vector_cpu<T>(temp_temp_data, gama_data, channels_,
+                             spatial_size_, batch_size_);
+  row_sum_cpu(temp_temp_data, temp_data, channels_, spatial_size_, batch_size_);
+  MyMemcpyCPU2CPU(bottom_diff, temp_temp_data, sizeof(T) * n * channels_);
+  scale_cpu<T>(bottom_diff, n * channels_, n);
+  // temp_temp_temp_data is the sum of temp_temp_data
+  T* temp_temp_temp_data;
+  MyMallocCPU(reinterpret_cast<void**>(&temp_temp_temp_data),
+              sizeof(T) * channels_);
+  col_sum_cpu(temp_data, temp_temp_temp_data, batch_size_, channels_, 1);
+  add_row_vector_cpu<T>(bottom_diff, temp_temp_temp_data, channels_,
+                        spatial_size_, batch_size_, -1);
+  multiply_two_vec_cpu<T>(temp_temp_data, standarded_cache_->GetCPUDataPtr(),
+                          temp_temp_data, n * channels_);
+  row_sum_cpu(temp_temp_data, temp_data, channels_, spatial_size_, batch_size_);
+  col_sum_cpu(temp_data, temp_temp_temp_data, batch_size_, channels_, 1);
+  multiply_row_vector_cpu<T>(standarded_cache_->GetCPUDataPtr(),
+                             temp_temp_temp_data, channels_, spatial_size_,
+                             batch_size_);
+  add_two_vec_cpu<T>(bottom_diff, standarded_cache_->GetCPUDataPtr(), -1,
+                     n * channels_);
+  divide_row_vector_cpu<T>(bottom_diff, variance_data, channels_, spatial_size_,
+                           batch_size_, 1e-5);
+  scale_cpu<T>(bottom_diff, n * channels_, 1.0f / n);
 }
 
 template class BatchNorm<float>;

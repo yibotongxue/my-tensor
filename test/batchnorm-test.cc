@@ -108,6 +108,91 @@ TEST_F(BatchNormCPUTest, BatchNormForwardTest) {
   }
 }
 
+TEST_F(BatchNormCPUTest, BatchNormBackwardBetaTest) {
+  batch_norm->BackwardCPU(top, bottom);
+  std::vector<float> beta_diff(100, 0.0f);
+  for (int i = 0; i < batch_size * channels * spatial_size; i++) {
+    beta_diff[(i / spatial_size) % channels] += output_diff[i];
+  }
+  for (int i = 0; i < channels; i++) {
+    EXPECT_NEAR(beta->GetCPUDiff(i), beta_diff[i], 0.01);
+  }
+}
+
+TEST_F(BatchNormCPUTest, BatchNormBackwardGamaTest) {
+  std::vector<float> mean(100, 0.0f);
+  std::vector<float> variance(100, 0.0f);
+  for (int i = 0; i < batch_size * channels * spatial_size; i++) {
+    mean[(i / spatial_size) % channels] += input_data[i];
+  }
+  for (int i = 0; i < channels; i++) {
+    mean[i] /= batch_size * spatial_size;
+  }
+  for (int i = 0; i < batch_size * channels * spatial_size; i++) {
+    variance[(i / spatial_size) % channels] +=
+        (input_data[i] - mean[(i / spatial_size) % channels]) *
+        (input_data[i] - mean[(i / spatial_size) % channels]);
+  }
+  for (int i = 0; i < channels; i++) {
+    variance[i] /= batch_size * spatial_size;
+  }
+  batch_norm->BackwardCPU(top, bottom);
+  std::vector<float> gama_diff(100, 0.0f);
+  for (int i = 0; i < batch_size * channels * spatial_size; i++) {
+    gama_diff[(i / spatial_size) % channels] +=
+        output_diff[i] *
+        ((input_data[i] - mean[(i / spatial_size) % channels]) /
+         std::sqrt(variance[(i / spatial_size) % channels] + 1e-5));
+  }
+  for (int i = 0; i < channels; i++) {
+    EXPECT_NEAR(gama->GetCPUDiff(i), gama_diff[i], 0.01);
+  }
+}
+
+TEST_F(BatchNormCPUTest, BatchNormCPUBackwardBottomTest) {
+  batch_norm->BackwardCPU(top, bottom);
+  std::vector<float> mean(100, 0.0f);
+  std::vector<float> variance(100, 0.0f);
+  for (int i = 0; i < batch_size * channels * spatial_size; i++) {
+    mean[(i / spatial_size) % channels] += input_data[i];
+  }
+  for (int i = 0; i < channels; i++) {
+    mean[i] /= batch_size * spatial_size;
+  }
+  for (int i = 0; i < batch_size * channels * spatial_size; i++) {
+    variance[(i / spatial_size) % channels] +=
+        (input_data[i] - mean[(i / spatial_size) % channels]) *
+        (input_data[i] - mean[(i / spatial_size) % channels]);
+  }
+  for (int i = 0; i < channels; i++) {
+    variance[i] /= batch_size * spatial_size;
+  }
+  std::vector<float> dx_(1024000, 0.0f);
+  for (int i = 0; i < batch_size * channels * spatial_size; i++) {
+    dx_[i] = output_diff[i] * gama_data[(i / spatial_size) % channels];
+  }
+  std::vector<float> dx_sum_(100, 0.0f);
+  for (int i = 0; i < batch_size * channels * spatial_size; i++) {
+    dx_sum_[(i / spatial_size) % channels] += dx_[i];
+  }
+  std::vector<float> x_(1024000, 0.0f);
+  for (int i = 0; i < batch_size * channels * spatial_size; i++) {
+    x_[i] = (input_data[i] - mean[(i / spatial_size) % channels]) /
+            std::sqrt(variance[(i / spatial_size) % channels] + 1e-5);
+  }
+  std::vector<float> dx_times_x_sum(100, 0.0f);
+  for (int i = 0; i < batch_size * channels * spatial_size; i++) {
+    dx_times_x_sum[(i / spatial_size) % channels] += dx_[i] * x_[i];
+  }
+
+  for (int i = 0; i < batch_size * channels * spatial_size; i++) {
+    float expect = 10240 * dx_[i] - dx_sum_[(i / spatial_size) % channels] -
+                   x_[i] * dx_times_x_sum[(i / spatial_size) % channels];
+    expect /= 10240 * std::sqrt(variance[(i / spatial_size) % channels] + 1e-5);
+    EXPECT_NEAR(input->GetCPUDiff(i), expect, 0.01);
+  }
+}
+
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
