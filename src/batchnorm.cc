@@ -203,6 +203,9 @@ void BatchNorm<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
   divide_row_vector_cpu<T>(bottom_diff, variance_data, channels_, spatial_size_,
                            batch_size_, 1e-5);
   scale_cpu<T>(bottom_diff, n * channels_, 1.0f / n);
+  MyMemFreeCPU(temp_temp_temp_data);
+  MyMemFreeCPU(temp_temp_data);
+  MyMemFreeCPU(temp_data);
 }
 
 template class BatchNorm<float>;

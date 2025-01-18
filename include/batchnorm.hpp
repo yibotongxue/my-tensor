@@ -43,9 +43,9 @@ class BatchNorm final : public Layer<T> {
                    const std::vector<TensorPtr<T>>& bottom) override;
 
   void ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
-                  const std::vector<TensorPtr<T>>& top) override {}
+                  const std::vector<TensorPtr<T>>& top) override;
   void BackwardGPU(const std::vector<TensorPtr<T>>& top,
-                   const std::vector<TensorPtr<T>>& bottom) override {}
+                   const std::vector<TensorPtr<T>>& bottom) override;
 
  private:
   int channels_;
