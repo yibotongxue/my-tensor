@@ -23,11 +23,10 @@ void BatchNorm<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
     Fill_GPU<T>(mean_data, channels_, 0);
     Fill_GPU<T>(variance_data, channels_, 0);
     // compute mean
-    T* temp_data;
-    MyMallocGPU(reinterpret_cast<void**>(&temp_data),
-                sizeof(T) * batch_size_ * channels_);
-    row_sum_gpu(bottom_data, temp_data, channels_, spatial_size_, batch_size_);
-    col_sum_gpu(temp_data, mean_data, batch_size_, channels_, 1);
+    row_sum_gpu(bottom_data, temp_cache1_->GetGPUDataPtr(), channels_,
+                spatial_size_, batch_size_);
+    col_sum_gpu(temp_cache1_->GetGPUDataPtr(), mean_data, batch_size_,
+                channels_, 1);
     scale_gpu(
         mean_data, channels_,
         static_cast<T>(1.0) / static_cast<T>(batch_size_ * spatial_size_));
@@ -36,20 +35,16 @@ void BatchNorm<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                     bottom[0]->GetSize() * sizeof(T));
     add_row_vector_gpu<T>(standarded_cache_->GetGPUDataPtr(), mean_data,
                           channels_, spatial_size_, batch_size_, -1);
-    T* temp_temp_data;
-    MyMallocGPU(reinterpret_cast<void**>(&temp_temp_data),
-                sizeof(T) * batch_size_ * channels_ * spatial_size_);
-    square_gpu(standarded_cache_->GetGPUDataPtr(), temp_temp_data,
-               standarded_cache_->GetSize());
-    row_sum_gpu(temp_temp_data, temp_data, channels_, spatial_size_,
-                batch_size_);
-    MyMemFreeGPU(temp_temp_data);
-    col_sum_gpu(temp_data, variance_data, batch_size_, channels_, 1);
+    square_gpu(standarded_cache_->GetGPUDataPtr(),
+               temp_cache2_->GetGPUDataPtr(), standarded_cache_->GetSize());
+    row_sum_gpu(temp_cache2_->GetGPUDataPtr(), temp_cache1_->GetGPUDataPtr(),
+                channels_, spatial_size_, batch_size_);
+    col_sum_gpu(temp_cache1_->GetGPUDataPtr(), variance_data, batch_size_,
+                channels_, 1);
     scale_gpu(
         variance_data, channels_,
         static_cast<T>(1.0) / static_cast<T>(batch_size_ * spatial_size_));
     sqrt_gpu(variance_data, variance_data, channels_);
-    MyMemFreeGPU(temp_data);
     // compute mean cache and variance cache
     scale_gpu(mean_cache_->GetGPUDataPtr(), channels_, move_scale_factor_);
     add_two_vec_gpu(mean_cache_->GetGPUDataPtr(), mean_data,
@@ -58,21 +53,16 @@ void BatchNorm<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
               move_scale_factor_);
     add_two_vec_gpu(sqrt_variance_cache_->GetGPUDataPtr(), variance_data,
                     static_cast<T>(1.0 - move_scale_factor_), channels_);
-    // update scale factor
-    scale_factor_ = 1.0 + move_scale_factor_ * scale_factor_;
-    sqrt_variance_->GetGPUDataPtr();
     // compute standarded data
     divide_row_vector_gpu<T>(standarded_cache_->GetGPUDataPtr(), variance_data,
                              channels_, spatial_size_, batch_size_,
                              static_cast<T>(1e-5));
   } else {
     // FIXME not sure if this is correct
-    MyMemcpyGPU2GPU(mean_data, mean_cache_->GetGPUDataPtr(),
-                    mean_cache_->GetSize());
-    scale_gpu(mean_data, channels_, scale_factor_);
-    MyMemcpyGPU2GPU(variance_data, sqrt_variance_cache_->GetGPUDataPtr(),
-                    sqrt_variance_cache_->GetSize());
-    scale_gpu(variance_data, channels_, scale_factor_);
+    mean_data = mean_cache_->GetGPUDataPtr();
+    variance_data = sqrt_variance_cache_->GetGPUDataPtr();
+    MyMemcpyGPU2GPU(standarded_cache_->GetGPUDataPtr(), bottom_data,
+                    bottom[0]->GetSize() * sizeof(T));
     add_row_vector_gpu<T>(standarded_cache_->GetGPUDataPtr(), mean_data,
                           channels_, spatial_size_, batch_size_, -1);
     divide_row_vector_gpu<T>(standarded_cache_->GetGPUDataPtr(), variance_data,
@@ -84,7 +74,6 @@ void BatchNorm<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                   standarded_cache_->GetSize() * sizeof(T));
   multiply_row_vector_gpu<T>(top_data, gama_data, channels_, spatial_size_,
                              batch_size_);
-  temp_cache_ = tensor_sum_gpu<T>(top_data, channels_);
   add_row_vector_gpu<T>(top_data, beta_data, channels_, spatial_size_,
                         batch_size_);
 }
@@ -102,53 +91,54 @@ void BatchNorm<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
   const T* mean_data = mean_->GetGPUDataPtr();
   const T* variance_data = sqrt_variance_->GetGPUDataPtr();
   // compute beta diff
-  T* temp_data;
-  MyMallocGPU(reinterpret_cast<void**>(&temp_data),
-              sizeof(T) * batch_size_ * channels_);
-  row_sum_gpu(top_diff, temp_data, channels_, spatial_size_, batch_size_);
-  col_sum_gpu(temp_data, beta_diff, batch_size_, channels_, 1);
+  row_sum_gpu(top_diff, temp_cache1_->GetGPUDataPtr(), channels_, spatial_size_,
+              batch_size_);
+  col_sum_gpu(temp_cache1_->GetGPUDataPtr(), beta_diff, batch_size_, channels_,
+              1);
   // compute gama diff
-  T* temp_temp_data;
-  MyMallocGPU(reinterpret_cast<void**>(&temp_temp_data),
-              sizeof(T) * batch_size_ * channels_ * spatial_size_);
   multiply_two_vec_gpu<T>(top_diff, standarded_cache_->GetGPUDataPtr(),
-                          temp_temp_data,
+                          temp_cache2_->GetGPUDataPtr(),
                           batch_size_ * channels_ * spatial_size_);
-  row_sum_gpu(temp_temp_data, temp_data, channels_, spatial_size_, batch_size_);
-  col_sum_gpu(temp_data, gama_diff, batch_size_, channels_, 1);
-  // MyMemFreeGPU(temp_temp_data);
+  row_sum_gpu(temp_cache2_->GetGPUDataPtr(), temp_cache1_->GetGPUDataPtr(),
+              channels_, spatial_size_, batch_size_);
+  col_sum_gpu(temp_cache1_->GetGPUDataPtr(), gama_diff, batch_size_, channels_,
+              1);
+  // MyMemFreeGPU(batch_size_times_channel_times_spatial_size_length_cache_->GetGPUDataPtr());
   // MyMemFreeGPU(temp_data);
   // compute bottom diff
-  // temp_temp_data is the partial diff of top_data to standarded_cache
+  // batch_size_times_channel_times_spatial_size_length_cache_->GetGPUDataPtr()
+  // is the partial diff of top_data to standarded_cache
   int n = batch_size_ * spatial_size_;
-  MyMemcpyGPU2GPU(temp_temp_data, top_diff, sizeof(T) * n * channels_);
-  multiply_row_vector_gpu<T>(temp_temp_data, gama_data, channels_,
-                             spatial_size_, batch_size_);
-  row_sum_gpu(temp_temp_data, temp_data, channels_, spatial_size_, batch_size_);
-  MyMemcpyGPU2GPU(bottom_diff, temp_temp_data, sizeof(T) * n * channels_);
+  MyMemcpyGPU2GPU(temp_cache2_->GetGPUDataPtr(), top_diff,
+                  sizeof(T) * n * channels_);
+  multiply_row_vector_gpu<T>(temp_cache2_->GetGPUDataPtr(), gama_data,
+                             channels_, spatial_size_, batch_size_);
+  row_sum_gpu(temp_cache2_->GetGPUDataPtr(), temp_cache1_->GetGPUDataPtr(),
+              channels_, spatial_size_, batch_size_);
+  MyMemcpyGPU2GPU(bottom_diff, temp_cache2_->GetGPUDataPtr(),
+                  sizeof(T) * n * channels_);
   scale_gpu<T>(bottom_diff, n * channels_, n);
-  // temp_temp_temp_data is the sum of temp_temp_data
-  T* temp_temp_temp_data;
-  MyMallocGPU(reinterpret_cast<void**>(&temp_temp_temp_data),
-              sizeof(T) * channels_);
-  col_sum_gpu(temp_data, temp_temp_temp_data, batch_size_, channels_, 1);
-  add_row_vector_gpu<T>(bottom_diff, temp_temp_temp_data, channels_,
+  // channel_length_cache_->GetGPUDataPtr() is the sum of
+  // batch_size_times_channel_times_spatial_size_length_cache_->GetGPUDataPtr()
+  col_sum_gpu(temp_cache1_->GetGPUDataPtr(), temp_cache_->GetGPUDataPtr(),
+              batch_size_, channels_, 1);
+  add_row_vector_gpu<T>(bottom_diff, temp_cache_->GetGPUDataPtr(), channels_,
                         spatial_size_, batch_size_, -1);
-  multiply_two_vec_gpu<T>(temp_temp_data, standarded_cache_->GetGPUDataPtr(),
-                          temp_temp_data, n * channels_);
-  row_sum_gpu(temp_temp_data, temp_data, channels_, spatial_size_, batch_size_);
-  col_sum_gpu(temp_data, temp_temp_temp_data, batch_size_, channels_, 1);
+  multiply_two_vec_gpu<T>(temp_cache2_->GetGPUDataPtr(),
+                          standarded_cache_->GetGPUDataPtr(),
+                          temp_cache2_->GetGPUDataPtr(), n * channels_);
+  row_sum_gpu(temp_cache2_->GetGPUDataPtr(), temp_cache1_->GetGPUDataPtr(),
+              channels_, spatial_size_, batch_size_);
+  col_sum_gpu(temp_cache1_->GetGPUDataPtr(), temp_cache_->GetGPUDataPtr(),
+              batch_size_, channels_, 1);
   multiply_row_vector_gpu<T>(standarded_cache_->GetGPUDataPtr(),
-                             temp_temp_temp_data, channels_, spatial_size_,
-                             batch_size_);
+                             temp_cache_->GetGPUDataPtr(), channels_,
+                             spatial_size_, batch_size_);
   add_two_vec_gpu<T>(bottom_diff, standarded_cache_->GetGPUDataPtr(), -1,
                      n * channels_);
   divide_row_vector_gpu<T>(bottom_diff, variance_data, channels_, spatial_size_,
                            batch_size_, 1e-5);
   scale_gpu<T>(bottom_diff, n * channels_, 1.0f / n);
-  MyMemFreeGPU(temp_temp_temp_data);
-  MyMemFreeGPU(temp_temp_data);
-  MyMemFreeGPU(temp_data);
 }
 
 template class BatchNorm<float>;

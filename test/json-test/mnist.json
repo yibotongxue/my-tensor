@@ -37,6 +37,14 @@
         }
       ],
       "bottom": ["input"],
+      "top": ["bn1"]
+    },
+    {
+      "name": "bn1",
+      "type": "BatchNorm",
+      "channels": 3,
+      "move_scale_factor": 0.9,
+      "bottom": ["conv1"],
       "top": ["pooling1"]
     },
     {
@@ -47,7 +55,7 @@
       "stride_w": 2,
       "stride_h": 2,
       "input_channels": 3,
-      "bottom": ["conv1"],
+      "bottom": ["bn1"],
       "top": ["relu1"]
     },
     {
@@ -73,6 +81,14 @@
         }
       ],
       "bottom": ["relu1"],
+      "top": ["bn1"]
+    },
+    {
+      "name": "bn2",
+      "type": "BatchNorm",
+      "channels": 10,
+      "move_scale_factor": 0.9,
+      "bottom": ["conv2"],
       "top": ["pooling2"]
     },
     {
@@ -83,7 +99,7 @@
       "stride_w": 2,
       "stride_h": 2,
       "input_channels": 10,
-      "bottom": ["conv2"],
+      "bottom": ["bn2"],
       "top": ["relu2"]
     },
     {
