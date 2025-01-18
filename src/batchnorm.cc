@@ -89,7 +89,6 @@ void BatchNorm<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
   if (this->is_train_) {
     Fill_CPU<T>(mean_data, channels_, 0);
     Fill_CPU<T>(variance_data, channels_, 0);
-    // compute mean
     row_sum_cpu(bottom_data, temp_cache1_->GetCPUDataPtr(), channels_,
                 spatial_size_, batch_size_);
     col_sum_cpu(temp_cache1_->GetCPUDataPtr(), mean_data, batch_size_,
@@ -97,7 +96,6 @@ void BatchNorm<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
     scale_cpu(
         mean_data, channels_,
         static_cast<T>(1.0) / static_cast<T>(batch_size_ * spatial_size_));
-    // compute variance
     MyMemcpyCPU2CPU(standarded_cache_->GetCPUDataPtr(), bottom_data,
                     bottom[0]->GetSize() * sizeof(T));
     add_row_vector_cpu<T>(standarded_cache_->GetCPUDataPtr(), mean_data,
@@ -112,7 +110,6 @@ void BatchNorm<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
         variance_data, channels_,
         static_cast<T>(1.0) / static_cast<T>(batch_size_ * spatial_size_));
     sqrt_cpu(variance_data, variance_data, channels_);
-    // compute mean cache and variance cache
     scale_cpu(mean_cache_->GetCPUDataPtr(), channels_, move_scale_factor_);
     add_two_vec_cpu(mean_cache_->GetCPUDataPtr(), mean_data,
                     static_cast<T>(1.0 - move_scale_factor_), channels_);
@@ -120,12 +117,10 @@ void BatchNorm<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
               move_scale_factor_);
     add_two_vec_cpu(sqrt_variance_cache_->GetCPUDataPtr(), variance_data,
                     static_cast<T>(1.0 - move_scale_factor_), channels_);
-    // compute standarded data
     divide_row_vector_cpu<T>(standarded_cache_->GetCPUDataPtr(), variance_data,
                              channels_, spatial_size_, batch_size_,
                              static_cast<T>(1e-5));
   } else {
-    // FIXME not sure if this is correct
     MyMemcpyCPU2CPU(mean_data, mean_cache_->GetCPUDataPtr(),
                     mean_cache_->GetSize());
     MyMemcpyCPU2CPU(variance_data, sqrt_variance_cache_->GetCPUDataPtr(),
@@ -138,7 +133,6 @@ void BatchNorm<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                              channels_, spatial_size_, batch_size_,
                              static_cast<T>(1e-5));
   }
-  // compute top data
   MyMemcpyCPU2CPU(top_data, standarded_cache_->GetCPUDataPtr(),
                   standarded_cache_->GetSize() * sizeof(T));
   multiply_row_vector_cpu<T>(top_data, gama_data, channels_, spatial_size_,
@@ -159,12 +153,10 @@ void BatchNorm<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
   T* beta_diff = beta_->GetCPUDiffPtr();
   const T* mean_data = mean_->GetCPUDataPtr();
   const T* variance_data = sqrt_variance_->GetCPUDataPtr();
-  // compute beta diff
   row_sum_cpu(top_diff, temp_cache1_->GetCPUDataPtr(), channels_, spatial_size_,
               batch_size_);
   col_sum_cpu(temp_cache1_->GetCPUDataPtr(), beta_diff, batch_size_, channels_,
               1);
-  // compute gama diff
   multiply_two_vec_cpu<T>(top_diff, standarded_cache_->GetCPUDataPtr(),
                           temp_cache2_->GetCPUDataPtr(),
                           batch_size_ * channels_ * spatial_size_);
@@ -172,11 +164,6 @@ void BatchNorm<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
               channels_, spatial_size_, batch_size_);
   col_sum_cpu(temp_cache1_->GetCPUDataPtr(), gama_diff, batch_size_, channels_,
               1);
-  // MyMemFreeCPU(batch_size_times_channel_times_spatial_size_length_cache_->GetCPUDataPtr());
-  // MyMemFreeCPU(temp_data);
-  // compute bottom diff
-  // batch_size_times_channel_times_spatial_size_length_cache_->GetCPUDataPtr()
-  // is the partial diff of top_data to standarded_cache
   int n = batch_size_ * spatial_size_;
   MyMemcpyCPU2CPU(temp_cache2_->GetCPUDataPtr(), top_diff,
                   sizeof(T) * n * channels_);
@@ -187,8 +174,6 @@ void BatchNorm<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
   MyMemcpyCPU2CPU(bottom_diff, temp_cache2_->GetCPUDataPtr(),
                   sizeof(T) * n * channels_);
   scale_cpu<T>(bottom_diff, n * channels_, n);
-  // channel_length_cache_->GetCPUDataPtr() is the sum of
-  // batch_size_times_channel_times_spatial_size_length_cache_->GetCPUDataPtr()
   col_sum_cpu(temp_cache1_->GetCPUDataPtr(), temp_cache_->GetCPUDataPtr(),
               batch_size_, channels_, 1);
   add_row_vector_cpu<T>(bottom_diff, temp_cache_->GetCPUDataPtr(), channels_,
