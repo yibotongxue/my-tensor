@@ -1,0 +1,15 @@
+{
+  "batch_size": 1024,
+  "learning_rate": 0.0006,
+  "l2": 1e-4,
+  "layers": [
+    {
+      "name": "bn1",
+      "type": "BatchNorm",
+      "channels": 100,
+      "move_scale_factor": 0.9,
+      "bottom": ["null"],
+      "top": ["null"]
+    }
+  ]
+}

@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "accuracy.hpp"
+#include "batchnorm.hpp"
 #include "conv.hpp"
 #include "error.hpp"
 #include "flatten.hpp"

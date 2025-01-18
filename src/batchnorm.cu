@@ -2,4 +2,6 @@
 
 #include "batchnorm.hpp"
 
-namespace my_tensor {}  // namespace my_tensor
+namespace my_tensor {
+template class BatchNorm<float>;
+}  // namespace my_tensor

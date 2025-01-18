@@ -70,8 +70,12 @@ class Layer {
   virtual void BackwardGPU(const std::vector<TensorPtr<T>>& top,
                            const std::vector<TensorPtr<T>>& bottom) = 0;
 
+  void SetTrain() { is_train_ = true; }
+  void SetTest() { is_train_ = false; }
+
  protected:
   LayerParameterPtr layer_param_;
+  bool is_train_ = true;
 };
 
 // Layer pointer.

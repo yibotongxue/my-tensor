@@ -94,8 +94,8 @@ class Net {
   std::vector<std::vector<T>> GetModelData() const;
   void SetModelData(std::vector<std::vector<T>>&& data);
   void CopyFrom(const std::vector<TensorPtr<T>>& learnable_params);
-  void SetTrain() { phase_ = Phase::kTrain; }
-  void SetTest() { phase_ = Phase::kTest; }
+  void SetTrain();
+  void SetTest();
 
  protected:
   // net parameter

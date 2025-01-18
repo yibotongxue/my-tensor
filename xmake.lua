@@ -44,7 +44,9 @@ local layer_src = {
     "src/loss-with-softmax.cu",
     "src/loss-with-softmax.cc",
     "src/accuracy.cu",
-    "src/accuracy.cc"
+    "src/accuracy.cc",
+    "src/batchnorm.cu",
+    "src/batchnorm.cc"
 }
 
 local solver_src = {
@@ -196,6 +198,13 @@ target("accuracy_test")
     add_includedirs("test/include")
     add_files("test/accuracy-test.cc")
 
+target("batchnorm_test")
+    set_kind("binary")
+    add_packages("gtest")
+    add_deps("layer_lib")
+    add_includedirs("test/include")
+    add_files("test/batchnorm-test.cc")
+
 target("mnist")
     set_kind("binary")
     add_deps("layer_lib")
@@ -221,7 +230,8 @@ target("run_tests")
             "pooling_test",
             "softmax_test",
             "loss_with_softmax_test",
-            "accuracy_test"
+            "accuracy_test",
+            "batchnorm_test"
         }
 
         -- 遍历运行每个测试

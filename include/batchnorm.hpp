@@ -26,7 +26,16 @@ class BatchNorm final : public Layer<T> {
   void LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
                   const std::vector<TensorPtr<T>>& top) override;
 
+  std::vector<TensorPtr<T>> GetLearnableParameters() override {
+    return {gama_, beta_};
+  }
+
   virtual ~BatchNorm() = default;
+
+  inline const TensorPtr<T> GetGama() const { return gama_; }
+  inline TensorPtr<T> GetGama() { return gama_; }
+  inline const TensorPtr<T> GetBeta() const { return beta_; }
+  inline TensorPtr<T> GetBeta() { return beta_; }
 
   void ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                   const std::vector<TensorPtr<T>>& top) override;
@@ -34,19 +43,27 @@ class BatchNorm final : public Layer<T> {
                    const std::vector<TensorPtr<T>>& bottom) override;
 
   void ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
-                  const std::vector<TensorPtr<T>>& top) override;
+                  const std::vector<TensorPtr<T>>& top) override {}
   void BackwardGPU(const std::vector<TensorPtr<T>>& top,
-                   const std::vector<TensorPtr<T>>& bottom) override;
+                   const std::vector<TensorPtr<T>>& bottom) override {}
 
  private:
   int channels_;
   TensorPtr<T> gama_;
   TensorPtr<T> beta_;
+  TensorPtr<T> mean_;
+  TensorPtr<T> sqrt_variance_;
   TensorPtr<T> mean_cache_;
-  TensorPtr<T> variance_cache_;
+  TensorPtr<T> sqrt_variance_cache_;
+  TensorPtr<T> standarded_cache_;
 
-  int batch_cnt_;
+  T scale_factor_;
+  T move_scale_factor_;
+  int batch_size_;
+  int spatial_size_;
 };
+
+extern template class BatchNorm<float>;
 }  // namespace my_tensor
 
 #endif  // INCLUDE_BATCHNORM_HPP_

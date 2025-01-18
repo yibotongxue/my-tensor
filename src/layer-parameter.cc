@@ -234,6 +234,12 @@ void BatchNormParameter::ParseSettingParameter(const nlohmann::json& js) {
         "The batchnorm layer should have an integer number as channels.");
   }
   channels_ = js["channels"].get<int>();
+  if (!js.contains("move_scale_factor") ||
+      !js["move_scale_factor"].is_number_float()) {
+    throw FileError(
+        "The batchnorm layer should have a float number as move_scale_factor.");
+  }
+  move_scale_factor_ = js["move_scale_factor"].get<float>();
 }
 
 }  // namespace my_tensor

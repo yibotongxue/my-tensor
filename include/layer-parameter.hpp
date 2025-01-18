@@ -186,6 +186,7 @@ class AccuracyParameter final : public LayerParameter {
 class BatchNormParameter final : public LayerParameter {
  public:
   int channels_;
+  float move_scale_factor_;
 
   explicit BatchNormParameter() : LayerParameter(ParamType::kBatchNorm) {}
 

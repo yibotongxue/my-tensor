@@ -90,6 +90,22 @@ void Net<T>::CopyFrom(const std::vector<TensorPtr<T>>& learnable_params) {
 }
 
 template <typename T>
+void Net<T>::SetTrain() {
+  phase_ = Phase::kTrain;
+  for (auto&& layer : layers_) {
+    layer->SetTrain();
+  }
+}
+
+template <typename T>
+void Net<T>::SetTest() {
+  phase_ = Phase::kTest;
+  for (auto&& layer : layers_) {
+    layer->SetTest();
+  }
+}
+
+template <typename T>
 std::shared_ptr<DataLoader> Net<T>::GetDataLoader() const {
   if (phase_ == Phase::kTrain) {
     return train_dataloader_;
