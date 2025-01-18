@@ -109,7 +109,7 @@ BATCH_NORM_TEST(GPU, gpu)
               ((input_data[i] - mean[(i / spatial_size) % channels]) /      \
                std::sqrt(variance[(i / spatial_size) % channels] + 1e-5)) + \
           beta_data[(i / spatial_size) % channels];                         \
-      EXPECT_NEAR(output->Get##device##Data(i), expect, 0.01);              \
+      EXPECT_NEAR(output->GetCPUData(i), expect, 0.01);                     \
     }                                                                       \
   }
 
@@ -124,7 +124,7 @@ BATCH_NORM_FORWARD_TEST(GPU, gpu)
       beta_diff[(i / spatial_size) % channels] += output_diff[i];    \
     }                                                                \
     for (int i = 0; i < channels; i++) {                             \
-      EXPECT_NEAR(beta->Get##device##Diff(i), beta_diff[i], 0.01);   \
+      EXPECT_NEAR(beta->GetCPUDiff(i), beta_diff[i], 0.01);          \
     }                                                                \
   }
 
@@ -158,7 +158,7 @@ BATCH_NORM_BACKWARD_TEST(GPU, gpu)
            std::sqrt(variance[(i / spatial_size) % channels] + 1e-5)); \
     }                                                                  \
     for (int i = 0; i < channels; i++) {                               \
-      EXPECT_NEAR(gama->Get##device##Diff(i), gama_diff[i], 0.01);     \
+      EXPECT_NEAR(gama->GetCPUDiff(i), gama_diff[i], 0.01);            \
     }                                                                  \
   }
 
@@ -207,7 +207,7 @@ BATCH_NORM_BACKWARD_GAMA_TEST(GPU, gpu)
                      x_[i] * dx_times_x_sum[(i / spatial_size) % channels];    \
       expect /=                                                                \
           10240 * std::sqrt(variance[(i / spatial_size) % channels] + 1e-5);   \
-      EXPECT_NEAR(input->Get##device##Diff(i), expect, 0.01);                  \
+      EXPECT_NEAR(input->GetCPUDiff(i), expect, 0.01);                         \
     }                                                                          \
   }
 

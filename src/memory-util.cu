@@ -27,4 +27,18 @@ void MyMemcpyGPU2GPU(void* dst, const void* src, size_t size) {
 void MyMemFreeCPU(void* ptr) { free(ptr); }
 
 void MyMemFreeGPU(void* ptr) { CUDA_CHECK(cudaFree(ptr)); }
+
+namespace {
+template <typename T>
+__global__ void SetAllValue(T* const data, std::size_t count, T value) {
+  CUDA_KERNEL_LOOP(i, count) { data[i] = value; }
+}
+}  // namespace
+
+template <typename T>
+void Fill_GPU(T* const data, std::size_t count, T value) {
+  SetAllValue<<<CudaGetBlocks(count), kCudaThreadNum>>>(data, count, value);
+}
+
+template void Fill_GPU(float* const data, std::size_t count, float value);
 }  // namespace my_tensor

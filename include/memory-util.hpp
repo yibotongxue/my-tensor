@@ -43,11 +43,10 @@ inline void Fill_CPU(T* const data, std::size_t count, T value) {
 }
 
 template <typename T>
-inline void Fill_GPU(T* const data, std::size_t count, T value) {
-  for (std::size_t i = 0; i < count; i++) {
-    MyMemcpyCPU2GPU(data + i, &value, sizeof(T));
-  }
-}
+void Fill_GPU(T* const data, std::size_t count, T value);
+
+extern template void Fill_GPU(float* const data, std::size_t count,
+                              float value);
 }  // namespace my_tensor
 
 #endif  // INCLUDE_MEMORY_UTIL_HPP_
