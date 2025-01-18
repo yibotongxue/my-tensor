@@ -107,45 +107,153 @@ void transpose_matmul_transpose_cpu(const float *A, const float *B, float *C,
                                     const int m, const int k, const int n,
                                     const int batch_count, const int broadcast);
 
+/**
+ * @brief add a row vector to a matrix
+ *
+ * @param mat 矩阵 batch_count * m * n
+ * @param vec 向量 m
+ * @param m 矩阵行数
+ * @param n 矩阵列数
+ * @param batch_count batch数
+ * @param scale 缩放因子
+ */
 template <typename T>
 void add_row_vector_gpu(T *mat, const T *vec, const int m, const int n,
-                        const int batch_count = 1) {
+                        const int batch_count = 1, const T scale = 1) {
   BLAS_UNIMPLEMENTION
 }
 
+/**
+ * @brief add a row vector to a matrix
+ *
+ * @param mat 矩阵 batch_count * m * n
+ * @param vec 向量 m
+ * @param m 矩阵行数
+ * @param n 矩阵列数
+ * @param batch_count batch数
+ * @param scale 缩放因子
+ */
 template <typename T>
 void add_row_vector_cpu(T *mat, const T *vec, const int m, const int n,
-                        const int batch_count = 1) {
+                        const int batch_count = 1, const T scale = 1) {
   BLAS_UNIMPLEMENTION
 }
 
+/**
+ * @brief add a row vector to a matrix
+ *
+ * @param mat 矩阵 batch_count * m * n
+ * @param vec 向量 m
+ * @param m 矩阵行数
+ * @param n 矩阵列数
+ * @param batch_count batch数
+ * @param scale 缩放因子
+ */
 template <>
 void add_row_vector_gpu(float *mat, const float *vec, const int m, const int n,
-                        const int batch_count);
+                        const int batch_count, const float scale);
 
+/**
+ * @brief add a row vector to a matrix
+ *
+ * @param mat 矩阵 batch_count * m * n
+ * @param vec 向量 m
+ * @param m 矩阵行数
+ * @param n 矩阵列数
+ * @param batch_count batch数
+ * @param scale 缩放因子
+ */
 template <>
 void add_row_vector_cpu(float *mat, const float *vec, const int m, const int n,
-                        const int batch_count);
+                        const int batch_count, const float scale);
 
 template <typename T>
 void add_col_vector_gpu(T *mat, const T *vec, const int m, const int n,
-                        const int batch_count = 1) {
+                        const int batch_count = 1, const T scale = 1) {
   BLAS_UNIMPLEMENTION
 }
 
 template <typename T>
 void add_col_vector_cpu(T *mat, const T *vec, const int m, const int n,
-                        const int batch_count = 1) {
+                        const int batch_count = 1, const T scale = 1) {
   BLAS_UNIMPLEMENTION
 }
 
 template <>
 void add_col_vector_gpu(float *mat, const float *vec, const int m, const int n,
-                        const int batch_count);
+                        const int batch_count, const float scale);
 
 template <>
 void add_col_vector_cpu(float *mat, const float *vec, const int m, const int n,
-                        const int batch_count);
+                        const int batch_count, const float scale);
+
+template <typename T>
+void multiply_row_vector_cpu(T *mat, const T *vec, const int m, const int n,
+                             const int batch_count = 1);
+
+extern template void multiply_row_vector_cpu(float *mat, const float *vec,
+                                             const int m, const int n,
+                                             const int batch_count);
+
+template <typename T>
+void multiply_row_vector_gpu(T *mat, const T *vec, const int m, const int n,
+                             const int batch_count = 1);
+
+extern template void multiply_row_vector_gpu(float *mat, const float *vec,
+                                             const int m, const int n,
+                                             const int batch_count);
+
+template <typename T>
+void multiply_col_vector_cpu(T *mat, const T *vec, const int m, const int n,
+                             const int batch_count = 1);
+
+extern template void multiply_col_vector_cpu(float *mat, const float *vec,
+                                             const int m, const int n,
+                                             const int batch_count);
+
+template <typename T>
+void multiply_col_vector_gpu(T *mat, const T *vec, const int m, const int n,
+                             const int batch_count = 1);
+
+extern template void multiply_col_vector_gpu(float *mat, const float *vec,
+                                             const int m, const int n,
+                                             const int batch_count);
+
+template <typename T>
+void divide_row_vector_cpu(T *mat, const T *vec, const int m, const int n,
+                           const int batch_count = 1, const T eps = 0);
+
+extern template void divide_row_vector_cpu(float *mat, const float *vec,
+                                           const int m, const int n,
+                                           const int batch_count,
+                                           const float eps);
+
+template <typename T>
+void divide_row_vector_gpu(T *mat, const T *vec, const int m, const int n,
+                           const int batch_count = 1, const T eps = 0);
+
+extern template void divide_row_vector_gpu(float *mat, const float *vec,
+                                           const int m, const int n,
+                                           const int batch_count,
+                                           const float eps);
+
+template <typename T>
+void divide_col_vector_cpu(T *mat, const T *vec, const int m, const int n,
+                           const int batch_count = 1, const T eps = 0);
+
+extern template void divide_col_vector_cpu(float *mat, const float *vec,
+                                           const int m, const int n,
+                                           const int batch_count,
+                                           const float eps);
+
+template <typename T>
+void divide_col_vector_gpu(T *mat, const T *vec, const int m, const int n,
+                           const int batch_count = 1, const T eps = 0);
+
+extern template void divide_col_vector_gpu(float *mat, const float *vec,
+                                           const int m, const int n,
+                                           const int batch_count,
+                                           const float eps);
 
 template <typename T>
 T tensor_sum_gpu(const T *tensor, const int cnt) {

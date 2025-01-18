@@ -87,14 +87,13 @@ void transpose_matmul_transpose_cpu(const float *A, const float *B, float *C,
                 m, B_batch, k, beta, C_batch, n);
   }
 }
-
 template <>
 void add_row_vector_cpu(float *mat, const float *vec, const int m, const int n,
-                        const int batch_count) {
+                        const int batch_count, const float scale) {
   for (int i = 0; i < batch_count; i++) {
     for (int j = 0; j < m; j++) {
       for (int k = 0; k < n; k++) {
-        mat[i * m * n + j * n + k] += vec[j];
+        mat[i * m * n + j * n + k] += vec[j] * scale;
       }
     }
   }
@@ -102,13 +101,71 @@ void add_row_vector_cpu(float *mat, const float *vec, const int m, const int n,
 
 template <>
 void add_col_vector_cpu(float *mat, const float *vec, const int m, const int n,
-                        const int batch_count) {
+                        const int batch_count, const float scale) {
   for (int i = 0; i < batch_count * m; i++) {
     for (int j = 0; j < n; j++) {
-      mat[i * n + j] += vec[j];
+      mat[i * n + j] += vec[j] * scale;
     }
   }
 }
+
+template <typename T>
+void multiply_row_vector_cpu(T *mat, const T *vec, const int m, const int n,
+                             const int batch_count) {
+  for (int i = 0; i < batch_count; i++) {
+    for (int j = 0; j < m; j++) {
+      for (int k = 0; k < n; k++) {
+        mat[i * m * n + j * n + k] *= vec[j];
+      }
+    }
+  }
+}
+
+template void multiply_row_vector_cpu(float *mat, const float *vec, const int m,
+                                      const int n, const int batch_count);
+
+template <typename T>
+void multiply_col_vector_cpu(T *mat, const T *vec, const int m, const int n,
+                             const int batch_count) {
+  for (int i = 0; i < batch_count * m; i++) {
+    for (int j = 0; j < n; j++) {
+      mat[i * n + j] *= vec[j];
+    }
+  }
+}
+
+template void multiply_col_vector_cpu(float *mat, const float *vec, const int m,
+                                      const int n, const int batch_count);
+
+template <typename T>
+void divide_row_vector_cpu(T *mat, const T *vec, const int m, const int n,
+                           const int batch_count, const T eps) {
+  for (int i = 0; i < batch_count; i++) {
+    for (int j = 0; j < m; j++) {
+      for (int k = 0; k < n; k++) {
+        mat[i * m * n + j * n + k] /= (vec[j] + eps);
+      }
+    }
+  }
+}
+
+template void divide_row_vector_cpu(float *mat, const float *vec, const int m,
+                                    const int n, const int batch_count,
+                                    const float eps);
+
+template <typename T>
+void divide_col_vector_cpu(T *mat, const T *vec, const int m, const int n,
+                           const int batch_count, const T eps) {
+  for (int i = 0; i < batch_count * m; i++) {
+    for (int j = 0; j < n; j++) {
+      mat[i * n + j] /= (vec[j] + eps);
+    }
+  }
+}
+
+template void divide_col_vector_cpu(float *mat, const float *vec, const int m,
+                                    const int n, const int batch_count,
+                                    const float eps);
 
 template <>
 float tensor_sum_cpu(const float *tensor, const int cnt) {

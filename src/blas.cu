@@ -143,8 +143,8 @@ void transpose_matmul_transpose_gpu(const float *A, const float *B, float *C,
 }
 
 namespace {
-__global__ void SetAllOnes(float *ones, int n) {
-  CUDA_KERNEL_LOOP(i, n) { ones[i] = 1.0f; }
+__global__ void SetAllValue(float *ones, int n, float value) {
+  CUDA_KERNEL_LOOP(i, n) { ones[i] = value; }
 }
 
 __global__ void RepeatVec(const float *vec, float *result, const int m,
@@ -155,11 +155,11 @@ __global__ void RepeatVec(const float *vec, float *result, const int m,
 
 template <>
 void add_row_vector_gpu(float *mat, const float *vec, const int m, const int n,
-                        const int batch_count) {
+                        const int batch_count, const float scale) {
   float alpha = 1.0f;
   float *ones = nullptr;
   cudaMalloc(&ones, n * sizeof(float));
-  SetAllOnes<<<CudaGetBlocks(n), kCudaThreadNum>>>(ones, n);
+  SetAllValue<<<CudaGetBlocks(n), kCudaThreadNum>>>(ones, n, scale);
   float *repeat_vec = nullptr;
   cudaMalloc(&repeat_vec, m * batch_count * sizeof(float));
   RepeatVec<<<CudaGetBlocks(m * batch_count), kCudaThreadNum>>>(vec, repeat_vec,
@@ -172,16 +172,112 @@ void add_row_vector_gpu(float *mat, const float *vec, const int m, const int n,
 
 template <>
 void add_col_vector_gpu(float *mat, const float *vec, const int m, const int n,
-                        const int batch_count) {
+                        const int batch_count, const float scale) {
   float alpha = 1.0f;
   float *ones = nullptr;
   cudaMalloc(&ones, m * batch_count * sizeof(float));
-  SetAllOnes<<<CudaGetBlocks(m * batch_count), kCudaThreadNum>>>(
-      ones, m * batch_count);
+  SetAllValue<<<CudaGetBlocks(m * batch_count), kCudaThreadNum>>>(
+      ones, m * batch_count, scale);
   CUBLAS_CHECK(cublasSger(CudaContext::cublas_handle(), n, m * batch_count,
                           &alpha, vec, 1, ones, 1, mat, n));
   cudaFree(ones);
 }
+
+namespace {
+template <typename T>
+__global__ void MutiplyRowVecDevice(T *mat, const T *vec, const int m,
+                                    const int n, const int total_cnt) {
+  CUDA_KERNEL_LOOP(i, total_cnt) {
+    int row_idx = (i / n) % m;
+    mat[i] *= vec[row_idx];
+  }
+}
+}  // namespace
+
+template <typename T>
+void multiply_row_vector_gpu(T *mat, const T *vec, const int m, const int n,
+                             const int batch_count) {
+  int total_cnt = m * n * batch_count;
+  MutiplyRowVecDevice<<<CudaGetBlocks(total_cnt), kCudaThreadNum>>>(
+      mat, vec, m, n, total_cnt);
+}
+
+template void multiply_row_vector_gpu<float>(float *mat, const float *vec,
+                                             const int m, const int n,
+                                             const int batch_count);
+
+namespace {
+template <typename T>
+__global__ void MultiplyColVecDevice(T *mat, const T *vec, const int m,
+                                     const int n, const int total_cnt) {
+  CUDA_KERNEL_LOOP(i, total_cnt) {
+    int col_idx = i % n;
+    mat[i] *= vec[col_idx];
+  }
+}
+}  // namespace
+
+template <typename T>
+void multiply_col_vector_gpu(T *mat, const T *vec, const int m, const int n,
+                             const int batch_count) {
+  int total_cnt = m * n * batch_count;
+  MultiplyColVecDevice<<<CudaGetBlocks(total_cnt), kCudaThreadNum>>>(
+      mat, vec, m, n, total_cnt);
+}
+
+template void multiply_col_vector_gpu<float>(float *mat, const float *vec,
+                                             const int m, const int n,
+                                             const int batch_count);
+
+namespace {
+template <typename T>
+__global__ void DivideRowVecDevice(T *mat, const T *vec, const int m,
+                                   const int n, const int total_cnt,
+                                   const T eps) {
+  CUDA_KERNEL_LOOP(i, total_cnt) {
+    int row_idx = (i / n) % m;
+    mat[i] /= (vec[row_idx] + eps);
+  }
+}
+}  // namespace
+
+template <typename T>
+void divide_row_vector_gpu(T *mat, const T *vec, const int m, const int n,
+                           const int batch_count, const T eps) {
+  int total_cnt = m * n * batch_count;
+  DivideRowVecDevice<<<CudaGetBlocks(total_cnt), kCudaThreadNum>>>(
+      mat, vec, m, n, total_cnt, eps);
+}
+
+template void divide_row_vector_gpu<float>(float *mat, const float *vec,
+                                           const int m, const int n,
+                                           const int batch_count,
+                                           const float eps);
+
+namespace {
+template <typename T>
+__global__ void DivideColVecDevice(T *mat, const T *vec, const int m,
+                                   const int n, const int total_cnt,
+                                   const T eps) {
+  CUDA_KERNEL_LOOP(i, total_cnt) {
+    int col_idx = i % n;
+    mat[i] /= (vec[col_idx] + eps);
+  }
+}
+}  // namespace
+
+template <typename T>
+void divide_col_vector_gpu(T *mat, const T *vec, const int m, const int n,
+                           const int batch_count, const T eps) {
+  int total_cnt = m * n * batch_count;
+  DivideColVecDevice<<<CudaGetBlocks(total_cnt), kCudaThreadNum>>>(
+      mat, vec, m, n, total_cnt, eps);
+}
+
+template void divide_col_vector_gpu<float>(float *mat, const float *vec,
+                                           const int m, const int n,
+                                           const int batch_count,
+                                           const float eps);
 
 template <>
 float tensor_sum_gpu(const float *tensor, const int cnt) {
@@ -197,7 +293,7 @@ void row_sum_gpu(const float *mat, float *result, const int m, const int n,
   float beta = 0.0f;
   float *ones = nullptr;
   cudaMalloc(&ones, n * sizeof(float));
-  SetAllOnes<<<CudaGetBlocks(n), kCudaThreadNum>>>(ones, n);
+  SetAllValue<<<CudaGetBlocks(n), kCudaThreadNum>>>(ones, n, 1.0f);
   CUBLAS_CHECK(cublasSgemv(CudaContext::cublas_handle(), CUBLAS_OP_T, n,
                            m * batch_count, &alpha, mat, n, ones, 1, &beta,
                            result, 1));
@@ -211,7 +307,8 @@ void col_sum_gpu(const float *mat, float *result, const int m, const int n,
   float beta = 0.0f;
   float *ones = nullptr;
   cudaMalloc(&ones, m * sizeof(float));
-  SetAllOnes<<<CudaGetBlocks(m), kCudaThreadNum>>>(ones, m * batch_count);
+  SetAllValue<<<CudaGetBlocks(m), kCudaThreadNum>>>(ones, m * batch_count,
+                                                    1.0f);
   thrust::device_vector<const float *> mat_vec(batch_count);
   int mat_stride = m * n;
   thrust::transform(thrust::counting_iterator<int>(0),

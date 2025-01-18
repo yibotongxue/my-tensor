@@ -590,6 +590,24 @@ class BlasAddVecTest : public ::testing::Test {
 BLAS_ADD_ROW_VEC_TEST(CPU, cpu)
 BLAS_ADD_ROW_VEC_TEST(GPU, gpu)
 
+#define BLAS_ADD_ROW_VEC_WITH_SCALE_TEST(device, device_low)                  \
+  TEST_F(BlasAddVecTest, Blas_AddRowVecWithScale##device##Test) {             \
+    for (int i = 0; i < 2000000; i++) {                                       \
+      result_expect[i] = tensor_data[i] + vec_data[(i % 200000) / 200] * 2;   \
+    }                                                                         \
+    tensor->Set##device##Data(tensor_data.data(), tensor_data.size());        \
+    vec->Set##device##Data(vec_data.data(), vec_data.size());                 \
+    my_tensor::add_row_vector_##device_low(tensor->Get##device##DataPtr(),    \
+                                           vec->Get##device##DataPtr(), 1000, \
+                                           200, 10, 2.0f);                    \
+    for (int i = 0; i < 2000000; i++) {                                       \
+      ASSERT_NEAR(result_expect[i], tensor->GetCPUData(i), 0.01);             \
+    }                                                                         \
+  }
+
+BLAS_ADD_ROW_VEC_WITH_SCALE_TEST(CPU, cpu)
+BLAS_ADD_ROW_VEC_WITH_SCALE_TEST(GPU, gpu)
+
 #define BLAS_ADD_COL_VEC_TEST(device, device_low)                            \
   TEST_F(BlasAddVecTest, Blas_AddColVec##device##Test) {                     \
     tensor->Reshape({10, 200, 1000});                                        \
@@ -608,6 +626,99 @@ BLAS_ADD_ROW_VEC_TEST(GPU, gpu)
 
 BLAS_ADD_COL_VEC_TEST(CPU, cpu)
 BLAS_ADD_COL_VEC_TEST(GPU, gpu)
+
+#define BLAS_ADD_COL_VEC_WITH_SCALE_TEST(device, device_low)                 \
+  TEST_F(BlasAddVecTest, Blas_AddColVecWithScale##device##Test) {            \
+    tensor->Reshape({10, 200, 1000});                                        \
+    for (int i = 0; i < 2000000; i++) {                                      \
+      result_expect[i] = tensor_data[i] + vec_data[(i % 200000) % 1000] * 2; \
+    }                                                                        \
+    tensor->Set##device##Data(tensor_data.data(), tensor_data.size());       \
+    vec->Set##device##Data(vec_data.data(), vec_data.size());                \
+    my_tensor::add_col_vector_##device_low(tensor->Get##device##DataPtr(),   \
+                                           vec->Get##device##DataPtr(), 200, \
+                                           1000, 10, 2.0f);                  \
+    for (int i = 0; i < 2000000; i++) {                                      \
+      ASSERT_NEAR(result_expect[i], tensor->GetCPUData(i), 0.01);            \
+    }                                                                        \
+  }
+
+BLAS_ADD_COL_VEC_WITH_SCALE_TEST(CPU, cpu)
+BLAS_ADD_COL_VEC_WITH_SCALE_TEST(GPU, gpu)
+
+#define BLAS_MUTIPLY_ROW_VEC_TEST(device, device_low)                      \
+  TEST_F(BlasAddVecTest, Blas_MultiplyRowVec##device##Test) {              \
+    for (int i = 0; i < 2000000; i++) {                                    \
+      result_expect[i] = tensor_data[i] * vec_data[(i / 200) % 1000];      \
+    }                                                                      \
+    tensor->Set##device##Data(tensor_data.data(), tensor_data.size());     \
+    vec->Set##device##Data(vec_data.data(), vec_data.size());              \
+    my_tensor::multiply_row_vector_##device_low(                           \
+        tensor->Get##device##DataPtr(), vec->Get##device##DataPtr(), 1000, \
+        200, 10);                                                          \
+    for (int i = 0; i < 2000000; i++) {                                    \
+      ASSERT_NEAR(result_expect[i], tensor->GetCPUData(i), 0.01);          \
+    }                                                                      \
+  }
+
+BLAS_MUTIPLY_ROW_VEC_TEST(CPU, cpu)
+BLAS_MUTIPLY_ROW_VEC_TEST(GPU, gpu)
+
+#define BLAS_MUTIPLY_COL_VEC_TEST(device, device_low)                     \
+  TEST_F(BlasAddVecTest, Blas_MultiplyColVec##device##Test) {             \
+    tensor->Reshape({10, 200, 1000});                                     \
+    for (int i = 0; i < 2000000; i++) {                                   \
+      result_expect[i] = tensor_data[i] * vec_data[i % 1000];             \
+    }                                                                     \
+    tensor->Set##device##Data(tensor_data.data(), tensor_data.size());    \
+    vec->Set##device##Data(vec_data.data(), vec_data.size());             \
+    my_tensor::multiply_col_vector_##device_low(                          \
+        tensor->Get##device##DataPtr(), vec->Get##device##DataPtr(), 200, \
+        1000, 10);                                                        \
+    for (int i = 0; i < 2000000; i++) {                                   \
+      ASSERT_NEAR(result_expect[i], tensor->GetCPUData(i), 0.01);         \
+    }                                                                     \
+  }
+
+BLAS_MUTIPLY_COL_VEC_TEST(CPU, cpu)
+BLAS_MUTIPLY_COL_VEC_TEST(GPU, gpu)
+
+#define BLAS_DIVIDE_ROW_VEC_TEST(device, device_low)                          \
+  TEST_F(BlasAddVecTest, Blas_DivideRowVec##device##Test) {                   \
+    for (int i = 0; i < 2000000; i++) {                                       \
+      result_expect[i] = tensor_data[i] / (vec_data[(i / 200) % 1000] + 0);   \
+    }                                                                         \
+    tensor->Set##device##Data(tensor_data.data(), tensor_data.size());        \
+    vec->Set##device##Data(vec_data.data(), vec_data.size());                 \
+    my_tensor::divide_row_vector_##device_low(tensor->Get##device##DataPtr(), \
+                                              vec->Get##device##DataPtr(),    \
+                                              1000, 200, 10);                 \
+    for (int i = 0; i < 2000000; i++) {                                       \
+      ASSERT_NEAR(result_expect[i], tensor->GetCPUData(i), 0.01);             \
+    }                                                                         \
+  }
+
+BLAS_DIVIDE_ROW_VEC_TEST(CPU, cpu)
+BLAS_DIVIDE_ROW_VEC_TEST(GPU, gpu)
+
+#define BLAS_DIVIDE_COL_VEC_TEST(device, device_low)                          \
+  TEST_F(BlasAddVecTest, Blas_DivideColVec##device##Test) {                   \
+    tensor->Reshape({10, 200, 1000});                                         \
+    for (int i = 0; i < 2000000; i++) {                                       \
+      result_expect[i] = tensor_data[i] / (vec_data[i % 1000] + 0);           \
+    }                                                                         \
+    tensor->Set##device##Data(tensor_data.data(), tensor_data.size());        \
+    vec->Set##device##Data(vec_data.data(), vec_data.size());                 \
+    my_tensor::divide_col_vector_##device_low(tensor->Get##device##DataPtr(), \
+                                              vec->Get##device##DataPtr(),    \
+                                              200, 1000, 10);                 \
+    for (int i = 0; i < 2000000; i++) {                                       \
+      ASSERT_NEAR(result_expect[i], tensor->GetCPUData(i), 0.01);             \
+    }                                                                         \
+  }
+
+BLAS_DIVIDE_COL_VEC_TEST(CPU, cpu)
+BLAS_DIVIDE_COL_VEC_TEST(GPU, gpu)
 
 class BlasSumTest : public ::testing::Test {
  protected:
