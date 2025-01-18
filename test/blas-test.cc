@@ -917,6 +917,51 @@ TEST(DivideTest, DivideGPUTest) {
   }
 }
 
+TEST(MultiplyTest, MultiplyCPUTest) {
+  std::vector<float> lhs_data(200000);
+  std::vector<float> rhs_data(200000);
+  std::vector<float> result_expect(200000);
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<float> dis(-10.0f, 10.0f);
+  auto random_func = [&gen, &dis]() -> float { return dis(gen); };
+  std::ranges::generate(lhs_data, random_func);
+  std::ranges::generate(rhs_data, random_func);
+  for (int i = 0; i < 200000; i++) {
+    result_expect[i] = lhs_data[i] * rhs_data[i];
+  }
+  my_tensor::multiply_two_vec_cpu<float>(lhs_data.data(), rhs_data.data(),
+                                         lhs_data.data(), 200000);
+  for (int i = 0; i < 200000; i++) {
+    ASSERT_NEAR(result_expect[i], lhs_data[i], 0.01);
+  }
+}
+
+TEST(MultiplyTest, MultiplyGPUTest) {
+  std::vector<float> lhs_data(200000);
+  std::vector<float> rhs_data(200000);
+  std::vector<float> result_expect(200000);
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<float> dis(-10.0f, 10.0f);
+  auto random_func = [&gen, &dis]() -> float { return dis(gen); };
+  std::ranges::generate(lhs_data, random_func);
+  std::ranges::generate(rhs_data, random_func);
+  for (int i = 0; i < 200000; i++) {
+    result_expect[i] = lhs_data[i] * rhs_data[i];
+  }
+  my_tensor::Tensor<float> lhs_tensor({200000});
+  my_tensor::Tensor<float> rhs_tensor({200000});
+  lhs_tensor.SetGPUData(lhs_data.data(), lhs_data.size());
+  rhs_tensor.SetGPUData(rhs_data.data(), rhs_data.size());
+  my_tensor::multiply_two_vec_gpu<float>(lhs_tensor.GetGPUDataPtr(),
+                                         rhs_tensor.GetGPUDataPtr(),
+                                         lhs_tensor.GetGPUDataPtr(), 200000);
+  for (int i = 0; i < 200000; i++) {
+    ASSERT_NEAR(result_expect[i], lhs_tensor.GetCPUData(i), 0.01);
+  }
+}
+
 TEST(VecAddNumTest, VecAddNumCPUTest) {
   std::vector<float> data(200000);
   std::vector<float> result_expect(200000);

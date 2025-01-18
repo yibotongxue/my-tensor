@@ -374,6 +374,18 @@ template void divide_two_vec_gpu<float>(const float *lhs, const float *rhs,
                                         float *result, const int n);
 
 template <typename T>
+void multiply_two_vec_gpu(const T *lhs, const T *rhs, T *result, const int n) {
+  thrust::device_ptr<const T> lhs_ptr(lhs);
+  thrust::device_ptr<const T> rhs_ptr(rhs);
+  thrust::device_ptr<T> result_ptr(result);
+  thrust::transform(lhs_ptr, lhs_ptr + n, rhs_ptr, result_ptr,
+                    thrust::multiplies<T>());
+}
+
+template void multiply_two_vec_gpu<float>(const float *lhs, const float *rhs,
+                                          float *result, const int n);
+
+template <typename T>
 void vec_add_num_gpu(const T *vec, T *result, const T num, const int n) {
   thrust::device_ptr<const T> vec_ptr(vec);
   thrust::device_ptr<T> result_ptr(result);

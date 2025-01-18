@@ -239,6 +239,16 @@ template void divide_two_vec_cpu(const float *lhs, const float *rhs,
                                  float *result, const int n);
 
 template <typename T>
+void multiply_two_vec_cpu(const T *lhs, const T *rhs, T *result, const int n) {
+  for (int i = 0; i < n; i++) {
+    result[i] = lhs[i] * rhs[i];
+  }
+}
+
+template void multiply_two_vec_cpu(const float *lhs, const float *rhs,
+                                   float *result, const int n);
+
+template <typename T>
 void vec_add_num_cpu(const T *vec, T *result, const T num, const int n) {
   for (int i = 0; i < n; i++) {
     result[i] = vec[i] + num;

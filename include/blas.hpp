@@ -423,6 +423,28 @@ inline void divide_two_vec(const T *lhs, const T *rhs, T *result, const int n) {
 }
 
 template <typename T>
+void multiply_two_vec_cpu(const T *lhs, const T *rhs, T *result, const int n);
+
+extern template void multiply_two_vec_cpu(const float *lhs, const float *rhs,
+                                          float *result, const int n);
+
+template <typename T>
+void multiply_two_vec_gpu(const T *lhs, const T *rhs, T *result, const int n);
+
+extern template void multiply_two_vec_gpu(const float *lhs, const float *rhs,
+                                          float *result, const int n);
+
+template <typename T>
+inline void multiply_two_vec(const T *lhs, const T *rhs, T *result,
+                             const int n) {
+  if (MyTensorContext::on_cpu()) {
+    multiply_two_vec_cpu(lhs, rhs, result, n);
+  } else {
+    multiply_two_vec_gpu(lhs, rhs, result, n);
+  }
+}
+
+template <typename T>
 void vec_add_num_cpu(const T *vec, T *result, const T num, const int n);
 
 extern template void vec_add_num_cpu(const float *vec, float *result,
