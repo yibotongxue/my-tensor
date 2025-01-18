@@ -14,7 +14,6 @@ namespace my_tensor {
 
 // Tensor class
 template <typename T = float>
-
 class Tensor {
  public:
   Tensor();
@@ -36,20 +35,28 @@ class Tensor {
     data_->SetCPUData(data, size);
   }
   void SetCPUDiff(const T* const diff, size_t size) {
+    AllocateDiff();
     diff_->SetCPUData(diff, size);
   }
   void SetGPUData(const T* const data, size_t size) {
     data_->SetGPUData(data, size);
   }
   void SetGPUDiff(const T* const diff, size_t size) {
+    AllocateDiff();
     diff_->SetGPUData(diff, size);
   }
 
   // Get methods.
   T GetCPUData(size_t index) const { return data_->host(index); }
-  T GetCPUDiff(size_t index) const { return diff_->host(index); }
+  T GetCPUDiff(size_t index) const {
+    AllocateDiff();
+    return diff_->host(index);
+  }
   T GetGPUData(size_t index) const { return data_->device(index); }
-  T GetGPUDiff(size_t index) const { return diff_->device(index); }
+  T GetGPUDiff(size_t index) const {
+    AllocateDiff();
+    return diff_->device(index);
+  }
 
   inline T GetData(size_t index) const {
     if (MyTensorContext::on_cpu()) {
@@ -71,13 +78,25 @@ class Tensor {
   // CPU
   const T* GetCPUDataPtr() const { return data_->GetCPUPtr(); }
   T* GetCPUDataPtr() { return data_->GetMutableCPUPtr(); }
-  const T* GetCPUDiffPtr() const { return diff_->GetCPUPtr(); }
-  T* GetCPUDiffPtr() { return diff_->GetMutableCPUPtr(); }
+  const T* GetCPUDiffPtr() const {
+    AllocateDiff();
+    return diff_->GetCPUPtr();
+  }
+  T* GetCPUDiffPtr() {
+    AllocateDiff();
+    return diff_->GetMutableCPUPtr();
+  }
   // GPU
   const T* GetGPUDataPtr() const { return data_->GetGPUPtr(); }
   T* GetGPUDataPtr() { return data_->GetMutableGPUPtr(); }
-  const T* GetGPUDiffPtr() const { return diff_->GetGPUPtr(); }
-  T* GetGPUDiffPtr() { return diff_->GetMutableGPUPtr(); }
+  const T* GetGPUDiffPtr() const {
+    AllocateDiff();
+    return diff_->GetGPUPtr();
+  }
+  T* GetGPUDiffPtr() {
+    AllocateDiff();
+    return diff_->GetMutableGPUPtr();
+  }
 
   const T* GetDataPtr() const {
     if (MyTensorContext::on_cpu()) {
@@ -123,8 +142,9 @@ class Tensor {
   std::vector<int> shape_;
   int size_;
   SyncedVectorPtr<T> data_;
-  SyncedVectorPtr<T> diff_;
+  mutable SyncedVectorPtr<T> diff_;
 
+  void AllocateDiff() const;
   void CheckShape() const;
 };  // class Tensor
 
