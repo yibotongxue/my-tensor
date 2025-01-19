@@ -39,11 +39,11 @@ void MnistDataset::ReadImageFile() {
   header.num_rows = ReverseInt(header.num_rows);
   header.num_cols = ReverseInt(header.num_cols);
   image_.resize(header.num_images * header.num_rows * header.num_cols);
-  std::vector<int> uimg_data(header.num_images * header.num_rows *
-                             header.num_cols);
+  std::vector<uint8_t> uimg_data(header.num_images * header.num_rows *
+                                 header.num_cols);
   file.read(reinterpret_cast<char*>(uimg_data.data()),
             image_.size() * sizeof(char));
-  std::ranges::transform(uimg_data, image_.begin(), [](int val) -> float {
+  std::ranges::transform(uimg_data, image_.begin(), [](uint8_t val) -> float {
     return static_cast<float>(val) / 255.0f - 0.5;
   });
   this->height_ = header.num_rows;
@@ -85,7 +85,8 @@ void Cifar10Dataset::LoadData() {
   }
   this->height_ = 32;
   this->width_ = 32;
-  std::ranges::transform(image_, image_.begin(),
-                         [](float val) -> float { return val / 255.0 - 0.5; });
+  std::ranges::transform(image_, image_.begin(), [](float val) -> float {
+    return val / 255.0f - 0.5f;
+  });
 }
 }  // namespace my_tensor
