@@ -24,12 +24,10 @@ std::array<TensorPtr<>, 2> DataLoader::GetNext() {
       dataset_->GetLabelSpanBetweenAnd(index_, index_ + batch_size_);
   if (MyTensorContext::on_cpu()) {
     top[0]->SetCPUData(image_data.data(), image_data.size());
-    std::vector<float> temp(label_data.begin(), label_data.end());
-    top[1]->SetCPUData(temp.data(), batch_size_);
+    top[1]->SetCPUData(label_data.data(), batch_size_);
   } else {
     top[0]->SetGPUData(image_data.data(), image_data.size());
-    std::vector<float> temp(label_data.begin(), label_data.end());
-    top[1]->SetGPUData(temp.data(), batch_size_);
+    top[1]->SetGPUData(label_data.data(), batch_size_);
   }
   index_ += batch_size_;
   return top;

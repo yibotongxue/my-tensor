@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <fstream>
+#include <iostream>
 #include <ranges>  // NOLINT
 #include <vector>
 
@@ -65,6 +66,26 @@ void MnistDataset::ReadLabelFile() {
 }
 
 void Cifar10Dataset::LoadData() {
-  // TODO(yibotongxue): Implement this function
+  for (auto&& data_batch : data_batches_) {
+    std::ifstream file(data_batch, std::ios::binary);
+    std::vector<uint8_t> data((32 * 32 * 3 + 1) * 10000);
+    file.read(reinterpret_cast<char*>(data.data()), data.size() * sizeof(char));
+    file.close();
+    auto data_view = data | std::views::transform([](uint8_t val) -> float {
+                       return static_cast<float>(val) / 255.0f - 0.5;
+                     });
+    for (int i : std::views::iota(0, 10000)) {
+      label_.push_back(data[i * (32 * 32 * 3 + 1)]);
+      // std::cout << "label: " << label_.back() << std::endl;
+      auto image_data = data_view |
+                        std::views::drop(i * (32 * 32 * 3 + 1) + 1) |
+                        std::views::take(32 * 32 * 3);
+      std::ranges::copy(image_data, std::back_inserter(image_));
+    }
+  }
+  this->height_ = 32;
+  this->width_ = 32;
+  std::ranges::transform(image_, image_.begin(),
+                         [](float val) -> float { return val / 255.0 - 0.5; });
 }
 }  // namespace my_tensor

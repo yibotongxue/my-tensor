@@ -3,6 +3,8 @@
 #ifndef INCLUDE_NET_HPP_
 #define INCLUDE_NET_HPP_
 
+#include <spdlog/spdlog.h>
+
 #include <memory>
 #include <string>
 #include <vector>

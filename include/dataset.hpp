@@ -25,11 +25,12 @@ class Dataset {
 
   virtual int GetHeight() const = 0;
   virtual int GetWidth() const = 0;
+  virtual int GetChannel() const = 0;
   virtual int GetSize() const = 0;
   virtual std::span<const float> GetImageSpanBetweenAnd(int start,
                                                         int end) const = 0;
-  virtual std::span<const int> GetLabelSpanBetweenAnd(int start,
-                                                      int end) const = 0;
+  virtual std::span<const float> GetLabelSpanBetweenAnd(int start,
+                                                        int end) const = 0;
 
  protected:
   std::string data_files_root_;
@@ -50,14 +51,14 @@ class LoadInMemoryDataset : public Dataset {
     return {image_.data() + start * height_ * width_,
             static_cast<size_t>((end - start) * height_ * width_)};
   }
-  std::span<const int> GetLabelSpanBetweenAnd(int start,
-                                              int end) const override {
+  std::span<const float> GetLabelSpanBetweenAnd(int start,
+                                                int end) const override {
     return {label_.data() + start, static_cast<size_t>(end - start)};
   }
 
  protected:
   std::vector<float> image_;
-  std::vector<int> label_;
+  std::vector<float> label_;
   int height_;
   int width_;
 };  // class LoadInMemoryDataset
@@ -75,6 +76,8 @@ class MnistDataset final : public LoadInMemoryDataset {
     }
   }
 
+  int GetChannel() const override { return 1; }
+
   void LoadData() override {
     ReadImageFile();
     ReadLabelFile();
@@ -91,9 +94,26 @@ class MnistDataset final : public LoadInMemoryDataset {
 class Cifar10Dataset final : public LoadInMemoryDataset {
  public:
   explicit Cifar10Dataset(const std::string& data_files_root, bool is_train)
-      : LoadInMemoryDataset(data_files_root, is_train) {}
+      : LoadInMemoryDataset(data_files_root, is_train) {
+    if (is_train) {
+      data_batches_ = {
+          data_files_root + "/data_batch_1.bin",
+          data_files_root + "/data_batch_2.bin",
+          data_files_root + "/data_batch_3.bin",
+          data_files_root + "/data_batch_4.bin",
+          data_files_root + "/data_batch_5.bin",
+      };
+    } else {
+      data_batches_ = {data_files_root + "/test_batch.bin"};
+    }
+  }
+
+  int GetChannel() const override { return 3; }
 
   void LoadData() override;
+
+ private:
+  std::vector<std::string> data_batches_;
 };  // class Cifar10Dataset
 
 using DatasetPtr = std::shared_ptr<Dataset>;
@@ -103,6 +123,10 @@ inline std::function<DatasetPtr(const std::string&, bool)> GetDatasetCreater(
   if (type == "mnist") {
     return [](const std::string& data_files_root, bool is_train) {
       return std::make_shared<MnistDataset>(data_files_root, is_train);
+    };
+  } else if (type == "cifar-10") {
+    return [](const std::string& data_files_root, bool is_train) {
+      return std::make_shared<Cifar10Dataset>(data_files_root, is_train);
     };
   } else {
     throw DataError("Unsupported data set type.");
