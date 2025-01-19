@@ -17,13 +17,13 @@
     "gama": 0.1,
     "stepsize": 1000
   },
-  "data_type": "mnist",
-  "data_files_root": "/home/linyibo/Code/my-tensor/data/mnist",
+  "data_type": "cifar-10",
+  "data_files_root": "/home/linyibo/Code/my-tensor/data/cifar-10",
   "layers": [
     {
       "name": "conv1",
       "type": "Convolution",
-      "input_channels": 1,
+      "input_channels": 3,
       "output_channels": 3,
       "kernel_size": 5,
       "params": [

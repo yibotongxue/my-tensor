@@ -42,7 +42,12 @@ void AdamWSolver<T>::UpdateParam() {
     scale<T>(param->GetDataPtr(), param->GetSize(),
              static_cast<T>(1.0 - 2 * lr * this->l2_));
     T* temp_cpu = reinterpret_cast<T*>(malloc(param->GetSize() * sizeof(T)));
-    MyMemcpyGPU2CPU(temp_cpu, temp, param->GetSize() * sizeof(T));
+    if (MyTensorContext::on_cpu()) {
+      MyMemcpyCPU2CPU(temp_cpu, temp, param->GetSize() * sizeof(T));
+    } else {
+      MyMemcpyGPU2CPU(temp_cpu, temp, param->GetSize() * sizeof(T));
+    }
+    // MyMemcpyGPU2CPU(temp_cpu, temp, param->GetSize() * sizeof(T));
     free(temp_cpu);
     add_two_vec<T>(param->GetDataPtr(), temp,
                    static_cast<T>(-lr / (1.0 - std::pow(beta1_, time_step_))),

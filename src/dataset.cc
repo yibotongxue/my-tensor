@@ -75,6 +75,7 @@ void Cifar10Dataset::LoadData() {
                        return static_cast<float>(val) / 255.0f - 0.5;
                      });
     for (int i : std::views::iota(0, 10000)) {
+      // std::cout << i << std::endl;
       label_.push_back(data[i * (32 * 32 * 3 + 1)]);
       // std::cout << "label: " << label_.back() << std::endl;
       auto image_data = data_view |

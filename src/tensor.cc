@@ -25,7 +25,7 @@ Tensor<T>::Tensor(const std::vector<int>& shape) : shape_(shape) {
   size_ =
       std::accumulate(shape_.begin(), shape_.end(), 1, std::multiplies<int>());
   data_ = std::make_shared<SyncedVector<T>>(size_);
-  diff_ = nullptr;
+  diff_.reset();
   CheckShape();
 }
 
@@ -38,7 +38,7 @@ Tensor<T>::Tensor(const Tensor<T>& tensor)
   if (tensor.diff_ != nullptr) {
     diff_ = std::make_shared<SyncedVector<T>>(*tensor.diff_);
   } else {
-    diff_ = nullptr;
+    diff_.reset();
   }
 }
 
@@ -56,8 +56,8 @@ Tensor<T>& Tensor<T>::operator=(const Tensor<T>& tensor) {
     } else {
       *diff_ = *tensor.diff_;
     }
-  } else {
-    diff_ = nullptr;
+  } else if (tensor.diff_ != nullptr) {
+    diff_.reset();
   }
   CheckShape();
   return *this;
@@ -71,7 +71,7 @@ Tensor<T>::Tensor(Tensor<T>&& tensor)
   if (tensor.diff_ != nullptr) {
     diff_ = std::make_shared<SyncedVector<T>>(std::move(*tensor.diff_));
   } else {
-    diff_ = nullptr;
+    diff_.reset();
   }
   CheckShape();
 }
@@ -88,7 +88,7 @@ Tensor<T>& Tensor<T>::operator=(Tensor<T>&& tensor) {
       *diff_ = *std::move(tensor.diff_);
     }
   } else {
-    diff_ = nullptr;
+    diff_.reset();
   }
   CheckShape();
   return *this;

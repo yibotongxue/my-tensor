@@ -48,8 +48,9 @@ class LoadInMemoryDataset : public Dataset {
   int GetSize() const override { return label_.size(); }
   std::span<const float> GetImageSpanBetweenAnd(int start,
                                                 int end) const override {
-    return {image_.data() + start * height_ * width_,
-            static_cast<size_t>((end - start) * height_ * width_)};
+    return {
+        image_.data() + start * GetChannel() * height_ * width_,
+        static_cast<size_t>((end - start) * height_ * GetChannel() * width_)};
   }
   std::span<const float> GetLabelSpanBetweenAnd(int start,
                                                 int end) const override {
