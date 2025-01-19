@@ -8,15 +8,20 @@
 
 namespace my_tensor {
 
-class ModelSaver {
- public:
-  template <typename T>
-  static void Save(const std::vector<std::vector<T>>& data,
-                   const std::string& file_path);
+namespace ModelSaver {
+template <typename T>
+void Save(const std::vector<std::vector<T>>& data,
+          const std::string& file_path);
 
-  template <typename T>
-  static std::vector<std::vector<T>> Load(const std::string& file_path);
-};  // class ModelSaver
+template <typename T>
+std::vector<std::vector<T>> Load(const std::string& file_path);
+
+extern template void Save<float>(const std::vector<std::vector<float>>& data,
+                                 const std::string& file_path);
+
+extern template std::vector<std::vector<float>> Load<float>(
+    const std::string& file_path);
+}  // namespace ModelSaver
 
 }  // namespace my_tensor
 

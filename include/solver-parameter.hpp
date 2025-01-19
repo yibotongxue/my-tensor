@@ -25,6 +25,9 @@ class SolverParameter {
   float base_lr_;
   float l2_;
   int test_step_;
+  int save_step_;
+  std::string save_model_path_;
+  std::string load_model_path_;
   SchedulerParameterPtr scheduler_param_;
   NetParameterPtr net_param_;
 
@@ -44,6 +47,9 @@ class SolverParameter {
     base_lr_ = LoadWithKey<float>(js, "base_lr");
     l2_ = LoadWithKey<float>(js, "l2");
     test_step_ = LoadWithKey<int>(js, "test_step");
+    save_step_ = LoadWithKey<int>(js, "save_step");
+    save_model_path_ = LoadWithKey<std::string>(js, "save_model_path");
+    load_model_path_ = LoadWithKey<std::string>(js, "load_model_path");
   }
 
   virtual void ParseSettingParameters(const nlohmann::json& js) = 0;

@@ -73,3 +73,5 @@ __pycache__
 .cache
 
 .xmake
+
+*.model

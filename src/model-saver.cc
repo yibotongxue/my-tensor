@@ -46,11 +46,13 @@ std::vector<std::vector<T>> ModelSaver::Load(const std::string& file_path) {
   size_t rows;
   in.read(reinterpret_cast<char*>(&rows), sizeof(size_t));  // 读取行数
 
+  // std::vector<std::vector<T>> data(rows);
+
   // 检查文件中的行数是否与传入的data的大小匹配
-  if (rows != data.size()) {
-    throw std::runtime_error(
-        "Data size mismatch: file rows do not match data size.");
-  }
+  // if (rows != data.size()) {
+  //   throw std::runtime_error(
+  //       "Data size mismatch: file rows do not match data size.");
+  // }
 
   std::vector<std::vector<T>> data;
 
@@ -66,5 +68,11 @@ std::vector<std::vector<T>> ModelSaver::Load(const std::string& file_path) {
   in.close();
   return data;
 }
+
+template void ModelSaver::Save<float>(
+    const std::vector<std::vector<float>>& data, const std::string& file_path);
+
+template std::vector<std::vector<float>> ModelSaver::Load<float>(
+    const std::string& file_path);
 
 }  // namespace my_tensor

@@ -4,6 +4,7 @@
 
 #include <iostream>
 
+#include "model-saver.hpp"
 #include "scheduler-parameter.hpp"
 
 namespace my_tensor {
@@ -22,10 +23,16 @@ void Solver<T>::CommonSetUp() {
   current_epoch_ = 0;
   l2_ = param_->l2_;
   test_step_ = param_->test_step_;
+  save_step_ = param_->save_step_;
+  save_model_path_ = param_->save_model_path_;
+  load_model_path_ = param_->load_model_path_;
   scheduler_ = CreateScheduler(param_->scheduler_param_);
   net_ = std::make_shared<Net<T>>(param_->net_param_);
   net_->SetUp();
   net_->SetTrain();
+  if (!load_model_path_.empty()) {
+    LoadModel(load_model_path_);
+  }
 }
 
 template <typename T>
@@ -33,7 +40,11 @@ void Solver<T>::Solve() {
   while (training_iter_ < max_iter_) {
     Step();
     UpdateParam();
+    if (training_iter_ % save_step_ == 0) {
+      SaveModel(save_model_path_);
+    }
   }
+  SaveModel(save_model_path_);
 }
 
 template <typename T>
@@ -48,6 +59,16 @@ float Solver<T>::Test() {
     total++;
   }
   return accuracy / static_cast<float>(total);
+}
+
+template <typename T>
+void Solver<T>::SaveModel(const std::string& model_path) {
+  ModelSaver::Save<T>(this->net_->GetModelData(), model_path);
+}
+
+template <typename T>
+void Solver<T>::LoadModel(const std::string& model_path) {
+  this->net_->SetModelData(ModelSaver::Load<T>(model_path));
 }
 
 template <typename T>

@@ -4,6 +4,7 @@
 #define INCLUDE_SOLVER_HPP_
 
 #include <memory>
+#include <string>
 
 #include "net.hpp"
 #include "scheduler.hpp"
@@ -25,6 +26,9 @@ class Solver {
 
   float Test();
 
+  void SaveModel(const std::string& model_path);
+  void LoadModel(const std::string& model_path);
+
  protected:
   NetPtr<T> net_;
   SolverParameterPtr param_;
@@ -35,6 +39,10 @@ class Solver {
   float base_lr_;
   float l2_;
   int test_step_;
+  int save_step_;
+
+  std::string save_model_path_;
+  std::string load_model_path_;
 
   void CommonSetUp();
   virtual void SpecialSetUp() {}

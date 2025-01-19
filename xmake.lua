@@ -50,6 +50,7 @@ local layer_src = {
 }
 
 local solver_src = {
+    "src/model-saver.cc",
     "src/solver.cc",
     "src/sgd-solver.cc",
     "src/sgd-with-momentum-solver.cc",
