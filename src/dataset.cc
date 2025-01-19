@@ -45,8 +45,8 @@ void MnistDataset::ReadImageFile() {
   std::ranges::transform(uimg_data, image_.begin(), [](uint8_t val) -> float {
     return static_cast<float>(val) / 255.0f - 0.5;
   });
-  height_ = header.num_rows;
-  width_ = header.num_cols;
+  this->height_ = header.num_rows;
+  this->width_ = header.num_cols;
 }
 
 void MnistDataset::ReadLabelFile() {

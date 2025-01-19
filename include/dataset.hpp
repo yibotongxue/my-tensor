@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <span>  // NOLINT
 #include <string>
 #include <vector>
 
@@ -21,38 +22,61 @@ class Dataset {
 
   virtual ~Dataset() = default;
 
-  void LoadData() {
-    ReadImageFile();
-    ReadLabelFile();
-  }
+  virtual void LoadData() = 0;
 
-  int GetHeight() const { return height_; }
-  int GetWidth() const { return width_; }
-  const std::vector<float>& GetImage() const { return image_; }
-  const std::vector<uint8_t>& GetLabel() const { return label_; }
-  int GetSize() const { return label_.size(); }
+  virtual int GetHeight() const = 0;
+  virtual int GetWidth() const = 0;
+  virtual int GetSize() const = 0;
+  virtual std::span<const float> GetImageSpanBetweenAnd(int start,
+                                                        int end) const = 0;
+  virtual std::span<const uint8_t> GetLabelSpanBetweenAnd(int start,
+                                                          int end) const = 0;
+
+ protected:
+  std::string image_file_path_;
+  std::string label_file_path_;
+};  // class Dataset
+
+class LoadInMemoryDataset : public Dataset {
+ public:
+  explicit LoadInMemoryDataset(const std::string& image_file_path,
+                               const std::string& label_file_path)
+      : Dataset(image_file_path, label_file_path) {}
+
+  int GetHeight() const override { return height_; }
+  int GetWidth() const override { return width_; }
+  int GetSize() const override { return label_.size(); }
+  std::span<const float> GetImageSpanBetweenAnd(int start,
+                                                int end) const override {
+    return {image_.data() + start * height_ * width_,
+            static_cast<size_t>((end - start) * height_ * width_)};
+  }
+  std::span<const uint8_t> GetLabelSpanBetweenAnd(int start,
+                                                  int end) const override {
+    return {label_.data() + start, static_cast<size_t>(end - start)};
+  }
 
  protected:
   std::vector<float> image_;
   std::vector<uint8_t> label_;
   int height_;
   int width_;
-  std::string image_file_path_;
-  std::string label_file_path_;
+};  // class LoadInMemoryDataset
 
-  virtual void ReadImageFile() = 0;
-  virtual void ReadLabelFile() = 0;
-};  // class Dataset
-
-class MnistDataset : public Dataset {
+class MnistDataset final : public LoadInMemoryDataset {
  public:
   explicit MnistDataset(const std::string& image_file_path,
                         const std::string& label_file_path)
-      : Dataset(image_file_path, label_file_path) {}
+      : LoadInMemoryDataset(image_file_path, label_file_path) {}
+
+  void LoadData() override {
+    ReadImageFile();
+    ReadLabelFile();
+  }
 
  private:
-  void ReadImageFile() override;
-  void ReadLabelFile() override;
+  void ReadImageFile();
+  void ReadLabelFile();
 };  // class MnistDataset
 
 using DatasetPtr = std::shared_ptr<Dataset>;
