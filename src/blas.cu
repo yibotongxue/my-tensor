@@ -10,28 +10,34 @@
 
 namespace my_tensor {
 
-#define DEFINE_ABC_VEC(broadcast)                                      \
-  int stride_A = (broadcast == 1) ? 0 : (m * k);                       \
-  thrust::device_vector<const float *> A_vec(batch_count);             \
-  thrust::transform(thrust::counting_iterator<int>(0),                 \
-                    thrust::counting_iterator<int>(batch_count),       \
-                    A_vec.begin(),                                     \
-                    [A, stride_A] __device__(int i) -> const float * { \
-                      return A + i * stride_A;                         \
-                    });                                                \
-  int stride_B = (broadcast == 2) ? 0 : (k * n);                       \
-  thrust::device_vector<const float *> B_vec(batch_count);             \
-  thrust::transform(thrust::counting_iterator<int>(0),                 \
-                    thrust::counting_iterator<int>(batch_count),       \
-                    B_vec.begin(),                                     \
-                    [B, stride_B] __device__(int i) -> const float * { \
-                      return B + i * stride_B;                         \
-                    });                                                \
-  thrust::device_vector<float *> C_vec(batch_count);                   \
-  thrust::transform(                                                   \
-      thrust::counting_iterator<int>(0),                               \
-      thrust::counting_iterator<int>(batch_count), C_vec.begin(),      \
-      [C, m, n] __device__(int i) -> float * { return C + i * m * n; });
+template <typename T>
+__global__ static void AssignRisingValues(T *data, const int n, T start,
+                                          int stride) {
+  CUDA_KERNEL_LOOP(i, n) { data[i] = start + i * stride; }
+}
+
+#define DEFINE_ABC_VEC(broadcast)                                          \
+  const_float_ptr *A_vec_raw = nullptr;                                    \
+  CUDA_CHECK(cudaMalloc(&A_vec_raw, batch_count * sizeof(const float *))); \
+  int stride_A = (broadcast == 1) ? 0 : (m * k);                           \
+  AssignRisingValues<<<CudaGetBlocks(batch_count), kCudaThreadNum>>>(      \
+      A_vec_raw, batch_count, A, stride_A);                                \
+  const_float_ptr *B_vec_raw = nullptr;                                    \
+  CUDA_CHECK(cudaMalloc(&B_vec_raw, batch_count * sizeof(const float *))); \
+  int stride_B = (broadcast == 2) ? 0 : (k * n);                           \
+  AssignRisingValues<<<CudaGetBlocks(batch_count), kCudaThreadNum>>>(      \
+      B_vec_raw, batch_count, B, stride_B);                                \
+  float **C_vec_raw = nullptr;                                             \
+  CUDA_CHECK(cudaMalloc(&C_vec_raw, batch_count * sizeof(float *)));       \
+  AssignRisingValues<<<CudaGetBlocks(batch_count), kCudaThreadNum>>>(      \
+      C_vec_raw, batch_count, C, m * n);
+
+#define FREE_ABC_VEC               \
+  CUDA_CHECK(cudaFree(A_vec_raw)); \
+  CUDA_CHECK(cudaFree(B_vec_raw)); \
+  CUDA_CHECK(cudaFree(C_vec_raw));
+
+using const_float_ptr = const float *;
 
 template <>
 void matmul_gpu(const float *A, const float *B, float *C, const int m,
@@ -46,18 +52,19 @@ void matmul_gpu(const float *A, const float *B, float *C, const int m,
       CudaContext::cublas_handle(),  // handle
       CUBLAS_OP_N,                   // no transpose of A<sup>T</sup>
       CUBLAS_OP_N,                   // no transpose of B<sup>T</sup>
-      n,       // row number of B<sup>T</sup> and row number of C<sup>T</sup>
-      m,       // col number of A<sup>T</sup> and col number of C<sup>T</sup>
-      k,       // col number of B<sup>T</sup> and row number of A<sup>T</sup>
-      &alpha,  // alpha
-      RAW_PTR(B_vec),  // B pointer, in cublas will be B<sup>T</sup>
-      n,               // leading dimension of B<sup>T</sup>
-      RAW_PTR(A_vec),  // A pointer, in cublas will be A<sup>T</sup>
-      k,               // leading dimension of A<sup>T</sup>
-      &beta,           // beta
-      RAW_PTR(C_vec),  // C pointer, in cublas will be C<sup>T</sup>
-      n,               // leading dimension of C<sup>T</sup>
+      n,          // row number of B<sup>T</sup> and row number of C<sup>T</sup>
+      m,          // col number of A<sup>T</sup> and col number of C<sup>T</sup>
+      k,          // col number of B<sup>T</sup> and row number of A<sup>T</sup>
+      &alpha,     // alpha
+      B_vec_raw,  // B pointer, in cublas will be B<sup>T</sup>
+      n,          // leading dimension of B<sup>T</sup>
+      A_vec_raw,  // A pointer, in cublas will be A<sup>T</sup>
+      k,          // leading dimension of A<sup>T</sup>
+      &beta,      // beta
+      C_vec_raw,  // C pointer, in cublas will be C<sup>T</sup>
+      n,          // leading dimension of C<sup>T</sup>
       batch_count));
+  FREE_ABC_VEC
 }
 
 template <>
@@ -73,18 +80,19 @@ void transpose_matmul_gpu(const float *A, const float *B, float *C, const int m,
       CudaContext::cublas_handle(),  // handle
       CUBLAS_OP_N,                   // no transpose of A<sup>T</sup>
       CUBLAS_OP_T,                   // no transpose of B<sup>T</sup>
-      n,       // row number of B<sup>T</sup> and row number of C<sup>T</sup>
-      m,       // col number of A and col number of C<sup>T</sup>
-      k,       // col number of B<sup>T</sup> and row number of A
-      &alpha,  // alpha
-      RAW_PTR(B_vec),  // B pointer, in cublas will be B<sup>T</sup>
-      n,               // leading dimension of B<sup>T</sup>
-      RAW_PTR(A_vec),  // A pointer, in cublas will be A<sup>T</sup>
-      m,               // leading dimension of A<sup>T</sup>
-      &beta,           // beta
-      RAW_PTR(C_vec),  // C pointer, in cublas will be C<sup>T</sup>
-      n,               // leading dimension of C<sup>T</sup>
+      n,          // row number of B<sup>T</sup> and row number of C<sup>T</sup>
+      m,          // col number of A and col number of C<sup>T</sup>
+      k,          // col number of B<sup>T</sup> and row number of A
+      &alpha,     // alpha
+      B_vec_raw,  // B pointer, in cublas will be B<sup>T</sup>
+      n,          // leading dimension of B<sup>T</sup>
+      A_vec_raw,  // A pointer, in cublas will be A<sup>T</sup>
+      m,          // leading dimension of A<sup>T</sup>
+      &beta,      // beta
+      C_vec_raw,  // C pointer, in cublas will be C<sup>T</sup>
+      n,          // leading dimension of C<sup>T</sup>
       batch_count));
+  FREE_ABC_VEC
 }
 
 template <>
@@ -100,18 +108,19 @@ void matmul_transpose_gpu(const float *A, const float *B, float *C, const int m,
       CudaContext::cublas_handle(),  // handle
       CUBLAS_OP_T,                   // no transpose of A<sup>T</sup>
       CUBLAS_OP_N,                   // no transpose of B<sup>T</sup>
-      n,       // row number of B and row number of C<sup>T</sup>
-      m,       // col number of A<sup>T</sup> and col number of C<sup>T</sup>
-      k,       // col number of B and row number of A<sup>T</sup>
-      &alpha,  // alpha
-      RAW_PTR(B_vec),  // B pointer, in cublas will be B<sup>T</sup>
-      k,               // leading dimension of B<sup>T</sup>
-      RAW_PTR(A_vec),  // A pointer, in cublas will be A<sup>T</sup>
-      k,               // leading dimension of A<sup>T</sup>
-      &beta,           // beta
-      RAW_PTR(C_vec),  // C pointer, in cublas will be C<sup>T</sup>
-      n,               // leading dimension of C<sup>T</sup>
+      n,          // row number of B and row number of C<sup>T</sup>
+      m,          // col number of A<sup>T</sup> and col number of C<sup>T</sup>
+      k,          // col number of B and row number of A<sup>T</sup>
+      &alpha,     // alpha
+      B_vec_raw,  // B pointer, in cublas will be B<sup>T</sup>
+      k,          // leading dimension of B<sup>T</sup>
+      A_vec_raw,  // A pointer, in cublas will be A<sup>T</sup>
+      k,          // leading dimension of A<sup>T</sup>
+      &beta,      // beta
+      C_vec_raw,  // C pointer, in cublas will be C<sup>T</sup>
+      n,          // leading dimension of C<sup>T</sup>
       batch_count));
+  FREE_ABC_VEC
 }
 
 template <>
@@ -128,18 +137,19 @@ void transpose_matmul_transpose_gpu(const float *A, const float *B, float *C,
       CudaContext::cublas_handle(),  // handle
       CUBLAS_OP_T,                   // no transpose of A<sup>T</sup>
       CUBLAS_OP_T,                   // no transpose of B<sup>T</sup>
-      n,               // row number of B and row number of C<sup>T</sup>
-      m,               // col number of A and col number of C<sup>T</sup>
-      k,               // col number of B and row number of A
-      &alpha,          // alpha
-      RAW_PTR(B_vec),  // B pointer, in cublas will be B<sup>T</sup>
-      k,               // leading dimension of B<sup>T</sup>
-      RAW_PTR(A_vec),  // A pointer, in cublas will be A<sup>T</sup>
-      m,               // leading dimension of A<sup>T</sup>
-      &beta,           // beta
-      RAW_PTR(C_vec),  // C pointer, in cublas will be C<sup>T</sup>
-      n,               // leading dimension of C<sup>T</sup>
+      n,          // row number of B and row number of C<sup>T</sup>
+      m,          // col number of A and col number of C<sup>T</sup>
+      k,          // col number of B and row number of A
+      &alpha,     // alpha
+      B_vec_raw,  // B pointer, in cublas will be B<sup>T</sup>
+      k,          // leading dimension of B<sup>T</sup>
+      A_vec_raw,  // A pointer, in cublas will be A<sup>T</sup>
+      m,          // leading dimension of A<sup>T</sup>
+      &beta,      // beta
+      C_vec_raw,  // C pointer, in cublas will be C<sup>T</sup>
+      n,          // leading dimension of C<sup>T</sup>
       batch_count));
+  FREE_ABC_VEC
 }
 
 namespace {
@@ -188,10 +198,7 @@ template <typename T>
 __global__ void MutiplyRowVecDevice(T *mat, const T *vec, const int m,
                                     const int n, const int total_cnt) {
   extern __shared__ T shared_vec[];
-  int thread_idx = threadIdx.x;
-  if (thread_idx < m) {
-    shared_vec[thread_idx] = vec[thread_idx];
-  }
+  CUDA_BLOCK_LOOP(i, m) { shared_vec[i] = vec[i]; }
   __syncthreads();
   CUDA_KERNEL_LOOP(i, total_cnt) {
     int row_idx = (i / n) % m;
@@ -241,10 +248,7 @@ __global__ void DivideRowVecDevice(T *mat, const T *vec, const int m,
                                    const int n, const int total_cnt,
                                    const T eps) {
   extern __shared__ T shared_vec[];
-  int thread_idx = threadIdx.x;
-  if (thread_idx < m) {
-    shared_vec[thread_idx] = vec[thread_idx];
-  }
+  CUDA_BLOCK_LOOP(i, m) { shared_vec[i] = vec[i]; }
   __syncthreads();
   CUDA_KERNEL_LOOP(i, total_cnt) {
     int row_idx = (i / n) % m;
@@ -427,5 +431,6 @@ template void vec_divide_num_gpu<float>(const float *vec, float *result,
                                         const float num, const int n);
 
 #undef DEFINE_ABC_VEC
+#undef FREE_ABC_VEC
 
 }  // namespace my_tensor

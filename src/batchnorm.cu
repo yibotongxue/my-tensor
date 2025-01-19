@@ -19,10 +19,7 @@ __global__ void ComputeMeanAndVariance(const T* const mean_data,
                                        const int batch_size, const int channels,
                                        const int spatial_size) {
   extern __shared__ T shared_vec[];
-  int thread_id = threadIdx.x;
-  if (thread_id < channels) {
-    shared_vec[thread_id] = mean_data[thread_id];
-  }
+  CUDA_BLOCK_LOOP(i, channels) { shared_vec[i] = mean_data[i]; }
   __syncthreads();
   CUDA_KERNEL_LOOP(idx, batch_size * channels * spatial_size) {
     standarded_cache[idx] =
@@ -52,11 +49,12 @@ __global__ void ComputeTopData(T* const top_data,
                                const T* const beta_data, const int batch_size,
                                const int channels, const int spatial_size) {
   extern __shared__ T shared_vec[];
-  int thread_id = threadIdx.x;
-  if (thread_id < channels) {
-    shared_vec[thread_id] = gama_data[thread_id];
-  } else if (thread_id < 2 * channels) {
-    shared_vec[thread_id] = beta_data[thread_id - channels];
+  CUDA_BLOCK_LOOP(i, 2 * channels) {
+    if (i < channels) {
+      shared_vec[i] = gama_data[i];
+    } else {
+      shared_vec[i] = beta_data[i - channels];
+    }
   }
   __syncthreads();
   CUDA_KERNEL_LOOP(idx, batch_size * channels * spatial_size) {
@@ -126,10 +124,7 @@ __global__ void MutiplyRowVectorAndAssign(
     T* const target, const T* const source, const T* const vec,
     const int channels, const int spatial_size, const int batch_size) {
   extern __shared__ T shared_vec[];
-  int thread_id = threadIdx.x;
-  if (thread_id < channels) {
-    shared_vec[thread_id] = vec[thread_id];
-  }
+  CUDA_BLOCK_LOOP(i, channels) { shared_vec[i] = vec[i]; }
   __syncthreads();
   CUDA_KERNEL_LOOP(idx, batch_size * channels * spatial_size) {
     target[idx] = source[idx] * shared_vec[(idx / spatial_size) % channels];
@@ -142,10 +137,7 @@ __global__ void ScaleBottomAndUpdateTempCache2(
     const T* const standarded_cache, const int batch_size, const int channels,
     const int spatial_size) {
   extern __shared__ T shared_vec[];
-  int thread_id = threadIdx.x;
-  if (thread_id < channels) {
-    shared_vec[thread_id] = temp_cache[thread_id];
-  }
+  CUDA_BLOCK_LOOP(i, channels) { shared_vec[i] = temp_cache[i]; }
   __syncthreads();
   int n = batch_size * spatial_size;
   CUDA_KERNEL_LOOP(idx, batch_size * channels * spatial_size) {
@@ -163,11 +155,12 @@ __global__ void ComputeBottomDiff(const T* const standarded_cache,
                                   const int batch_size, const int channels,
                                   const int spatial_size) {
   extern __shared__ T shared_vec[];
-  int thread_id = threadIdx.x;
-  if (thread_id < channels) {
-    shared_vec[thread_id] = temp_cache[thread_id];
-  } else if (thread_id < 2 * channels) {
-    shared_vec[thread_id] = variance_data[thread_id - channels];
+  CUDA_BLOCK_LOOP(i, 2 * channels) {
+    if (i < channels) {
+      shared_vec[i] = temp_cache[i];
+    } else {
+      shared_vec[i] = variance_data[i - channels];
+    }
   }
   __syncthreads();
   float n = batch_size * spatial_size;

@@ -17,6 +17,9 @@ inline int CudaGetBlocks(const int N) {
   for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < (n); \
        i += blockDim.x * gridDim.x)
 
+#define CUDA_BLOCK_LOOP(i, n) \
+  for (int i = threadIdx.x; i < (n); i += blockDim.x)
+
 #ifdef DEBUG
 #define CUDA_CHECK(function)                                            \
   do {                                                                  \
