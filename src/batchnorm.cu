@@ -56,13 +56,13 @@ __global__ void ComputeTopData(T* const top_data,
   if (thread_id < channels) {
     shared_vec[thread_id] = gama_data[thread_id];
   } else if (thread_id < 2 * channels) {
-    shared_vec[thread_id] = beta_data[thread_id];
+    shared_vec[thread_id] = beta_data[thread_id - channels];
   }
   __syncthreads();
   CUDA_KERNEL_LOOP(idx, batch_size * channels * spatial_size) {
     top_data[idx] =
-        gama_data[(idx / spatial_size) % channels] * standared_cache[idx] +
-        beta_data[(idx / spatial_size) % channels];
+        shared_vec[(idx / spatial_size) % channels] * standared_cache[idx] +
+        shared_vec[(idx / spatial_size) % channels + channels];
   }
 }
 }  // namespace
@@ -80,9 +80,9 @@ void BatchNorm<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
     Fill_GPU<T>(mean_data, channels_, 0);
     Fill_GPU<T>(variance_data, channels_, 0);
     row_sum_gpu(bottom_data, temp_cache1_->GetGPUDataPtr(), channels_,
-                spatial_size_, batch_size_);
+                spatial_size_, batch_size_, all_ones_->GetGPUDataPtr());
     col_sum_gpu(temp_cache1_->GetGPUDataPtr(), mean_data, batch_size_,
-                channels_, 1);
+                channels_, 1, all_ones_->GetGPUDataPtr());
     scale_gpu(
         mean_data, channels_,
         static_cast<T>(1.0) / static_cast<T>(batch_size_ * spatial_size_));
@@ -92,9 +92,10 @@ void BatchNorm<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
         mean_data, standarded_cache_->GetGPUDataPtr(), bottom_data,
         temp_cache2_->GetGPUDataPtr(), batch_size_, channels_, spatial_size_);
     row_sum_gpu(temp_cache2_->GetGPUDataPtr(), temp_cache1_->GetGPUDataPtr(),
-                channels_, spatial_size_, batch_size_);
+                channels_, spatial_size_, batch_size_,
+                all_ones_->GetGPUDataPtr());
     col_sum_gpu(temp_cache1_->GetGPUDataPtr(), variance_data, batch_size_,
-                channels_, 1);
+                channels_, 1, all_ones_->GetGPUDataPtr());
     ComputeCache<<<CudaGetBlocks(channels_), kCudaThreadNum>>>(
         variance_data, mean_data, mean_cache_->GetGPUDataPtr(),
         sqrt_variance_cache_->GetGPUDataPtr(), move_scale_factor_, channels_,
@@ -192,25 +193,27 @@ void BatchNorm<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
   const T* mean_data = mean_->GetGPUDataPtr();
   const T* variance_data = sqrt_variance_->GetGPUDataPtr();
   row_sum_gpu(top_diff, temp_cache1_->GetGPUDataPtr(), channels_, spatial_size_,
-              batch_size_);
+              batch_size_, all_ones_->GetGPUDataPtr());
   col_sum_gpu(temp_cache1_->GetGPUDataPtr(), beta_diff, batch_size_, channels_,
-              1);
+              1, all_ones_->GetGPUDataPtr());
   multiply_two_vec_gpu<T>(top_diff, standarded_cache_->GetGPUDataPtr(),
                           temp_cache2_->GetGPUDataPtr(),
                           batch_size_ * channels_ * spatial_size_);
   row_sum_gpu(temp_cache2_->GetGPUDataPtr(), temp_cache1_->GetGPUDataPtr(),
-              channels_, spatial_size_, batch_size_);
+              channels_, spatial_size_, batch_size_,
+              all_ones_->GetGPUDataPtr());
   col_sum_gpu(temp_cache1_->GetGPUDataPtr(), gama_diff, batch_size_, channels_,
-              1);
+              1, all_ones_->GetGPUDataPtr());
   MutiplyRowVectorAndAssign<<<CudaGetBlocks(channels_ * spatial_size_ *
                                             batch_size_),
                               kCudaThreadNum, channels_ * sizeof(T)>>>(
       temp_cache2_->GetGPUDataPtr(), top_diff, gama_data, channels_,
       spatial_size_, batch_size_);
   row_sum_gpu(temp_cache2_->GetGPUDataPtr(), temp_cache1_->GetGPUDataPtr(),
-              channels_, spatial_size_, batch_size_);
+              channels_, spatial_size_, batch_size_,
+              all_ones_->GetGPUDataPtr());
   col_sum_gpu(temp_cache1_->GetGPUDataPtr(), temp_cache_->GetGPUDataPtr(),
-              batch_size_, channels_, 1);
+              batch_size_, channels_, 1, all_ones_->GetGPUDataPtr());
   ScaleBottomAndUpdateTempCache2<<<CudaGetBlocks(batch_size_ * channels_ *
                                                  spatial_size_),
                                    kCudaThreadNum, channels_ * sizeof(T)>>>(
@@ -218,9 +221,10 @@ void BatchNorm<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
       standarded_cache_->GetGPUDataPtr(), batch_size_, channels_,
       spatial_size_);
   row_sum_gpu(temp_cache2_->GetGPUDataPtr(), temp_cache1_->GetGPUDataPtr(),
-              channels_, spatial_size_, batch_size_);
+              channels_, spatial_size_, batch_size_,
+              all_ones_->GetGPUDataPtr());
   col_sum_gpu(temp_cache1_->GetGPUDataPtr(), temp_cache_->GetGPUDataPtr(),
-              batch_size_, channels_, 1);
+              batch_size_, channels_, 1, all_ones_->GetGPUDataPtr());
   ComputeBottomDiff<<<CudaGetBlocks(batch_size_ * channels_ * spatial_size_),
                       kCudaThreadNum, 2 * channels_ * sizeof(T)>>>(
       standarded_cache_->GetGPUDataPtr(), temp_cache_->GetGPUDataPtr(),

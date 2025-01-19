@@ -75,6 +75,9 @@ void BatchNorm<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
   temp_cache1_ = std::make_shared<Tensor<T>>(
       std::vector<int>{batch_size_, channels_, 1, 1});
   temp_cache2_ = std::make_shared<Tensor<T>>(bottom[0]->GetShape());
+  int one_size = std::max(batch_size_, spatial_size_);
+  all_ones_ = std::make_shared<Tensor<T>>(std::vector<int>{1, one_size, 1, 1});
+  Fill_CPU<T>(all_ones_->GetCPUDataPtr(), one_size, 1);
 }
 
 template <typename T>

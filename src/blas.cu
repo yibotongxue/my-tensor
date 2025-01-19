@@ -187,9 +187,15 @@ namespace {
 template <typename T>
 __global__ void MutiplyRowVecDevice(T *mat, const T *vec, const int m,
                                     const int n, const int total_cnt) {
+  extern __shared__ T shared_vec[];
+  int thread_idx = threadIdx.x;
+  if (thread_idx < m) {
+    shared_vec[thread_idx] = vec[thread_idx];
+  }
+  __syncthreads();
   CUDA_KERNEL_LOOP(i, total_cnt) {
     int row_idx = (i / n) % m;
-    mat[i] *= vec[row_idx];
+    mat[i] *= shared_vec[row_idx];
   }
 }
 }  // namespace
@@ -198,8 +204,8 @@ template <typename T>
 void multiply_row_vector_gpu(T *mat, const T *vec, const int m, const int n,
                              const int batch_count) {
   int total_cnt = m * n * batch_count;
-  MutiplyRowVecDevice<<<CudaGetBlocks(total_cnt), kCudaThreadNum>>>(
-      mat, vec, m, n, total_cnt);
+  MutiplyRowVecDevice<<<CudaGetBlocks(total_cnt), kCudaThreadNum,
+                        m * sizeof(T)>>>(mat, vec, m, n, total_cnt);
 }
 
 template void multiply_row_vector_gpu<float>(float *mat, const float *vec,
@@ -234,9 +240,15 @@ template <typename T>
 __global__ void DivideRowVecDevice(T *mat, const T *vec, const int m,
                                    const int n, const int total_cnt,
                                    const T eps) {
+  extern __shared__ T shared_vec[];
+  int thread_idx = threadIdx.x;
+  if (thread_idx < m) {
+    shared_vec[thread_idx] = vec[thread_idx];
+  }
+  __syncthreads();
   CUDA_KERNEL_LOOP(i, total_cnt) {
     int row_idx = (i / n) % m;
-    mat[i] /= (vec[row_idx] + eps);
+    mat[i] /= (shared_vec[row_idx] + eps);
   }
 }
 }  // namespace
@@ -245,8 +257,8 @@ template <typename T>
 void divide_row_vector_gpu(T *mat, const T *vec, const int m, const int n,
                            const int batch_count, const T eps) {
   int total_cnt = m * n * batch_count;
-  DivideRowVecDevice<<<CudaGetBlocks(total_cnt), kCudaThreadNum>>>(
-      mat, vec, m, n, total_cnt, eps);
+  DivideRowVecDevice<<<CudaGetBlocks(total_cnt), kCudaThreadNum,
+                       m * sizeof(T)>>>(mat, vec, m, n, total_cnt, eps);
 }
 
 template void divide_row_vector_gpu<float>(float *mat, const float *vec,
@@ -288,27 +300,32 @@ float tensor_sum_gpu(const float *tensor, const int cnt) {
 
 template <>
 void row_sum_gpu(const float *mat, float *result, const int m, const int n,
-                 const int batch_count) {
+                 const int batch_count, float *help_vec) {
   float alpha = 1.0f;
   float beta = 0.0f;
-  float *ones = nullptr;
-  cudaMalloc(&ones, n * sizeof(float));
-  SetAllValue<<<CudaGetBlocks(n), kCudaThreadNum>>>(ones, n, 1.0f);
+  bool need_malloc_help_vec = help_vec == nullptr;
+  if (need_malloc_help_vec) {
+    CUDA_CHECK(cudaMalloc(&help_vec, n * sizeof(float)));
+    SetAllValue<<<CudaGetBlocks(n), kCudaThreadNum>>>(help_vec, n, 1.0f);
+  }
   CUBLAS_CHECK(cublasSgemv(CudaContext::cublas_handle(), CUBLAS_OP_T, n,
-                           m * batch_count, &alpha, mat, n, ones, 1, &beta,
+                           m * batch_count, &alpha, mat, n, help_vec, 1, &beta,
                            result, 1));
-  cudaFree(ones);
+  if (need_malloc_help_vec) {
+    CUDA_CHECK(cudaFree(help_vec));
+  }
 }
 
 template <>
 void col_sum_gpu(const float *mat, float *result, const int m, const int n,
-                 const int batch_count) {
+                 const int batch_count, float *help_vec) {
   float alpha = 1.0f;
   float beta = 0.0f;
-  float *ones = nullptr;
-  cudaMalloc(&ones, m * sizeof(float));
-  SetAllValue<<<CudaGetBlocks(m), kCudaThreadNum>>>(ones, m * batch_count,
-                                                    1.0f);
+  bool need_malloc_help_vec = help_vec == nullptr;
+  if (need_malloc_help_vec) {
+    CUDA_CHECK(cudaMalloc(&help_vec, m * sizeof(float)));
+    SetAllValue<<<CudaGetBlocks(m), kCudaThreadNum>>>(help_vec, m, 1.0f);
+  }
   thrust::device_vector<const float *> mat_vec(batch_count);
   int mat_stride = m * n;
   thrust::transform(thrust::counting_iterator<int>(0),
@@ -318,7 +335,7 @@ void col_sum_gpu(const float *mat, float *result, const int m, const int n,
                       return mat + i * mat_stride;
                     });
   thrust::device_vector<const float *> ones_vec(batch_count);
-  thrust::fill(ones_vec.begin(), ones_vec.end(), ones);
+  thrust::fill(ones_vec.begin(), ones_vec.end(), help_vec);
   thrust::device_vector<float *> result_vec(batch_count);
   thrust::transform(
       thrust::counting_iterator<int>(0),
@@ -327,7 +344,9 @@ void col_sum_gpu(const float *mat, float *result, const int m, const int n,
   CUBLAS_CHECK(cublasSgemvBatched(
       CudaContext::cublas_handle(), CUBLAS_OP_N, n, m, &alpha, RAW_PTR(mat_vec),
       n, RAW_PTR(ones_vec), 1, &beta, RAW_PTR(result_vec), 1, batch_count));
-  cudaFree(ones);
+  if (need_malloc_help_vec) {
+    CUDA_CHECK(cudaFree(help_vec));
+  }
 }
 
 template <>

@@ -273,43 +273,63 @@ float tensor_sum_cpu(const float *tensor, const int cnt);
 
 template <typename T>
 void row_sum_gpu(const T *mat, T *result, const int m, const int n,
-                 const int batch_count = 1) {
+                 const int batch_count = 1, T *helper_vec = nullptr) {
   BLAS_UNIMPLEMENTION
 }
 
 template <typename T>
 void row_sum_cpu(const T *mat, T *result, const int m, const int n,
-                 const int batch_count = 1) {
+                 const int batch_count = 1, T *helper_vec = nullptr) {
   BLAS_UNIMPLEMENTION
 }
 
 template <>
 void row_sum_gpu(const float *mat, float *result, const int m, const int n,
-                 const int batch_count);
+                 const int batch_count, float *helper_vec);
 
 template <>
 void row_sum_cpu(const float *mat, float *result, const int m, const int n,
-                 const int batch_count);
+                 const int batch_count, float *helper_vec);
 
 template <typename T>
 void col_sum_gpu(const T *mat, T *result, const int m, const int n,
-                 const int batch_count = 1) {
+                 const int batch_count = 1, T *helper_vec = nullptr) {
   BLAS_UNIMPLEMENTION
 }
 
 template <typename T>
 void col_sum_cpu(const T *mat, T *result, const int m, const int n,
-                 const int batch_count = 1) {
+                 const int batch_count = 1, T *helper_vec = nullptr) {
   BLAS_UNIMPLEMENTION
 }
 
 template <>
 void col_sum_gpu(const float *mat, float *result, const int m, const int n,
-                 const int batch_count);
+                 const int batch_count, float *helper_vec);
 
 template <>
 void col_sum_cpu(const float *mat, float *result, const int m, const int n,
-                 const int batch_count);
+                 const int batch_count, float *helper_vec);
+
+template <typename T>
+void mytensor_gemv_cpu(const T *A, const T *x, T *y, const int m, const int n,
+                       const T alpha, const T beta) {
+  BLAS_UNIMPLEMENTION
+}
+
+// template <>
+// void mytensor_gemv_cpu(const float *A, const float *x, float *y, const int m,
+//                        const int n, const float alpha, const float beta);
+
+template <typename T>
+void mytensor_gemv_gpu(const T *A, const T *x, T *y, const int m, const int n,
+                       const T alpha, const T beta) {
+  BLAS_UNIMPLEMENTION
+}
+
+// template <>
+// void mytensor_gemv_gpu(const float *A, const float *x, float *y, const int m,
+//                        const int n, const float alpha, const float beta);
 
 template <typename T>
 void add_two_vec_gpu(T *lhs, const T *rhs, const T k, const int n) {

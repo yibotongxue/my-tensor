@@ -178,7 +178,7 @@ float tensor_sum_cpu(const float *tensor, const int cnt) {
 
 template <>
 void row_sum_cpu(const float *mat, float *result, const int m, const int n,
-                 const int batch_count) {
+                 const int batch_count, float *helper_vec) {
   memset(result, 0, sizeof(float) * batch_count * m);
   for (int i = 0; i < batch_count * m; i++) {
     for (int j = 0; j < n; j++) {
@@ -189,7 +189,7 @@ void row_sum_cpu(const float *mat, float *result, const int m, const int n,
 
 template <>
 void col_sum_cpu(const float *mat, float *result, const int m, const int n,
-                 const int batch_count) {
+                 const int batch_count, float *helper_vec) {
   memset(result, 0, sizeof(float) * batch_count * n);
   for (int i = 0; i < batch_count; i++) {
     for (int j = 0; j < m; j++) {

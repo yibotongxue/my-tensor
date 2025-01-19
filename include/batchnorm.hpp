@@ -61,6 +61,8 @@ class BatchNorm final : public Layer<T> {
   TensorPtr<T> temp_cache1_;
   TensorPtr<T> temp_cache2_;
 
+  TensorPtr<T> all_ones_;
+
   T move_scale_factor_;
   int batch_size_;
   int spatial_size_;
