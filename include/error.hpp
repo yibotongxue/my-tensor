@@ -106,6 +106,11 @@ class SolverError : public std::runtime_error {
   using runtime_error::runtime_error;
 };  // class SolverError
 
+class ModelError : public std::runtime_error {
+ public:
+  using runtime_error::runtime_error;
+};  // class ModelError
+
 class SchedulerError : public std::runtime_error {
  public:
   using runtime_error::runtime_error;

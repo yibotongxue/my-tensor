@@ -1,6 +1,7 @@
 // Copyright 2024 yibotongxue
 
-#include <iostream>
+#include <spdlog/spdlog.h>
+
 #include <memory>
 #include <vector>
 
@@ -29,6 +30,6 @@ int main(int argc, char** argv) {
       my_tensor::CreateSolver<float>(loader.LoadSolver());
   solver->SetUp();
   solver->Solve();
-  std::cout << "Final test accuracy = " << solver->Test() << std::endl;
+  spdlog::info("Final test accuracy = {}", solver->Test());
   return 0;
 }

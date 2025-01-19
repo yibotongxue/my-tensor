@@ -2,7 +2,6 @@
 
 #include "pooling.hpp"
 
-#include <iostream>
 #include <memory>
 #include <vector>
 

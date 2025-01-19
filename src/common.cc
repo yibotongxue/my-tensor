@@ -5,7 +5,6 @@
 #include <unistd.h>
 
 #include <ctime>
-#include <iostream>
 #include <thread>  // NOLINT
 
 #include "utils.hpp"

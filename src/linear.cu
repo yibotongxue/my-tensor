@@ -29,10 +29,6 @@ void Linear<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
 template <typename T>
 void Linear<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
                             const std::vector<TensorPtr<T>>& bottom) {
-  // std::cout << this->layer_param_->name_ << " BackwardGPU" << std::endl;
-  // std::ranges::copy(SPAN_DATA(weight_, T),
-  //                   std::ostream_iterator<T>(std::cout, " "));
-  // std::cout << std::endl;
   CheckShape(bottom[0], top[0]);
   // bottom m * k
   // weight k * n
@@ -47,10 +43,6 @@ void Linear<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
   // *bottom = transpose_matmul(*weight_, *top, true);
   // *weight_ = matmul_transpose(*top, *bottom, true);
   // *bias_ = row_sum(*top, true);
-  // if (this->layer_param_->name_ == "linear3") {
-  //   std::ranges::copy(SPAN_DIFF(top[0], T),
-  //   std::ostream_iterator<T>(std::cout, " ")); std::cout << std::endl;
-  // }
 }
 
 template class Linear<>;

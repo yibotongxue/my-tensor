@@ -3,7 +3,6 @@
 #include "loss-with-softmax.hpp"
 
 #include <algorithm>
-#include <iostream>
 #include <memory>
 #include <random>
 #include <vector>

@@ -4,7 +4,6 @@
 #include <thrust/fill.h>
 #include <thrust/scatter.h>
 
-#include <iostream>
 #include <memory>
 #include <vector>
 

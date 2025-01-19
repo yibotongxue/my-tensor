@@ -2,7 +2,7 @@
 
 #include "solver.hpp"
 
-#include <iostream>
+#include <spdlog/spdlog.h>
 
 #include "model-saver.hpp"
 #include "scheduler-parameter.hpp"
@@ -32,6 +32,8 @@ void Solver<T>::CommonSetUp() {
   net_->SetTrain();
   if (!load_model_path_.empty()) {
     LoadModel(load_model_path_);
+  } else {
+    spdlog::info("No model loaded");
   }
 }
 
@@ -63,12 +65,22 @@ float Solver<T>::Test() {
 
 template <typename T>
 void Solver<T>::SaveModel(const std::string& model_path) {
-  ModelSaver::Save<T>(this->net_->GetModelData(), model_path);
+  try {
+    ModelSaver::Save<T>(this->net_->GetModelData(), model_path);
+    spdlog::info("Model saved to {}", model_path);
+  } catch (const ModelError& e) {
+    spdlog::error("{}", e.what());
+  }
 }
 
 template <typename T>
 void Solver<T>::LoadModel(const std::string& model_path) {
-  this->net_->SetModelData(ModelSaver::Load<T>(model_path));
+  try {
+    this->net_->SetModelData(ModelSaver::Load<T>(model_path));
+    spdlog::info("Model loaded from {}", model_path);
+  } catch (const ModelError& e) {
+    spdlog::error("{}", e.what());
+  }
 }
 
 template <typename T>
@@ -79,12 +91,12 @@ void Solver<T>::Step() {
   net_->Forward();
   net_->Backward();
   training_iter_++;
-  std::cout << std::format("loss = {}", net_->GetOutput()) << std::endl;
+  spdlog::info("loss = {}", net_->GetOutput());
   if (training_iter_ % test_step_ == 0) {
     net_->SetTest();
     net_->RefetchData();
     net_->Forward();
-    std::cout << std::format("accuracy = {}", net_->GetOutput()) << std::endl;
+    spdlog::info("test accuracy = {}", net_->GetOutput());
     net_->SetTrain();
   }
 }

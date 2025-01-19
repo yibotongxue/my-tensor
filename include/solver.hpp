@@ -26,9 +26,6 @@ class Solver {
 
   float Test();
 
-  void SaveModel(const std::string& model_path);
-  void LoadModel(const std::string& model_path);
-
  protected:
   NetPtr<T> net_;
   SolverParameterPtr param_;
@@ -43,6 +40,9 @@ class Solver {
 
   std::string save_model_path_;
   std::string load_model_path_;
+
+  void SaveModel(const std::string& model_path);
+  void LoadModel(const std::string& model_path);
 
   void CommonSetUp();
   virtual void SpecialSetUp() {}

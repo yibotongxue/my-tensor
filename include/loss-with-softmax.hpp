@@ -3,7 +3,6 @@
 #ifndef INCLUDE_LOSS_WITH_SOFTMAX_HPP_
 #define INCLUDE_LOSS_WITH_SOFTMAX_HPP_
 
-#include <iostream>
 #include <vector>
 
 #include "layer-parameter.hpp"

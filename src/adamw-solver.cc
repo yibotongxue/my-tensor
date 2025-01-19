@@ -43,13 +43,7 @@ void AdamWSolver<T>::UpdateParam() {
              static_cast<T>(1.0 - 2 * lr * this->l2_));
     T* temp_cpu = reinterpret_cast<T*>(malloc(param->GetSize() * sizeof(T)));
     MyMemcpyGPU2CPU(temp_cpu, temp, param->GetSize() * sizeof(T));
-    // for (int j = 0; j < param->GetSize(); j++) {
-    //   std::cout << temp_cpu[j] << " ";
-    // }
-    // std::cout << std::endl;
     free(temp_cpu);
-    // std::cout << static_cast<T>(-lr / (1.0 - std::pow(beta1_, time_step_)))
-    // << std::endl;
     add_two_vec<T>(param->GetDataPtr(), temp,
                    static_cast<T>(-lr / (1.0 - std::pow(beta1_, time_step_))),
                    param->GetSize());

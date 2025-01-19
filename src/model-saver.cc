@@ -6,9 +6,10 @@
 
 #include <fstream>
 #include <iostream>
-#include <stdexcept>  // 用于抛出异常
 #include <string>
 #include <vector>
+
+#include "error.hpp"
 
 namespace my_tensor {
 
@@ -18,7 +19,7 @@ void ModelSaver::Save(const std::vector<std::vector<T>>& data,
   std::ofstream out(
       file_path, std::ios::binary | std::ios::trunc);  // 打开文件并清空原内容
   if (!out) {
-    throw std::runtime_error("Error opening file for writing: " + file_path);
+    throw ModelError("Error opening file for writing: " + file_path);
   }
 
   size_t rows = data.size();
@@ -40,7 +41,7 @@ template <typename T>
 std::vector<std::vector<T>> ModelSaver::Load(const std::string& file_path) {
   std::ifstream in(file_path, std::ios::binary);
   if (!in) {
-    throw std::runtime_error("Error opening file for reading: " + file_path);
+    throw ModelError("Error opening file for reading: " + file_path);
   }
 
   size_t rows;

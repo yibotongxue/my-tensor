@@ -9,7 +9,7 @@ add_rules("mode.debug", "mode.release", "mode.profile")
 add_cuflags("-G", "--extended-lambda")
 add_cugencodes("native")
 
-add_requires("gtest", "nlohmann_json", "openblas")
+add_requires("gtest", "nlohmann_json", "openblas", "spdlog")
 
 local tensor_src = {
     "src/memory-util.cu",
@@ -59,6 +59,7 @@ local solver_src = {
 
 target("common_lib")
     set_kind("static")
+    add_packages("spdlog", {public = true})
     add_includedirs("include", {public = true})
     add_headerfiles("include/common.hpp")
     add_files("src/common.cc")
