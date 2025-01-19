@@ -72,7 +72,7 @@ void Cifar10Dataset::LoadData() {
     file.read(reinterpret_cast<char*>(data.data()), data.size() * sizeof(char));
     file.close();
     auto data_view = data | std::views::transform([](uint8_t val) -> float {
-                       return static_cast<float>(val) / 255.0f - 0.5;
+                       return static_cast<float>(val) / 255.0f - 0.5f;
                      });
     for (int i : std::views::iota(0, 10000)) {
       // std::cout << i << std::endl;
@@ -86,8 +86,5 @@ void Cifar10Dataset::LoadData() {
   }
   this->height_ = 32;
   this->width_ = 32;
-  std::ranges::transform(image_, image_.begin(), [](float val) -> float {
-    return val / 255.0f - 0.5f;
-  });
 }
 }  // namespace my_tensor
