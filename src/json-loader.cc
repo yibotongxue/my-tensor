@@ -32,21 +32,14 @@ std::vector<LayerParameterPtr> JsonLoader::LoadLayers() {
   return result;
 }
 
-DataParameterPtr JsonLoader::LoadTrainDataParameter() {
-  return std::make_shared<DataParameter>(
-      LoadDataType(), LoadTrainImageFilePath(), LoadTrainLabelFilePath(),
-      LoadBatchSize());
-}
-
-DataParameterPtr JsonLoader::LoadTestDataParameter() {
-  return std::make_shared<DataParameter>(
-      LoadDataType(), LoadTestImageFilePath(), LoadTestLabelFilePath(),
-      LoadBatchSize());
+DataParameterPtr JsonLoader::LoadDataParameter() {
+  return std::make_shared<DataParameter>(LoadDataType(), LoadDataFileRoot(),
+                                         LoadBatchSize());
 }
 
 NetParameterPtr JsonLoader::LoadNet() {
-  return std::make_shared<NetParameter>(LoadNetName(), LoadTrainDataParameter(),
-                                        LoadTestDataParameter(), LoadLayers());
+  return std::make_shared<NetParameter>(LoadNetName(), LoadDataParameter(),
+                                        LoadLayers());
 }
 
 SchedulerParameterPtr JsonLoader::LoadScheduler() {

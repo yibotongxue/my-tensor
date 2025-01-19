@@ -28,8 +28,8 @@ bool Net<T>::RefetchData() {
 template <typename T>
 void Net<T>::SetUp() {
   net_name_ = net_parameter_->name_;
-  train_dataloader_ = CreateDataLoader(net_parameter_->train_data_parameter_);
-  test_dataloader_ = CreateDataLoader(net_parameter_->test_data_parameter_);
+  train_dataloader_ = CreateDataLoader(net_parameter_->data_parameter_, true);
+  test_dataloader_ = CreateDataLoader(net_parameter_->data_parameter_, false);
   CheckNetValid(net_parameter_->layer_params_);
   layers_.clear();
   for (auto&& layer_param : TopoSort(net_parameter_->layer_params_)) {

@@ -32,24 +32,14 @@ class JsonLoader {
   std::string LoadDataType() const {
     return LoadWithKey<std::string>(js, "data_type");
   }
-  std::string LoadTrainImageFilePath() const {
-    return LoadWithKey<std::string>(js, "train_image_file_path");
-  }
-  std::string LoadTrainLabelFilePath() const {
-    return LoadWithKey<std::string>(js, "train_label_file_path");
-  }
-  std::string LoadTestImageFilePath() const {
-    return LoadWithKey<std::string>(js, "test_image_file_path");
-  }
-  std::string LoadTestLabelFilePath() const {
-    return LoadWithKey<std::string>(js, "test_label_file_path");
+  std::string LoadDataFileRoot() const {
+    return LoadWithKey<std::string>(js, "data_files_root");
   }
   std::string LoadNetName() const {
     return LoadWithKey<std::string>(js, "name");
   }
   std::vector<LayerParameterPtr> LoadLayers();
-  DataParameterPtr LoadTrainDataParameter();
-  DataParameterPtr LoadTestDataParameter();
+  DataParameterPtr LoadDataParameter();
   NetParameterPtr LoadNet();
   SchedulerParameterPtr LoadScheduler();
   SolverParameterPtr LoadSolver();

@@ -18,7 +18,7 @@ struct MNISTHeader {
 };
 
 uint32_t ReverseInt(uint32_t i) {
-  uint8_t ch1, ch2, ch3, ch4;
+  int ch1, ch2, ch3, ch4;
   ch1 = i & 255;
   ch2 = (i >> 8) & 255;
   ch3 = (i >> 16) & 255;
@@ -38,11 +38,11 @@ void MnistDataset::ReadImageFile() {
   header.num_rows = ReverseInt(header.num_rows);
   header.num_cols = ReverseInt(header.num_cols);
   image_.resize(header.num_images * header.num_rows * header.num_cols);
-  std::vector<uint8_t> uimg_data(header.num_images * header.num_rows *
-                                 header.num_cols);
+  std::vector<int> uimg_data(header.num_images * header.num_rows *
+                             header.num_cols);
   file.read(reinterpret_cast<char*>(uimg_data.data()),
             image_.size() * sizeof(char));
-  std::ranges::transform(uimg_data, image_.begin(), [](uint8_t val) -> float {
+  std::ranges::transform(uimg_data, image_.begin(), [](int val) -> float {
     return static_cast<float>(val) / 255.0f - 0.5;
   });
   this->height_ = header.num_rows;
@@ -56,7 +56,15 @@ void MnistDataset::ReadLabelFile() {
   file.read(reinterpret_cast<char*>(&num_labels), sizeof(uint32_t));
   magic_number = ReverseInt(magic_number);
   num_labels = ReverseInt(num_labels);
+  std::vector<uint8_t> label(num_labels);
+  file.read(reinterpret_cast<char*>(label.data()), num_labels * sizeof(char));
   label_.resize(num_labels);
-  file.read(reinterpret_cast<char*>(label_.data()), num_labels * sizeof(char));
+  std::ranges::transform(label, label_.begin(), [](uint8_t val) -> int {
+    return static_cast<int>(val);
+  });
+}
+
+void Cifar10Dataset::LoadData() {
+  // TODO(yibotongxue): Implement this function
 }
 }  // namespace my_tensor

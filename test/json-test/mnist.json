@@ -18,10 +18,7 @@
     "stepsize": 1000
   },
   "data_type": "mnist",
-  "train_image_file_path": "/home/linyibo/Code/my-tensor/data/train-images-idx3-ubyte",
-  "train_label_file_path": "/home/linyibo/Code/my-tensor/data/train-labels-idx1-ubyte",
-  "test_image_file_path": "/home/linyibo/Code/my-tensor/data/t10k-images-idx3-ubyte",
-  "test_label_file_path": "/home/linyibo/Code/my-tensor/data/t10k-labels-idx1-ubyte",
+  "data_files_root": "/home/linyibo/Code/my-tensor/data/mnist",
   "layers": [
     {
       "name": "conv1",

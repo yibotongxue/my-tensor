@@ -16,9 +16,8 @@ namespace my_tensor {
 
 class Dataset {
  public:
-  explicit Dataset(const std::string& image_file_path,
-                   const std::string& label_file_path)
-      : image_file_path_(image_file_path), label_file_path_(label_file_path) {}
+  explicit Dataset(const std::string& data_files_path, bool is_train)
+      : data_files_root_(data_files_path), is_train_(is_train) {}
 
   virtual ~Dataset() = default;
 
@@ -29,19 +28,19 @@ class Dataset {
   virtual int GetSize() const = 0;
   virtual std::span<const float> GetImageSpanBetweenAnd(int start,
                                                         int end) const = 0;
-  virtual std::span<const uint8_t> GetLabelSpanBetweenAnd(int start,
-                                                          int end) const = 0;
+  virtual std::span<const int> GetLabelSpanBetweenAnd(int start,
+                                                      int end) const = 0;
 
  protected:
-  std::string image_file_path_;
-  std::string label_file_path_;
+  std::string data_files_root_;
+  bool is_train_;
 };  // class Dataset
 
 class LoadInMemoryDataset : public Dataset {
  public:
-  explicit LoadInMemoryDataset(const std::string& image_file_path,
-                               const std::string& label_file_path)
-      : Dataset(image_file_path, label_file_path) {}
+  explicit LoadInMemoryDataset(const std::string& data_files_path,
+                               bool is_train)
+      : Dataset(data_files_path, is_train) {}
 
   int GetHeight() const override { return height_; }
   int GetWidth() const override { return width_; }
@@ -51,23 +50,30 @@ class LoadInMemoryDataset : public Dataset {
     return {image_.data() + start * height_ * width_,
             static_cast<size_t>((end - start) * height_ * width_)};
   }
-  std::span<const uint8_t> GetLabelSpanBetweenAnd(int start,
-                                                  int end) const override {
+  std::span<const int> GetLabelSpanBetweenAnd(int start,
+                                              int end) const override {
     return {label_.data() + start, static_cast<size_t>(end - start)};
   }
 
  protected:
   std::vector<float> image_;
-  std::vector<uint8_t> label_;
+  std::vector<int> label_;
   int height_;
   int width_;
 };  // class LoadInMemoryDataset
 
 class MnistDataset final : public LoadInMemoryDataset {
  public:
-  explicit MnistDataset(const std::string& image_file_path,
-                        const std::string& label_file_path)
-      : LoadInMemoryDataset(image_file_path, label_file_path) {}
+  explicit MnistDataset(const std::string& data_files_root, bool is_train)
+      : LoadInMemoryDataset(data_files_root, is_train) {
+    if (is_train) {
+      image_file_path_ = data_files_root + "/train-images-idx3-ubyte";
+      label_file_path_ = data_files_root + "/train-labels-idx1-ubyte";
+    } else {
+      image_file_path_ = data_files_root + "/t10k-images-idx3-ubyte";
+      label_file_path_ = data_files_root + "/t10k-labels-idx1-ubyte";
+    }
+  }
 
   void LoadData() override {
     ReadImageFile();
@@ -77,16 +83,26 @@ class MnistDataset final : public LoadInMemoryDataset {
  private:
   void ReadImageFile();
   void ReadLabelFile();
+
+  std::string image_file_path_;
+  std::string label_file_path_;
 };  // class MnistDataset
+
+class Cifar10Dataset final : public LoadInMemoryDataset {
+ public:
+  explicit Cifar10Dataset(const std::string& data_files_root, bool is_train)
+      : LoadInMemoryDataset(data_files_root, is_train) {}
+
+  void LoadData() override;
+};  // class Cifar10Dataset
 
 using DatasetPtr = std::shared_ptr<Dataset>;
 
-inline std::function<DatasetPtr(const std::string&, const std::string&)>
-GetDatasetCreater(const std::string& type) {
+inline std::function<DatasetPtr(const std::string&, bool)> GetDatasetCreater(
+    const std::string& type) {
   if (type == "mnist") {
-    return [](const std::string& image_file_path,
-              const std::string& label_file_path) -> DatasetPtr {
-      return std::make_shared<MnistDataset>(image_file_path, label_file_path);
+    return [](const std::string& data_files_root, bool is_train) {
+      return std::make_shared<MnistDataset>(data_files_root, is_train);
     };
   } else {
     throw DataError("Unsupported data set type.");
