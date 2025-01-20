@@ -12,7 +12,7 @@
 
 namespace my_tensor {
 
-template <Arithmetic T = float>
+template <Arithmetic T>
 class Pooling final : public Layer<T> {
  public:
   explicit Pooling(LayerParameterPtr param) : Layer<T>(param) {}
@@ -56,7 +56,7 @@ class Pooling final : public Layer<T> {
   void CheckShape(const TensorPtr<T> bottom, const TensorPtr<T> top) const;
 };  // class PoolingLayer
 
-extern template class Pooling<>;
+extern template class Pooling<float>;
 
 }  // namespace my_tensor
 

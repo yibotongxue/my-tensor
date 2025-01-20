@@ -45,5 +45,5 @@ void Relu<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
       [](T val1, T val2) -> T { return val1 > 0 ? val2 : 0; });
 }
 
-template class Relu<>;
+template class Relu<float>;
 }  // namespace my_tensor

@@ -45,6 +45,6 @@ void Linear<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
   // *bias_ = row_sum(*top, true);
 }
 
-template class Linear<>;
+template class Linear<float>;
 
 }  // namespace my_tensor

@@ -190,6 +190,6 @@ void Convolution<T>::CheckShape(const TensorPtr<T> bottom,
 #endif  // DEBUG
 }
 
-template class Convolution<>;
+template class Convolution<float>;
 
 }  // namespace my_tensor

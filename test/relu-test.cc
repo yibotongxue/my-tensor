@@ -45,7 +45,7 @@
       relu.reset();                                                         \
       bottom.reset();                                                       \
       top.reset();                                                          \
-      relu = my_tensor::CreateLayer<>(layer_parameters[0]);                 \
+      relu = my_tensor::CreateLayer<float>(layer_parameters[0]);            \
       bottom = std::make_shared<my_tensor::Tensor<float>>(shape);           \
       top = std::make_shared<my_tensor::Tensor<float>>(shape);              \
       bottom->Set##device##Data(data.data(), data.size());                  \
@@ -59,7 +59,7 @@
     const std::vector<int> shape{10000, 3};                                 \
     std::vector<float> data;                                                \
     std::vector<float> diff;                                                \
-    my_tensor::LayerPtr<> relu;                                             \
+    my_tensor::LayerPtr<float> relu;                                        \
     my_tensor::TensorPtr<float> bottom;                                     \
     my_tensor::TensorPtr<float> top;                                        \
     std::vector<my_tensor::TensorPtr<float>> bottom_vec;                    \

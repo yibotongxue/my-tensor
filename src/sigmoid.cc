@@ -45,5 +45,5 @@ void Sigmoid<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
                          });
 }
 
-template class Sigmoid<>;
+template class Sigmoid<float>;
 }  // namespace my_tensor

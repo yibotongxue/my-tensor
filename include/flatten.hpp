@@ -10,7 +10,7 @@
 
 namespace my_tensor {
 
-template <Arithmetic T = float>
+template <Arithmetic T>
 class Flatten : public Layer<T> {
  public:
   explicit Flatten(LayerParameterPtr param) : Layer<T>(param) {}
@@ -45,7 +45,7 @@ class Flatten : public Layer<T> {
   bool inplace_;
 };  // class Flatten
 
-extern template class Flatten<>;
+extern template class Flatten<float>;
 
 }  // namespace my_tensor
 

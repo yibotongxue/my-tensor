@@ -145,6 +145,6 @@ void Linear<T>::CheckShape(const TensorPtr<T> bottom,
 #endif  // DEBUG
 }
 
-template class Linear<>;
+template class Linear<float>;
 
 }  // namespace my_tensor

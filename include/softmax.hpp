@@ -12,7 +12,7 @@
 
 namespace my_tensor {
 
-template <Arithmetic T = float>
+template <Arithmetic T>
 class Softmax final : public Layer<T> {
  public:
   explicit Softmax(LayerParameterPtr param) : Layer<T>(param) {}
@@ -53,7 +53,7 @@ class Softmax final : public Layer<T> {
   void CheckShape(const TensorPtr<T> bottom, const TensorPtr<T> top) const;
 };  // class Softmax
 
-extern template class Softmax<>;
+extern template class Softmax<float>;
 
 }  // namespace my_tensor
 

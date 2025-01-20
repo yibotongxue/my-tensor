@@ -48,7 +48,7 @@
       bottom_vec.push_back(bottom);                                            \
       top_vec.push_back(top);                                                  \
       pooling.reset();                                                         \
-      pooling = my_tensor::CreateLayer<>(layer_parameters[0]);                 \
+      pooling = my_tensor::CreateLayer<float>(layer_parameters[0]);            \
       pooling->SetUp(bottom_vec, top_vec);                                     \
       pooling->Forward##device(bottom_vec, top_vec);                           \
     }                                                                          \
@@ -60,7 +60,7 @@
     my_tensor::TensorPtr<float> top;                                           \
     std::vector<my_tensor::TensorPtr<float>> bottom_vec;                       \
     std::vector<my_tensor::TensorPtr<float>> top_vec;                          \
-    my_tensor::LayerPtr<> pooling;                                             \
+    my_tensor::LayerPtr<float> pooling;                                        \
   };
 
 POOLING_TEST_CLASS(CPU)
@@ -92,7 +92,7 @@ POOLING_FORWARD_TOP_TEST(GPU)
 #define POOLING_FORWARD_MASK_TEST(device)                                   \
   TEST_F(Pooling##device##Test, ForwardMask) {                              \
     auto pooling_ptr =                                                      \
-        std::dynamic_pointer_cast<my_tensor::Pooling<>>(pooling);           \
+        std::dynamic_pointer_cast<my_tensor::Pooling<float>>(pooling);      \
     for (int i = 0; i < 14400; i++) {                                       \
       int t = i / 480;                                                      \
       int row = (i % 480) / 32;                                             \

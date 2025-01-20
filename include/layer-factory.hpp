@@ -20,7 +20,7 @@
 #include "softmax.hpp"
 
 namespace my_tensor {
-template <Arithmetic T = float>
+template <Arithmetic T>
 inline LayerPtr<T> CreateLayer(const LayerParameterPtr param) {
   switch (param->type_) {
     case ParamType::kRelu:
@@ -48,7 +48,7 @@ inline LayerPtr<T> CreateLayer(const LayerParameterPtr param) {
   }
 }
 
-template LayerPtr<> CreateLayer<>(const LayerParameterPtr param);
+template LayerPtr<float> CreateLayer<float>(const LayerParameterPtr param);
 }  // namespace my_tensor
 
 #endif  // INCLUDE_LAYER_FACTORY_HPP_

@@ -96,6 +96,6 @@ void Softmax<T>::CheckShape(const TensorPtr<T> bottom,
 #endif  // DEBUG
 }
 
-template class Softmax<>;
+template class Softmax<float>;
 
 }  // namespace my_tensor

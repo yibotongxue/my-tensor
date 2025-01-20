@@ -26,7 +26,7 @@
 #define SOFTMAX_TEST(device)                                                 \
   TEST(SoftmaxTest, Forward##device##Test) {                                 \
     my_tensor::JsonLoader loader("../../../../test/json-test/softmax.json"); \
-    auto softmax = my_tensor::CreateLayer<>(loader.LoadLayers()[0]);         \
+    auto softmax = my_tensor::CreateLayer<float>(loader.LoadLayers()[0]);    \
     const std::vector<int> bottom_shape{1024, 10};                           \
     auto bottom = std::make_shared<my_tensor::Tensor<float>>(bottom_shape);  \
     auto top = std::make_shared<my_tensor::Tensor<float>>(bottom_shape);     \

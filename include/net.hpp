@@ -170,7 +170,7 @@ class Net {
   void SetUpBottomAndTop();
 };  // class Net
 
-template <Arithmetic T = float>
+template <Arithmetic T>
 using NetPtr = std::shared_ptr<Net<T>>;
 
 extern template class Net<float>;

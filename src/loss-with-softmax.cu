@@ -62,6 +62,6 @@ void LossWithSoftmax<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
       [batch_size] __device__(T val) -> T { return val / batch_size; });
 }
 
-template class LossWithSoftmax<>;
+template class LossWithSoftmax<float>;
 
 }  // namespace my_tensor

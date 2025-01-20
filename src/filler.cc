@@ -40,9 +40,9 @@ void HeFiller<>::FillCPU(TensorPtr<float> tensor) {
   std::ranges::generate(SPAN_DATA(tensor, float), func);
 }
 
-template class Filler<>;
-template class ZeroFiller<>;
-template class ConstantFiller<>;
-template class XavierFiller<>;
-template class HeFiller<>;
+template class Filler<float>;
+template class ZeroFiller<float>;
+template class ConstantFiller<float>;
+template class XavierFiller<float>;
+template class HeFiller<float>;
 }  // namespace my_tensor

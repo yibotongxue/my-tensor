@@ -12,7 +12,7 @@
 
 namespace my_tensor {
 // Sigmoid class, implements Layer class.
-template <Arithmetic T = float>
+template <Arithmetic T>
 class Sigmoid final : public Layer<T> {
  public:
   explicit Sigmoid(LayerParameterPtr param) : Layer<T>(param) {}
@@ -39,7 +39,7 @@ class Sigmoid final : public Layer<T> {
                    const std::vector<TensorPtr<T>>& bottom) override;
 };
 
-extern template class my_tensor::Sigmoid<>;
+extern template class my_tensor::Sigmoid<float>;
 }  // namespace my_tensor
 
 #endif  // INCLUDE_SIGMOID_HPP_

@@ -94,6 +94,6 @@ void Flatten<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
   }
 }
 
-template class Flatten<>;
+template class Flatten<float>;
 
 }  // namespace my_tensor

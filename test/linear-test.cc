@@ -23,65 +23,65 @@
 //   EXPECT_TRUE(false);
 // }
 
-#define LINEAR_TEST(device)                                                   \
-  class Linear##device##Test : public ::testing::Test {                       \
-   protected:                                                                 \
-    void SetUp() override {                                                   \
-      my_tensor::JsonLoader loader("../../../../test/json-test/linear.json"); \
-      auto&& layer_parameters = loader.LoadLayers();                          \
-      weight_data.resize(80000);                                              \
-      x_data.resize(60000);                                                   \
-      bias_data.resize(400);                                                  \
-      y_diff.resize(120000);                                                  \
-      std::random_device rd;                                                  \
-      std::mt19937 gen(rd());                                                 \
-      std::uniform_real_distribution<float> dis(-10.0f, 10.0f);               \
-      auto random_func = [&gen, &dis]() -> float { return dis(gen); };        \
-      std::ranges::generate(weight_data, random_func);                        \
-      std::ranges::generate(x_data, random_func);                             \
-      std::ranges::generate(bias_data, random_func);                          \
-      std::ranges::generate(y_diff, random_func);                             \
-      X.reset();                                                              \
-      weight.reset();                                                         \
-      bias.reset();                                                           \
-      Y.reset();                                                              \
-      X = std::make_shared<my_tensor::Tensor<float>>(x_shape);                \
-      Y = std::make_shared<my_tensor::Tensor<float>>(y_shape);                \
-      X->Set##device##Data(x_data.data(), x_data.size());                     \
-      linear.reset();                                                         \
-      linear = my_tensor::CreateLayer<>(layer_parameters[0]);                 \
-      auto temp = std::dynamic_pointer_cast<my_tensor::Linear<>>(linear);     \
-      bottom.clear();                                                         \
-      top.clear();                                                            \
-      bottom.push_back(X);                                                    \
-      top.push_back(Y);                                                       \
-      linear->SetUp(bottom, top);                                             \
-      weight = temp->GetWeight();                                             \
-      bias = temp->GetBias();                                                 \
-      weight->Set##device##Data(weight_data.data(), weight_data.size());      \
-      bias->Set##device##Data(bias_data.data(), bias_data.size());            \
-      linear->Forward##device(bottom, top);                                   \
-      Y->Set##device##Diff(y_diff.data(), y_diff.size());                     \
-      linear->Backward##device(top, bottom);                                  \
-    }                                                                         \
-    const std::vector<int> weight_shape{200, 400};                            \
-    const std::vector<int> x_shape{300, 200};                                 \
-    const std::vector<int> bias_shape{400};                                   \
-    const std::vector<int> y_shape{300, 400};                                 \
-    std::vector<float> weight_data;                                           \
-    std::vector<float> x_data;                                                \
-    std::vector<float> bias_data;                                             \
-    std::vector<float> y_diff;                                                \
-    my_tensor::TensorPtr<float> X;                                            \
-    my_tensor::TensorPtr<float> weight;                                       \
-    my_tensor::TensorPtr<float> bias;                                         \
-    my_tensor::TensorPtr<float> Y;                                            \
-    std::vector<my_tensor::TensorPtr<float>> bottom;                          \
-    std::vector<my_tensor::TensorPtr<float>> top;                             \
-    my_tensor::LayerPtr<> linear;                                             \
-    int m = 300;                                                              \
-    int k = 200;                                                              \
-    int n = 400;                                                              \
+#define LINEAR_TEST(device)                                                    \
+  class Linear##device##Test : public ::testing::Test {                        \
+   protected:                                                                  \
+    void SetUp() override {                                                    \
+      my_tensor::JsonLoader loader("../../../../test/json-test/linear.json");  \
+      auto&& layer_parameters = loader.LoadLayers();                           \
+      weight_data.resize(80000);                                               \
+      x_data.resize(60000);                                                    \
+      bias_data.resize(400);                                                   \
+      y_diff.resize(120000);                                                   \
+      std::random_device rd;                                                   \
+      std::mt19937 gen(rd());                                                  \
+      std::uniform_real_distribution<float> dis(-10.0f, 10.0f);                \
+      auto random_func = [&gen, &dis]() -> float { return dis(gen); };         \
+      std::ranges::generate(weight_data, random_func);                         \
+      std::ranges::generate(x_data, random_func);                              \
+      std::ranges::generate(bias_data, random_func);                           \
+      std::ranges::generate(y_diff, random_func);                              \
+      X.reset();                                                               \
+      weight.reset();                                                          \
+      bias.reset();                                                            \
+      Y.reset();                                                               \
+      X = std::make_shared<my_tensor::Tensor<float>>(x_shape);                 \
+      Y = std::make_shared<my_tensor::Tensor<float>>(y_shape);                 \
+      X->Set##device##Data(x_data.data(), x_data.size());                      \
+      linear.reset();                                                          \
+      linear = my_tensor::CreateLayer<float>(layer_parameters[0]);             \
+      auto temp = std::dynamic_pointer_cast<my_tensor::Linear<float>>(linear); \
+      bottom.clear();                                                          \
+      top.clear();                                                             \
+      bottom.push_back(X);                                                     \
+      top.push_back(Y);                                                        \
+      linear->SetUp(bottom, top);                                              \
+      weight = temp->GetWeight();                                              \
+      bias = temp->GetBias();                                                  \
+      weight->Set##device##Data(weight_data.data(), weight_data.size());       \
+      bias->Set##device##Data(bias_data.data(), bias_data.size());             \
+      linear->Forward##device(bottom, top);                                    \
+      Y->Set##device##Diff(y_diff.data(), y_diff.size());                      \
+      linear->Backward##device(top, bottom);                                   \
+    }                                                                          \
+    const std::vector<int> weight_shape{200, 400};                             \
+    const std::vector<int> x_shape{300, 200};                                  \
+    const std::vector<int> bias_shape{400};                                    \
+    const std::vector<int> y_shape{300, 400};                                  \
+    std::vector<float> weight_data;                                            \
+    std::vector<float> x_data;                                                 \
+    std::vector<float> bias_data;                                              \
+    std::vector<float> y_diff;                                                 \
+    my_tensor::TensorPtr<float> X;                                             \
+    my_tensor::TensorPtr<float> weight;                                        \
+    my_tensor::TensorPtr<float> bias;                                          \
+    my_tensor::TensorPtr<float> Y;                                             \
+    std::vector<my_tensor::TensorPtr<float>> bottom;                           \
+    std::vector<my_tensor::TensorPtr<float>> top;                              \
+    my_tensor::LayerPtr<float> linear;                                         \
+    int m = 300;                                                               \
+    int k = 200;                                                               \
+    int n = 400;                                                               \
   };
 
 LINEAR_TEST(CPU)

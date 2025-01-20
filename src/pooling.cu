@@ -73,6 +73,6 @@ void Pooling<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
                   bottom_diff_ptr);
 }
 
-template class Pooling<>;
+template class Pooling<float>;
 
 }  // namespace my_tensor

@@ -12,7 +12,7 @@
 
 namespace my_tensor {
 // Relu class, implements Layer.
-template <Arithmetic T = float>
+template <Arithmetic T>
 class Relu final : public Layer<T> {
  public:
   explicit Relu(LayerParameterPtr param) : Layer<T>(param) {}
@@ -39,7 +39,7 @@ class Relu final : public Layer<T> {
                    const std::vector<TensorPtr<T>>& bottom) override;
 };
 
-extern template class my_tensor::Relu<>;
+extern template class my_tensor::Relu<float>;
 }  // namespace my_tensor
 
 #endif  // INCLUDE_RELU_HPP_

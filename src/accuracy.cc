@@ -110,6 +110,6 @@ void Accuracy<T>::CheckShape(const TensorPtr<T> input, const TensorPtr<T> label,
 #endif  // DEBUG
 }
 
-template class Accuracy<>;
+template class Accuracy<float>;
 
 }  // namespace my_tensor

@@ -47,5 +47,5 @@ void Sigmoid<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
                     top_data_ptr, bottom_diff_ptr, SigmoidGradOperator<T>());
 }
 
-template class Sigmoid<>;
+template class Sigmoid<float>;
 }  // namespace my_tensor

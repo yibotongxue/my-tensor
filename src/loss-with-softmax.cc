@@ -130,6 +130,6 @@ void LossWithSoftmax<T>::CheckShape(const TensorPtr<T> input,
 #endif  // DEBUG
 }
 
-template class LossWithSoftmax<>;
+template class LossWithSoftmax<float>;
 
 }  // namespace my_tensor

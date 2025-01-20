@@ -57,6 +57,6 @@ void Softmax<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                     });
 }
 
-template class Softmax<>;
+template class Softmax<float>;
 
 }  // namespace my_tensor

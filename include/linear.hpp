@@ -11,7 +11,7 @@
 
 namespace my_tensor {
 
-template <Arithmetic T = float>
+template <Arithmetic T>
 class Linear final : public Layer<T> {
  public:
   explicit Linear(LayerParameterPtr param) : Layer<T>(param) {}
@@ -56,7 +56,7 @@ class Linear final : public Layer<T> {
   void CheckShape(const TensorPtr<T> bottom, const TensorPtr<T> top) const;
 };  // class Linear
 
-extern template class Linear<>;
+extern template class Linear<float>;
 
 }  // namespace my_tensor
 

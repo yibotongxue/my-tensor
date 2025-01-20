@@ -141,6 +141,6 @@ void Pooling<T>::CheckShape(const TensorPtr<T> bottom,
 #endif  // DEBUG
 }
 
-template class Pooling<>;
+template class Pooling<float>;
 
 }  // namespace my_tensor

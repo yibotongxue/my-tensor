@@ -58,6 +58,6 @@ void Accuracy<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
   throw AccuracyError("Unimplemention error.");
 }
 
-template class Accuracy<>;
+template class Accuracy<float>;
 
 }  // namespace my_tensor

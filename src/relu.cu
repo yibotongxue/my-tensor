@@ -44,5 +44,5 @@ void Relu<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
                     top_diff_ptr, bottom_diff_ptr, ReluGradOperator<T>());
 }
 
-template class Relu<>;
+template class Relu<float>;
 }  // namespace my_tensor

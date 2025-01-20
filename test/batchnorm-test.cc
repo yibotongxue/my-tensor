@@ -21,65 +21,65 @@
 //   EXPECT_TRUE(false);
 // }
 
-#define BATCH_NORM_TEST(device, device_low)                              \
-  class BatchNorm##device##Test : public ::testing::Test {               \
-   protected:                                                            \
-    void SetUp() override {                                              \
-      my_tensor::JsonLoader loader(                                      \
-          "../../../../test/json-test/batchnorm.json");                  \
-      auto&& layer_parameters = loader.LoadLayers();                     \
-      gama_data.resize(100);                                             \
-      beta_data.resize(100);                                             \
-      input_data.resize(1024000);                                        \
-      output_diff.resize(1024000);                                       \
-      std::random_device rd;                                             \
-      std::mt19937 gen(rd());                                            \
-      std::uniform_real_distribution<float> dis(-10.0f, 10.0f);          \
-      auto random_func = [&gen, &dis]() -> float { return dis(gen); };   \
-      std::ranges::generate(gama_data, random_func);                     \
-      std::ranges::generate(beta_data, random_func);                     \
-      std::ranges::generate(input_data, random_func);                    \
-      std::ranges::generate(output_diff, random_func);                   \
-      input.reset();                                                     \
-      output.reset();                                                    \
-      gama.reset();                                                      \
-      beta.reset();                                                      \
-      input = std::make_shared<my_tensor::Tensor<float>>(input_shape);   \
-      output = std::make_shared<my_tensor::Tensor<float>>(output_shape); \
-      input->Set##device##Data(input_data.data(), input_data.size());    \
-      batch_norm = my_tensor::CreateLayer<>(layer_parameters[0]);        \
-      auto temp =                                                        \
-          std::dynamic_pointer_cast<my_tensor::BatchNorm<>>(batch_norm); \
-      bottom.clear();                                                    \
-      top.clear();                                                       \
-      bottom.push_back(input);                                           \
-      top.push_back(output);                                             \
-      batch_norm->SetUp(bottom, top);                                    \
-      gama = temp->GetGama();                                            \
-      beta = temp->GetBeta();                                            \
-      gama->Set##device##Data(gama_data.data(), gama_data.size());       \
-      beta->Set##device##Data(beta_data.data(), beta_data.size());       \
-      batch_norm->Forward##device(bottom, top);                          \
-      output->Set##device##Diff(output_diff.data(), output_diff.size()); \
-    }                                                                    \
-    const std::vector<int> gama_shape{1, 100, 1, 1};                     \
-    const std::vector<int> beta_shape{1, 100, 1, 1};                     \
-    std::vector<float> gama_data;                                        \
-    std::vector<float> beta_data;                                        \
-    const std::vector<int> input_shape{10, 100, 32, 32};                 \
-    const std::vector<int> output_shape{10, 100, 32, 32};                \
-    std::vector<float> input_data;                                       \
-    std::vector<float> output_diff;                                      \
-    my_tensor::TensorPtr<float> input;                                   \
-    my_tensor::TensorPtr<float> output;                                  \
-    my_tensor::TensorPtr<float> gama;                                    \
-    my_tensor::TensorPtr<float> beta;                                    \
-    std::vector<my_tensor::TensorPtr<float>> bottom;                     \
-    std::vector<my_tensor::TensorPtr<float>> top;                        \
-    my_tensor::LayerPtr<> batch_norm;                                    \
-    int batch_size = 10;                                                 \
-    int channels = 100;                                                  \
-    int spatial_size = 1024;                                             \
+#define BATCH_NORM_TEST(device, device_low)                                   \
+  class BatchNorm##device##Test : public ::testing::Test {                    \
+   protected:                                                                 \
+    void SetUp() override {                                                   \
+      my_tensor::JsonLoader loader(                                           \
+          "../../../../test/json-test/batchnorm.json");                       \
+      auto&& layer_parameters = loader.LoadLayers();                          \
+      gama_data.resize(100);                                                  \
+      beta_data.resize(100);                                                  \
+      input_data.resize(1024000);                                             \
+      output_diff.resize(1024000);                                            \
+      std::random_device rd;                                                  \
+      std::mt19937 gen(rd());                                                 \
+      std::uniform_real_distribution<float> dis(-10.0f, 10.0f);               \
+      auto random_func = [&gen, &dis]() -> float { return dis(gen); };        \
+      std::ranges::generate(gama_data, random_func);                          \
+      std::ranges::generate(beta_data, random_func);                          \
+      std::ranges::generate(input_data, random_func);                         \
+      std::ranges::generate(output_diff, random_func);                        \
+      input.reset();                                                          \
+      output.reset();                                                         \
+      gama.reset();                                                           \
+      beta.reset();                                                           \
+      input = std::make_shared<my_tensor::Tensor<float>>(input_shape);        \
+      output = std::make_shared<my_tensor::Tensor<float>>(output_shape);      \
+      input->Set##device##Data(input_data.data(), input_data.size());         \
+      batch_norm = my_tensor::CreateLayer<float>(layer_parameters[0]);        \
+      auto temp =                                                             \
+          std::dynamic_pointer_cast<my_tensor::BatchNorm<float>>(batch_norm); \
+      bottom.clear();                                                         \
+      top.clear();                                                            \
+      bottom.push_back(input);                                                \
+      top.push_back(output);                                                  \
+      batch_norm->SetUp(bottom, top);                                         \
+      gama = temp->GetGama();                                                 \
+      beta = temp->GetBeta();                                                 \
+      gama->Set##device##Data(gama_data.data(), gama_data.size());            \
+      beta->Set##device##Data(beta_data.data(), beta_data.size());            \
+      batch_norm->Forward##device(bottom, top);                               \
+      output->Set##device##Diff(output_diff.data(), output_diff.size());      \
+    }                                                                         \
+    const std::vector<int> gama_shape{1, 100, 1, 1};                          \
+    const std::vector<int> beta_shape{1, 100, 1, 1};                          \
+    std::vector<float> gama_data;                                             \
+    std::vector<float> beta_data;                                             \
+    const std::vector<int> input_shape{10, 100, 32, 32};                      \
+    const std::vector<int> output_shape{10, 100, 32, 32};                     \
+    std::vector<float> input_data;                                            \
+    std::vector<float> output_diff;                                           \
+    my_tensor::TensorPtr<float> input;                                        \
+    my_tensor::TensorPtr<float> output;                                       \
+    my_tensor::TensorPtr<float> gama;                                         \
+    my_tensor::TensorPtr<float> beta;                                         \
+    std::vector<my_tensor::TensorPtr<float>> bottom;                          \
+    std::vector<my_tensor::TensorPtr<float>> top;                             \
+    my_tensor::LayerPtr<float> batch_norm;                                    \
+    int batch_size = 10;                                                      \
+    int channels = 100;                                                       \
+    int spatial_size = 1024;                                                  \
   };
 
 BATCH_NORM_TEST(CPU, cpu)

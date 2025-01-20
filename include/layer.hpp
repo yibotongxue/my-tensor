@@ -24,7 +24,7 @@ namespace my_tensor {
  * - Backward: 反向传播
  * - GetLearnableParameters: 获取可学习参数
  */
-template <Arithmetic T = float>
+template <Arithmetic T>
   requires std::is_arithmetic<T>::value
 class Layer {
  public:
@@ -208,11 +208,11 @@ class Layer {
 };
 
 // Layer pointer.
-template <Arithmetic T = float>
+template <Arithmetic T>
 using LayerPtr = std::shared_ptr<my_tensor::Layer<T>>;
 
 // 实例化模板类
-extern template class my_tensor::Layer<>;
+extern template class my_tensor::Layer<float>;
 }  // namespace my_tensor
 
 #endif  // INCLUDE_LAYER_HPP_

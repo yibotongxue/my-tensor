@@ -35,7 +35,7 @@ void Net<T>::SetUp() {
   CheckNetValid(net_parameter_->layer_params_);
   layers_.clear();
   for (auto&& layer_param : TopoSort(net_parameter_->layer_params_)) {
-    layers_.push_back(CreateLayer(layer_param));
+    layers_.push_back(CreateLayer<T>(layer_param));
   }
   bottom_vec_.resize(layers_.size());
   top_vec_.resize(layers_.size());

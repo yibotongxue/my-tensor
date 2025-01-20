@@ -11,7 +11,7 @@
 
 namespace my_tensor {
 
-template <Arithmetic T = float>
+template <Arithmetic T>
 class Accuracy final : public Layer<T> {
  public:
   explicit Accuracy(LayerParameterPtr param) : Layer<T>(param) {}
@@ -45,7 +45,7 @@ class Accuracy final : public Layer<T> {
                   const TensorPtr<T> output) const;
 };
 
-extern template class my_tensor::Accuracy<>;
+extern template class my_tensor::Accuracy<float>;
 
 }  // namespace my_tensor
 

@@ -61,6 +61,6 @@ void Convolution<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
   cudaFree(temp_diff);
 }
 
-template class Convolution<>;
+template class Convolution<float>;
 
 }  // namespace my_tensor

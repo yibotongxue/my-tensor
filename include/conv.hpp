@@ -12,7 +12,7 @@
 
 namespace my_tensor {
 
-template <Arithmetic T = float>
+template <Arithmetic T>
 class Convolution final : public Layer<T> {
  public:
   explicit Convolution(LayerParameterPtr param) : Layer<T>(param) {}
@@ -60,7 +60,7 @@ class Convolution final : public Layer<T> {
   void CheckShape(const TensorPtr<T> bottom, const TensorPtr<T> top) const;
 };  // class Convolution
 
-extern template class Convolution<>;
+extern template class Convolution<float>;
 
 }  // namespace my_tensor
 

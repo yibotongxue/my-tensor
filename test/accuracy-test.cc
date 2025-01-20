@@ -26,7 +26,7 @@
 #define ACCURACY_TEST(device)                                                 \
   TEST(AccuracyTest, Forward##device##Test) {                                 \
     my_tensor::JsonLoader loader("../../../../test/json-test/accuracy.json"); \
-    auto accuracy = my_tensor::CreateLayer<>(loader.LoadLayers()[0]);         \
+    auto accuracy = my_tensor::CreateLayer<float>(loader.LoadLayers()[0]);    \
     const std::vector<int> bottom_shape{1024, 10};                            \
     const std::vector<int> label_shape{1024};                                 \
     const std::vector<int> top_shape{1};                                      \
