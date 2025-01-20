@@ -10,8 +10,8 @@
   "max_iter": 1000,
   "test_step": 10,
   "save_step": 100,
-  "save_model_path": "/home/linyibo/Code/my-tensor/model/lenet.model",
-  "load_model_path": "/home/linyibo/Code/my-tensor/model/lenet.model",
+  "save_model_path": "/home/linyibo/Code/my-tensor/model/vgg-19.model",
+  "load_model_path": "/home/linyibo/Code/my-tensor/model/vgg-19.model",
   "scheduler": {
     "type": "step",
     "gama": 0.1,
@@ -29,7 +29,7 @@
       "params": [
         {
           "name": "conv_kernel",
-          "init": "xavier"
+          "init": "he"
         },
         {
           "name": "conv_bias",

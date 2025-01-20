@@ -217,7 +217,7 @@ target("main")
 
 -- from ChatGPT
 -- 添加一个目标用于批量运行测试
-target("run_tests")
+target("test")
     set_kind("phony") -- 表示这是一个伪目标
     on_run(function ()
         -- 定义需要运行的测试列表
