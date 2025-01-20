@@ -2,6 +2,8 @@
 
 #include "net.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <format>
 
 #include "error.hpp"
@@ -51,6 +53,7 @@ void Net<T>::SetUp() {
                                learnable_param_of_layer.end());
     }
   }
+  spdlog::info("Net {} setup successfully.", net_name_);
 }
 
 template <typename T>
@@ -95,6 +98,7 @@ void Net<T>::SetTrain() {
   for (auto&& layer : layers_) {
     layer->SetTrain();
   }
+  spdlog::info("Set phase to train.");
 }
 
 template <typename T>
@@ -103,6 +107,7 @@ void Net<T>::SetTest() {
   for (auto&& layer : layers_) {
     layer->SetTest();
   }
+  spdlog::info("Set phase to test.");
 }
 
 template <typename T>

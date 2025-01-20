@@ -69,7 +69,7 @@ void Solver<T>::SaveModel(const std::string& model_path) {
     ModelSaver::Save<T>(this->net_->GetModelData(), model_path);
     spdlog::info("Model saved to {}", model_path);
   } catch (const ModelError& e) {
-    spdlog::error("{}", e.what());
+    spdlog::warn("{}", e.what());
   }
 }
 
@@ -79,7 +79,7 @@ void Solver<T>::LoadModel(const std::string& model_path) {
     this->net_->SetModelData(ModelSaver::Load<T>(model_path));
     spdlog::info("Model loaded from {}", model_path);
   } catch (const ModelError& e) {
-    spdlog::error("{}", e.what());
+    spdlog::warn("{}", e.what());
   }
 }
 

@@ -207,13 +207,13 @@ target("batchnorm_test")
     add_includedirs("test/include")
     add_files("test/batchnorm-test.cc")
 
-target("mnist")
+target("main")
     set_kind("binary")
     add_deps("layer_lib")
     add_deps("data_lib")
     add_deps("solver_lib")
     add_files("src/json-loader.cc")
-    add_files("src/mnist.cc")
+    add_files("src/main.cc")
 
 -- from ChatGPT
 -- 添加一个目标用于批量运行测试

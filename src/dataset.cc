@@ -2,6 +2,8 @@
 
 #include "dataset.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <algorithm>
 #include <cstdint>
 #include <fstream>
@@ -48,6 +50,7 @@ void MnistDataset::ReadImageFile() {
   });
   this->height_ = header.num_rows;
   this->width_ = header.num_cols;
+  spdlog::info("Read image file done");
 }
 
 void MnistDataset::ReadLabelFile() {
@@ -63,6 +66,7 @@ void MnistDataset::ReadLabelFile() {
   std::ranges::transform(label, label_.begin(), [](uint8_t val) -> int {
     return static_cast<int>(val);
   });
+  spdlog::info("Read label file done");
 }
 
 void Cifar10Dataset::LoadData() {
@@ -86,5 +90,6 @@ void Cifar10Dataset::LoadData() {
   }
   this->height_ = 32;
   this->width_ = 32;
+  spdlog::info("Load data done");
 }
 }  // namespace my_tensor

@@ -3,6 +3,8 @@
 #ifndef INCLUDE_LAYER_HPP_
 #define INCLUDE_LAYER_HPP_
 
+#include <spdlog/spdlog.h>
+
 #include <memory>
 #include <vector>
 
@@ -24,6 +26,7 @@ class Layer {
     CheckTensorCount(bottom, top);
     LayerSetUp(bottom, top);
     Reshape(bottom, top);
+    spdlog::info("Layer {} setup done.", layer_param_->name_);
   }
 
   virtual void CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
