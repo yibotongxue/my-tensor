@@ -12,27 +12,31 @@
 namespace my_tensor {
 
 template <typename T>
-SyncedVector<T>::SyncedVector()
+  requires std::is_arithmetic<T>::value
+SyncedVector<T>::SyncedVector() noexcept
     : state_(kUninitialized),
       size_(0),
       cpu_data_(nullptr),
       gpu_data_(nullptr) {}
 
 template <typename T>
-SyncedVector<T>::SyncedVector(size_t size)
+  requires std::is_arithmetic<T>::value
+SyncedVector<T>::SyncedVector(size_t size) noexcept
     : state_(kUninitialized),
       size_(size),
       cpu_data_(nullptr),
       gpu_data_(nullptr) {}
 
 template <typename T>
+  requires std::is_arithmetic<T>::value
 SyncedVector<T>::~SyncedVector() {
   MyMemFreeCPU(cpu_data_);
   MyMemFreeGPU(gpu_data_);
 }
 
 template <typename T>
-SyncedVector<T>::SyncedVector(const SyncedVector<T>& vec)
+  requires std::is_arithmetic<T>::value
+SyncedVector<T>::SyncedVector(const SyncedVector<T>& vec) noexcept
     : state_(vec.state_),
       size_(vec.size_),
       cpu_data_(nullptr),
@@ -54,7 +58,9 @@ SyncedVector<T>::SyncedVector(const SyncedVector<T>& vec)
 }
 
 template <typename T>
-SyncedVector<T>& SyncedVector<T>::operator=(const SyncedVector<T>& vec) {
+  requires std::is_arithmetic<T>::value
+SyncedVector<T>& SyncedVector<T>::operator=(
+    const SyncedVector<T>& vec) noexcept {
   if (this == &vec) {
     return *this;
   }
@@ -80,7 +86,8 @@ SyncedVector<T>& SyncedVector<T>::operator=(const SyncedVector<T>& vec) {
 }
 
 template <typename T>
-SyncedVector<T>::SyncedVector(SyncedVector<T>&& vec)
+  requires std::is_arithmetic<T>::value
+SyncedVector<T>::SyncedVector(SyncedVector<T>&& vec) noexcept
     : state_(vec.state_),
       size_(vec.size_),
       cpu_data_(vec.cpu_data_),
@@ -90,7 +97,8 @@ SyncedVector<T>::SyncedVector(SyncedVector<T>&& vec)
 }
 
 template <typename T>
-SyncedVector<T>& SyncedVector<T>::operator=(SyncedVector<T>&& vec) {
+  requires std::is_arithmetic<T>::value
+SyncedVector<T>& SyncedVector<T>::operator=(SyncedVector<T>&& vec) noexcept {
   if (this == &vec) {
     return *this;
   }
@@ -104,7 +112,9 @@ SyncedVector<T>& SyncedVector<T>::operator=(SyncedVector<T>&& vec) {
 }
 
 template <typename T>
-inline void SyncedVector<T>::SetCPUData(const T* const data, size_t size) {
+  requires std::is_arithmetic<T>::value
+inline void SyncedVector<T>::SetCPUData(const T* const data,
+                                        size_t size) noexcept {
   MyMemFreeCPU(cpu_data_);
   MyMallocCPU(reinterpret_cast<void**>(&cpu_data_), size * sizeof(T));
   MyMemcpyCPU2CPU(cpu_data_, data, size * sizeof(T));
@@ -113,7 +123,9 @@ inline void SyncedVector<T>::SetCPUData(const T* const data, size_t size) {
 }
 
 template <typename T>
-inline void SyncedVector<T>::SetGPUData(const T* const data, size_t size) {
+  requires std::is_arithmetic<T>::value
+inline void SyncedVector<T>::SetGPUData(const T* const data,
+                                        size_t size) noexcept {
   MyMemFreeGPU(gpu_data_);
   MyMallocGPU(reinterpret_cast<void**>(&gpu_data_), size * sizeof(T));
   MyMemcpyCPU2GPU(gpu_data_, data, size * sizeof(T));
@@ -122,12 +134,14 @@ inline void SyncedVector<T>::SetGPUData(const T* const data, size_t size) {
 }
 
 template <typename T>
+  requires std::is_arithmetic<T>::value
 inline const T* SyncedVector<T>::GetCPUPtr() {
   ToCPU();
   return cpu_data_;
 }
 
 template <typename T>
+  requires std::is_arithmetic<T>::value
 inline T* SyncedVector<T>::GetMutableCPUPtr() {
   ToCPU();
   state_ = kHeadAtCPU;
@@ -135,12 +149,14 @@ inline T* SyncedVector<T>::GetMutableCPUPtr() {
 }
 
 template <typename T>
+  requires std::is_arithmetic<T>::value
 inline const T* SyncedVector<T>::GetGPUPtr() {
   ToGPU();
   return gpu_data_;
 }
 
 template <typename T>
+  requires std::is_arithmetic<T>::value
 inline T* SyncedVector<T>::GetMutableGPUPtr() {
   ToGPU();
   state_ = kHeadAtGPU;
@@ -148,6 +164,7 @@ inline T* SyncedVector<T>::GetMutableGPUPtr() {
 }
 
 template <typename T>
+  requires std::is_arithmetic<T>::value
 inline T SyncedVector<T>::host(size_t index) {
   if (index >= size_) {
     throw VectorError("Index out of range!");
@@ -157,6 +174,7 @@ inline T SyncedVector<T>::host(size_t index) {
 }
 
 template <typename T>
+  requires std::is_arithmetic<T>::value
 inline T SyncedVector<T>::device(size_t index) {
   if (index >= size_) {
     throw VectorError("Index out of range!");
@@ -166,6 +184,7 @@ inline T SyncedVector<T>::device(size_t index) {
 }
 
 template <typename T>
+  requires std::is_arithmetic<T>::value
 inline void SyncedVector<T>::ToCPU() {
   switch (state_) {
     case kUninitialized:
@@ -188,6 +207,7 @@ inline void SyncedVector<T>::ToCPU() {
 }
 
 template <typename T>
+  requires std::is_arithmetic<T>::value
 void SyncedVector<T>::ToGPU() {
   switch (state_) {
     case kUninitialized:

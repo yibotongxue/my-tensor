@@ -11,6 +11,15 @@
 
 namespace my_tensor {
 
+/**
+ * @brief Accuracy layer.
+ *
+ * @tparam T Data type.
+ *
+ * This layer is used to calculate the accuracy of the model.
+ * The input of this layer should be the output of the model and the label.
+ * The output of this layer is the accuracy.
+ */
 template <typename T = float>
 class Accuracy final : public Layer<T> {
  public:
@@ -27,13 +36,21 @@ class Accuracy final : public Layer<T> {
 
   virtual ~Accuracy() = default;
 
-  // Override forward and backward methods of Layer class.
-  // CPU
+  /**
+   * @brief Forward calculation on CPU.
+   *
+   * @param bottom Input tensor.
+   * @param top Output tensor.
+   *
+   * The forward calculation is to compare the output of the model with the
+   * label. The accuracy is calculated by the number of correct predictions
+   * divided by the total number of predictions.
+   */
   void ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                   const std::vector<TensorPtr<T>>& top) override;
   void BackwardCPU(const std::vector<TensorPtr<T>>& top,
                    const std::vector<TensorPtr<T>>& bottom) override;
-  // GPU
+
   void ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                   const std::vector<TensorPtr<T>>& top) override;
   void BackwardGPU(const std::vector<TensorPtr<T>>& top,

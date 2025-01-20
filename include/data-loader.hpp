@@ -8,11 +8,9 @@
 #include <vector>
 
 #include "dataset.hpp"
+#include "tensor.hpp"
 
 namespace my_tensor {
-template <typename T>
-
-class Tensor;
 
 class DataLoader {
  public:
