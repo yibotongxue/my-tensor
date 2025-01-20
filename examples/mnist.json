@@ -7,7 +7,7 @@
   "beta1": 0.9,
   "beta2": 0.999,
   "epsilon": 1e-8,
-  "max_iter": 200,
+  "max_iter": 500,
   "test_step": 10,
   "save_step": 100,
   "save_model_path": "../../../../model/lenet.model",

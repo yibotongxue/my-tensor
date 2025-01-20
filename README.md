@@ -28,7 +28,9 @@
 | gcc/g++      | 13.2              |
 | xmake | 2.9.7 |
 
-一般地，使用其他 Linux 发行版或者使用 WSL2 ，gcc/g++ 和 nvcc 版本支持 C++20 或以上，是可以完成项目的编译构建的。如果使用 Windows 操作系统，一般使用 MinGW 也可以（这没有经过实验，不推荐这样做），MSVC 不确定能否编译构建本项目。如果可能，最好在 `Linux` 平台批阅，可以使用我打包的 `Docker` 镜像，使用命令
+一般地，使用其他 Linux 发行版或者使用 WSL2 ，gcc/g++ 和 nvcc 版本支持 C++20 或以上，是可以完成项目的编译构建的。如果使用 Windows 操作系统，一般使用 MinGW 也可以（这没有经过实验，不推荐这样做），MSVC 不确定能否编译构建本项目。
+
+可以使用我打包的 `Docker` 镜像，使用命令
 
 <!-- TODO -->
 ```bash
@@ -94,10 +96,6 @@ xmake run test
 
 以运行示例。
 
-#### 运行 `ImageNet` 数据示例
-
-<!--- TODO --->
-
 ## 项目代码解析
 
 ### 生成文档
@@ -160,7 +158,9 @@ doxygen Doxyfile
 
 ## 实验结果
 
-在 `MNIST` 数据上，经过 $200$ 次迭代，训练的模型准确率为 $0.9751519$ 。复现方式可以在项目根目录执行
+### MNIST 数据集实验结果
+
+在 `MNIST` 数据上，经过 $500$ 次迭代，训练的模型准确率为 $0.9824219$ 网络即为 `examples` 目录下的配置文件[mnist.json](./examples/mnist.json)所定义的。复现方式可以在项目根目录执行
 
 ```bash
 ./scripts/run_mnist.sh
@@ -171,3 +171,15 @@ doxygen Doxyfile
 ```bash
 xmake run main --config=../../../../examples/mnist.json --device=gpu --phase=train
 ```
+
+你可以在 `model` 目录下看到模型训练参数的文件 `lenet.model` ，如果你中途中断了训练，可以继续在上一次保存的模型之后继续训练，而不必从头开始。
+
+### ImageNet 数据集实验结果
+
+首先需要下载数据，但我没有找到可以通过命令行下载的方法，所以请手动下载到 `data` 目录下的imagenet目录或者其他任意你喜欢的目录（这个目录下应该有train和test子目录），然后修改[imagenet.json](./examples/imagenet.json)中的对应路径，类似上面的方法即可运行。
+
+在 `ImageNet` 数据集上，我们定义了一个 `VGG-19` 网络，配置文件为[imagenet.json](./examples/imagenet.json)，但训练没有取的好的效果。
+
+如果你只是想验证代码能运行，可以尝试运行一下，确实是可以运行的，但这个网络并没有好的效果，所以请不要浪费时间在这上面，不必等训练结束，可以直接当这份作业的ImageNet部分的训练没有效果，然后继续其他的批阅工作。
+
+关于为什么训练得不到好的效果，我的猜测是迭代次数不够，或者参数需要调整。我添加了批量归一化层（文件[batchnorm.hpp](./include/batchnorm.hpp)）和对模型参数进行 `Xavier` 初始化和 `Kaiming` 初始化（文件[filler.hpp](./include/filler.hpp)），也确对数据进行了处理（文件[dataset.cc](./src/dataset.cc)），所有的网络层都经过充分的测试，并在MNIST数据集上取得较好的效果，而模型设计使用的也是[ImageNet挑战赛](https://image-net.org/challenges/LSVRC/)上取得很好效果的`VGG-19`，所以我相信这个模型如果进行调试是可能较好地完成ImageNet的分类任务的，后续需要针对的进行改进。

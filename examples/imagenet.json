@@ -1,0 +1,287 @@
+{
+  "name": "vgg19",
+  "batch_size": 4,
+  "base_lr": 0.01,
+  "l2": 5e-4,
+  "solver_type": "adamw",
+  "beta1": 0.9,
+  "beta2": 0.999,
+  "epsilon": 1e-8,
+  "max_iter": 10000,
+  "test_step": 1000,
+  "save_step": 5000,
+  "save_model_path": "../../../../model/vgg19.model",
+  "load_model_path": "../../../../model/vgg19.model",
+  "scheduler": {
+    "type": "step",
+    "gama": 0.1,
+    "stepsize": 100000
+  },
+  "data_type": "imagenet",
+  "data_files_root": "../../../../data/imagenet",
+  "layers": [
+    {
+      "name": "conv1_1",
+      "type": "Convolution",
+      "input_channels": 3,
+      "output_channels": 64,
+      "kernel_size": 3,
+      "params": [
+        {
+          "name": "conv_kernel",
+          "init": "he"
+        },
+        {
+          "name": "conv_bias",
+          "init": "zero"
+        }
+      ],
+      "bottom": ["input"],
+      "top": ["relu1_1"]
+    },
+    {
+      "name": "relu1_1",
+      "type": "Relu",
+      "bottom": ["conv1_1"],
+      "top": ["conv1_2"]
+    },
+    {
+      "name": "conv1_2",
+      "type": "Convolution",
+      "input_channels": 64,
+      "output_channels": 64,
+      "kernel_size": 3,
+      "params": [
+        {
+          "name": "conv_kernel",
+          "init": "he"
+        },
+        {
+          "name": "conv_bias",
+          "init": "zero"
+        }
+      ],
+      "bottom": ["relu1_1"],
+      "top": ["relu1_2"]
+    },
+    {
+      "name": "relu1_2",
+      "type": "Relu",
+      "bottom": ["conv1_2"],
+      "top": ["pool1"]
+    },
+    {
+      "name": "pool1",
+      "type": "Pooling",
+      "kernel_w": 2,
+      "kernel_h": 2,
+      "stride_w": 2,
+      "stride_h": 2,
+      "input_channels": 64,
+      "bottom": ["relu1_2"],
+      "top": ["conv2_1"]
+    },
+    {
+      "name": "conv2_1",
+      "type": "Convolution",
+      "input_channels": 64,
+      "output_channels": 128,
+      "kernel_size": 3,
+      "params": [
+        {
+          "name": "conv_kernel",
+          "init": "he"
+        },
+        {
+          "name": "conv_bias",
+          "init": "zero"
+        }
+      ],
+      "bottom": ["pool1"],
+      "top": ["relu2_1"]
+    },
+    {
+      "name": "relu2_1",
+      "type": "Relu",
+      "bottom": ["conv2_1"],
+      "top": ["conv2_2"]
+    },
+    {
+      "name": "conv2_2",
+      "type": "Convolution",
+      "input_channels": 128,
+      "output_channels": 128,
+      "kernel_size": 3,
+      "params": [
+        {
+          "name": "conv_kernel",
+          "init": "he"
+        },
+        {
+          "name": "conv_bias",
+          "init": "zero"
+        }
+      ],
+      "bottom": ["relu2_1"],
+      "top": ["relu2_2"]
+    },
+    {
+      "name": "relu2_2",
+      "type": "Relu",
+      "bottom": ["conv2_2"],
+      "top": ["pool2"]
+    },
+    {
+      "name": "pool2",
+      "type": "Pooling",
+      "kernel_w": 2,
+      "kernel_h": 2,
+      "stride_w": 2,
+      "stride_h": 2,
+      "input_channels": 128,
+      "bottom": ["relu2_2"],
+      "top": ["conv3_1"]
+    },
+    {
+      "name": "conv3_1",
+      "type": "Convolution",
+      "input_channels": 128,
+      "output_channels": 256,
+      "kernel_size": 3,
+      "params": [
+        {
+          "name": "conv_kernel",
+          "init": "he"
+        },
+        {
+          "name": "conv_bias",
+          "init": "zero"
+        }
+      ],
+      "bottom": ["pool2"],
+      "top": ["relu3_1"]
+    },
+    {
+      "name": "relu3_1",
+      "type": "Relu",
+      "bottom": ["conv3_1"],
+      "top": ["conv3_2"]
+    },
+    {
+      "name": "conv3_2",
+      "type": "Convolution",
+      "input_channels": 256,
+      "output_channels": 256,
+      "kernel_size": 3,
+      "params": [
+        {
+          "name": "conv_kernel",
+          "init": "he"
+        },
+        {
+          "name": "conv_bias",
+          "init": "zero"
+        }
+      ],
+      "bottom": ["relu3_1"],
+      "top": ["relu3_2"]
+    },
+    {
+      "name": "relu3_2",
+      "type": "Relu",
+      "bottom": ["conv3_2"],
+      "top": ["pool3"]
+    },
+    {
+      "name": "pool3",
+      "type": "Pooling",
+      "kernel_w": 2,
+      "kernel_h": 2,
+      "stride_w": 2,
+      "stride_h": 2,
+      "input_channels": 256,
+      "bottom": ["relu3_2"],
+      "top": ["fc1"]
+    },
+    {
+      "name": "fc1",
+      "type": "Linear",
+      "input_feature": 4096,
+      "output_feature": 4096,
+      "params": [
+        {
+          "name": "linear_weight",
+          "init": "xavier"
+        },
+        {
+          "name": "linear_bias",
+          "init": "zero"
+        }
+      ],
+      "bottom": ["pool3"],
+      "top": ["relu_fc1"]
+    },
+    {
+      "name": "relu_fc1",
+      "type": "Relu",
+      "bottom": ["fc1"],
+      "top": ["fc2"]
+    },
+    {
+      "name": "fc2",
+      "type": "Linear",
+      "input_feature": 4096,
+      "output_feature": 4096,
+      "params": [
+        {
+          "name": "linear_weight",
+          "init": "xavier"
+        },
+        {
+          "name": "linear_bias",
+          "init": "zero"
+        }
+      ],
+      "bottom": ["relu_fc1"],
+      "top": ["relu_fc2"]
+    },
+    {
+      "name": "relu_fc2",
+      "type": "Relu",
+      "bottom": ["fc2"],
+      "top": ["fc3"]
+    },
+    {
+      "name": "fc3",
+      "type": "Linear",
+      "input_feature": 4096,
+      "output_feature": 1000,
+      "params": [
+        {
+          "name": "linear_weight",
+          "init": "xavier"
+        },
+        {
+          "name": "linear_bias",
+          "init": "zero"
+        }
+      ],
+      "bottom": ["relu_fc2"],
+      "top": ["loss_with_softmax"]
+    },
+    {
+      "name": "loss_with_softmax",
+      "type": "LossWithSoftmax",
+      "channels": 1000,
+      "bottom": ["fc3"],
+      "top": ["loss"]
+    },
+    {
+      "name": "accuracy",
+      "type": "Accuracy",
+      "features": 1000,
+      "bottom": ["fc3"],
+      "top": ["accuracy"]
+    }
+  ]
+}
