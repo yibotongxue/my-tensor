@@ -10,14 +10,14 @@
 #include "tensor.hpp"
 
 namespace my_tensor {
-std::array<TensorPtr<>, 2> DataLoader::GetNext() {
-  std::array<TensorPtr<>, 2> top;
+std::array<TensorPtr<float>, 2> DataLoader::GetNext() {
+  std::array<TensorPtr<float>, 2> top;
   const int im_size = dataset_->GetHeight() * dataset_->GetWidth();
   std::vector<int> data_shape = {batch_size_, dataset_->GetChannel(),
                                  dataset_->GetHeight(), dataset_->GetWidth()};
   std::vector<int> label_shape = {batch_size_};
-  top[0] = std::make_shared<Tensor<>>(data_shape);
-  top[1] = std::make_shared<Tensor<>>(label_shape);
+  top[0] = std::make_shared<Tensor<float>>(data_shape);
+  top[1] = std::make_shared<Tensor<float>>(label_shape);
   auto&& image_data =
       dataset_->GetImageSpanBetweenAnd(index_, index_ + batch_size_);
   auto&& label_data =

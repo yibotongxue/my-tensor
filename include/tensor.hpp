@@ -19,8 +19,7 @@ namespace my_tensor {
  *
  * Tensor类用于表示张量，支持在CPU和GPU上分别获取和设置数据，包含数据和梯度两部分，梯度默认为空
  */
-template <typename T = float>
-  requires std::is_arithmetic<T>::value
+template <Arithmetic T>
 class Tensor {
  public:
   /**
@@ -389,10 +388,10 @@ class Tensor {
   void CheckShape() const;
 };  // class Tensor
 
-template <typename T = float>
+template <typename T>
 using TensorPtr = std::shared_ptr<my_tensor::Tensor<T>>;
 
-extern template class my_tensor::Tensor<>;
+extern template class my_tensor::Tensor<float>;
 extern template class my_tensor::Tensor<int>;
 }  // namespace my_tensor
 

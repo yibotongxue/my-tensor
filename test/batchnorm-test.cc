@@ -70,12 +70,12 @@
     const std::vector<int> output_shape{10, 100, 32, 32};                \
     std::vector<float> input_data;                                       \
     std::vector<float> output_diff;                                      \
-    my_tensor::TensorPtr<> input;                                        \
-    my_tensor::TensorPtr<> output;                                       \
-    my_tensor::TensorPtr<> gama;                                         \
-    my_tensor::TensorPtr<> beta;                                         \
-    std::vector<my_tensor::TensorPtr<>> bottom;                          \
-    std::vector<my_tensor::TensorPtr<>> top;                             \
+    my_tensor::TensorPtr<float> input;                                   \
+    my_tensor::TensorPtr<float> output;                                  \
+    my_tensor::TensorPtr<float> gama;                                    \
+    my_tensor::TensorPtr<float> beta;                                    \
+    std::vector<my_tensor::TensorPtr<float>> bottom;                     \
+    std::vector<my_tensor::TensorPtr<float>> top;                        \
     my_tensor::LayerPtr<> batch_norm;                                    \
     int batch_size = 10;                                                 \
     int channels = 100;                                                  \

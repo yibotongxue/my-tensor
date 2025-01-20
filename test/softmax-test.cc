@@ -28,8 +28,8 @@
     my_tensor::JsonLoader loader("../../../../test/json-test/softmax.json"); \
     auto softmax = my_tensor::CreateLayer<>(loader.LoadLayers()[0]);         \
     const std::vector<int> bottom_shape{1024, 10};                           \
-    auto bottom = std::make_shared<my_tensor::Tensor<>>(bottom_shape);       \
-    auto top = std::make_shared<my_tensor::Tensor<>>(bottom_shape);          \
+    auto bottom = std::make_shared<my_tensor::Tensor<float>>(bottom_shape);  \
+    auto top = std::make_shared<my_tensor::Tensor<float>>(bottom_shape);     \
     softmax->SetUp({bottom}, {top});                                         \
     std::vector<float> bottom_data(10240);                                   \
     std::random_device rd;                                                   \

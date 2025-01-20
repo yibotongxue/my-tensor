@@ -32,18 +32,18 @@ class BlasMatmulTest : public ::testing::Test {
     auto random_func = [&gen, &dis]() -> float { return dis(gen); };
     std::ranges::generate(lhs_data, random_func);
     std::ranges::generate(rhs_data, random_func);
-    lhs = std::make_shared<my_tensor::Tensor<>>(left_shape);
-    rhs = std::make_shared<my_tensor::Tensor<>>(right_shape);
+    lhs = std::make_shared<my_tensor::Tensor<float>>(left_shape);
+    rhs = std::make_shared<my_tensor::Tensor<float>>(right_shape);
     result_expect.resize(32000);
-    result = std::make_shared<my_tensor::Tensor<>>(result_shape);
+    result = std::make_shared<my_tensor::Tensor<float>>(result_shape);
   }
 
   std::vector<float> lhs_data;
   std::vector<float> rhs_data;
   std::vector<float> result_expect;
-  my_tensor::TensorPtr<> lhs;
-  my_tensor::TensorPtr<> rhs;
-  my_tensor::TensorPtr<> result;
+  my_tensor::TensorPtr<float> lhs;
+  my_tensor::TensorPtr<float> rhs;
+  my_tensor::TensorPtr<float> result;
   const std::vector<int> left_shape{500, 128};
   const std::vector<int> right_shape{128, 64};
   const std::vector<int> result_shape{500, 64};
@@ -152,18 +152,18 @@ class BlasMatmulBatchTest : public ::testing::Test {
     auto random_func = [&gen, &dis]() -> float { return dis(gen); };
     std::ranges::generate(lhs_data, random_func);
     std::ranges::generate(rhs_data, random_func);
-    lhs = std::make_shared<my_tensor::Tensor<>>(left_shape);
-    rhs = std::make_shared<my_tensor::Tensor<>>(right_shape);
+    lhs = std::make_shared<my_tensor::Tensor<float>>(left_shape);
+    rhs = std::make_shared<my_tensor::Tensor<float>>(right_shape);
     result_expect.resize(320000);
-    result = std::make_shared<my_tensor::Tensor<>>(result_shape);
+    result = std::make_shared<my_tensor::Tensor<float>>(result_shape);
   }
 
   std::vector<float> lhs_data;
   std::vector<float> rhs_data;
   std::vector<float> result_expect;
-  my_tensor::TensorPtr<> lhs;
-  my_tensor::TensorPtr<> rhs;
-  my_tensor::TensorPtr<> result;
+  my_tensor::TensorPtr<float> lhs;
+  my_tensor::TensorPtr<float> rhs;
+  my_tensor::TensorPtr<float> result;
   const std::vector<int> left_shape{10, 500, 128};
   const std::vector<int> right_shape{10, 128, 64};
   const std::vector<int> result_shape{10, 500, 64};
@@ -288,18 +288,18 @@ class BlasMatmulBatchOneBroadcastTest : public ::testing::Test {
     auto random_func = [&gen, &dis]() -> float { return dis(gen); };
     std::ranges::generate(lhs_data, random_func);
     std::ranges::generate(rhs_data, random_func);
-    lhs = std::make_shared<my_tensor::Tensor<>>(left_shape);
-    rhs = std::make_shared<my_tensor::Tensor<>>(right_shape);
+    lhs = std::make_shared<my_tensor::Tensor<float>>(left_shape);
+    rhs = std::make_shared<my_tensor::Tensor<float>>(right_shape);
     result_expect.resize(320000);
-    result = std::make_shared<my_tensor::Tensor<>>(result_shape);
+    result = std::make_shared<my_tensor::Tensor<float>>(result_shape);
   }
 
   std::vector<float> lhs_data;
   std::vector<float> rhs_data;
   std::vector<float> result_expect;
-  my_tensor::TensorPtr<> lhs;
-  my_tensor::TensorPtr<> rhs;
-  my_tensor::TensorPtr<> result;
+  my_tensor::TensorPtr<float> lhs;
+  my_tensor::TensorPtr<float> rhs;
+  my_tensor::TensorPtr<float> result;
   const std::vector<int> left_shape{500, 128};
   const std::vector<int> right_shape{10, 128, 64};
   const std::vector<int> result_shape{10, 500, 64};
@@ -423,18 +423,18 @@ class BlasMatmulBatchTwoBroadcastTest : public ::testing::Test {
     auto random_func = [&gen, &dis]() -> float { return dis(gen); };
     std::ranges::generate(lhs_data, random_func);
     std::ranges::generate(rhs_data, random_func);
-    lhs = std::make_shared<my_tensor::Tensor<>>(left_shape);
-    rhs = std::make_shared<my_tensor::Tensor<>>(right_shape);
+    lhs = std::make_shared<my_tensor::Tensor<float>>(left_shape);
+    rhs = std::make_shared<my_tensor::Tensor<float>>(right_shape);
     result_expect.resize(320000);
-    result = std::make_shared<my_tensor::Tensor<>>(result_shape);
+    result = std::make_shared<my_tensor::Tensor<float>>(result_shape);
   }
 
   std::vector<float> lhs_data;
   std::vector<float> rhs_data;
   std::vector<float> result_expect;
-  my_tensor::TensorPtr<> lhs;
-  my_tensor::TensorPtr<> rhs;
-  my_tensor::TensorPtr<> result;
+  my_tensor::TensorPtr<float> lhs;
+  my_tensor::TensorPtr<float> rhs;
+  my_tensor::TensorPtr<float> result;
   const std::vector<int> left_shape{10, 500, 128};
   const std::vector<int> right_shape{128, 64};
   const std::vector<int> result_shape{10, 500, 64};
@@ -553,8 +553,8 @@ class BlasAddVecTest : public ::testing::Test {
     tensor_data.resize(2000000);
     vec_data.resize(1000);
     result_expect.resize(2000000);
-    tensor = std::make_shared<my_tensor::Tensor<>>(tensor_shape);
-    vec = std::make_shared<my_tensor::Tensor<>>(vec_shape);
+    tensor = std::make_shared<my_tensor::Tensor<float>>(tensor_shape);
+    vec = std::make_shared<my_tensor::Tensor<float>>(vec_shape);
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dis(-10.0f, 10.0f);
@@ -566,8 +566,8 @@ class BlasAddVecTest : public ::testing::Test {
   std::vector<float> tensor_data;
   std::vector<float> vec_data;
   std::vector<float> result_expect;
-  my_tensor::TensorPtr<> tensor;
-  my_tensor::TensorPtr<> vec;
+  my_tensor::TensorPtr<float> tensor;
+  my_tensor::TensorPtr<float> vec;
   const std::vector<int> tensor_shape{10, 1000, 200};
   const std::vector<int> vec_shape{1000, 1};
 };
@@ -729,11 +729,11 @@ class BlasSumTest : public ::testing::Test {
     std::uniform_real_distribution<float> dis(-10.0f, 10.0f);
     auto random_func = [&gen, &dis]() -> float { return dis(gen); };
     std::ranges::generate(data, random_func);
-    tensor = std::make_shared<my_tensor::Tensor<>>(shape);
+    tensor = std::make_shared<my_tensor::Tensor<float>>(shape);
   }
   const std::vector<int> shape{10, 100, 200};
   std::vector<float> data;
-  my_tensor::TensorPtr<> tensor;
+  my_tensor::TensorPtr<float> tensor;
 };
 
 #define BLAS_SUM_TENSOR_SUM_TEST(device, device_low)                         \
@@ -753,7 +753,7 @@ BLAS_SUM_TENSOR_SUM_TEST(GPU, gpu)
   TEST_F(BlasSumTest, Blas_SumRowSum##device##Test) {                         \
     tensor->Set##device##Data(data.data(), data.size());                      \
     const std::vector<int> result_shape{10, 100, 1};                          \
-    auto result = std::make_shared<my_tensor::Tensor<>>(result_shape);        \
+    auto result = std::make_shared<my_tensor::Tensor<float>>(result_shape);   \
     my_tensor::row_sum_##device_low(tensor->Get##device##DataPtr(),           \
                                     result->Get##device##DataPtr(), 100, 200, \
                                     10);                                      \
@@ -778,7 +778,7 @@ BLAS_SUM_ROW_SUM_TEST(GPU, gpu);
     tensor->Reshape({10, 200, 100});                                          \
     tensor->Set##device##Data(data.data(), data.size());                      \
     const std::vector<int> result_shape{10, 100, 1};                          \
-    auto result = std::make_shared<my_tensor::Tensor<>>(result_shape);        \
+    auto result = std::make_shared<my_tensor::Tensor<float>>(result_shape);   \
     my_tensor::col_sum_##device_low(tensor->Get##device##DataPtr(),           \
                                     result->Get##device##DataPtr(), 200, 100, \
                                     10);                                      \

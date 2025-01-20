@@ -39,8 +39,8 @@
       std::ranges::generate(top_diff, random_func);                            \
       bottom.reset();                                                          \
       top.reset();                                                             \
-      bottom = std::make_shared<my_tensor::Tensor<>>(bottom_shape);            \
-      top = std::make_shared<my_tensor::Tensor<>>(top_shape);                  \
+      bottom = std::make_shared<my_tensor::Tensor<float>>(bottom_shape);       \
+      top = std::make_shared<my_tensor::Tensor<float>>(top_shape);             \
       bottom->Set##device##Data(bottom_data.data(), bottom_data.size());       \
       top->Set##device##Diff(top_diff.data(), top_diff.size());                \
       bottom_vec.clear();                                                      \
@@ -56,10 +56,10 @@
     std::vector<float> top_diff;                                               \
     const std::vector<int> bottom_shape = {10, 3, 31, 64};                     \
     const std::vector<int> top_shape = {10, 3, 15, 32};                        \
-    my_tensor::TensorPtr<> bottom;                                             \
-    my_tensor::TensorPtr<> top;                                                \
-    std::vector<my_tensor::TensorPtr<>> bottom_vec;                            \
-    std::vector<my_tensor::TensorPtr<>> top_vec;                               \
+    my_tensor::TensorPtr<float> bottom;                                        \
+    my_tensor::TensorPtr<float> top;                                           \
+    std::vector<my_tensor::TensorPtr<float>> bottom_vec;                       \
+    std::vector<my_tensor::TensorPtr<float>> top_vec;                          \
     my_tensor::LayerPtr<> pooling;                                             \
   };
 

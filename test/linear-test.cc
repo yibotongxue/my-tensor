@@ -45,8 +45,8 @@
       weight.reset();                                                         \
       bias.reset();                                                           \
       Y.reset();                                                              \
-      X = std::make_shared<my_tensor::Tensor<>>(x_shape);                     \
-      Y = std::make_shared<my_tensor::Tensor<>>(y_shape);                     \
+      X = std::make_shared<my_tensor::Tensor<float>>(x_shape);                \
+      Y = std::make_shared<my_tensor::Tensor<float>>(y_shape);                \
       X->Set##device##Data(x_data.data(), x_data.size());                     \
       linear.reset();                                                         \
       linear = my_tensor::CreateLayer<>(layer_parameters[0]);                 \
@@ -72,12 +72,12 @@
     std::vector<float> x_data;                                                \
     std::vector<float> bias_data;                                             \
     std::vector<float> y_diff;                                                \
-    my_tensor::TensorPtr<> X;                                                 \
-    my_tensor::TensorPtr<> weight;                                            \
-    my_tensor::TensorPtr<> bias;                                              \
-    my_tensor::TensorPtr<> Y;                                                 \
-    std::vector<my_tensor::TensorPtr<>> bottom;                               \
-    std::vector<my_tensor::TensorPtr<>> top;                                  \
+    my_tensor::TensorPtr<float> X;                                            \
+    my_tensor::TensorPtr<float> weight;                                       \
+    my_tensor::TensorPtr<float> bias;                                         \
+    my_tensor::TensorPtr<float> Y;                                            \
+    std::vector<my_tensor::TensorPtr<float>> bottom;                          \
+    std::vector<my_tensor::TensorPtr<float>> top;                             \
     my_tensor::LayerPtr<> linear;                                             \
     int m = 300;                                                              \
     int k = 200;                                                              \

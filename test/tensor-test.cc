@@ -1,5 +1,7 @@
 // Copyright 2024 yibotongxue
 
+#include "tensor.hpp"
+
 #include <gtest/gtest.h>
 
 #include <algorithm>
@@ -10,7 +12,6 @@
 #include <vector>
 
 #include "error.hpp"
-#include "tensor.hpp"
 #include "tensor/tensor-utils.hpp"
 
 class TensorConstructNoDataTest : public ::testing::Test {
@@ -18,13 +19,13 @@ class TensorConstructNoDataTest : public ::testing::Test {
   void SetUp() override {
     const std::vector<int> shape = {2, 3};
     try {
-      tensor = std::make_shared<my_tensor::Tensor<>>(shape);
+      tensor = std::make_shared<my_tensor::Tensor<float>>(shape);
     } catch (my_tensor::ShapeError &e) {
       std::cerr << e.what() << std::endl;
       FAIL() << "Failed to construct tensor.\n";
     }
   }
-  my_tensor::TensorPtr<> tensor;
+  my_tensor::TensorPtr<float> tensor;
 };
 
 TEST_SHAPE_AND_SIZE(TensorConstructNoData)
@@ -37,7 +38,7 @@ class TensorSetMethodTest : public ::testing::Test {
 
   std::vector<float> data;
   std::vector<float> diff;
-  my_tensor::TensorPtr<> tensor;
+  my_tensor::TensorPtr<float> tensor;
 };
 
 TEST_F(TensorSetMethodTest, TensorSetCPUOnCPUData_Left) {
@@ -80,26 +81,26 @@ TEST_F(TensorSetMethodTest, TensorSetGPUOnGPUDiff_Left) {
   DIFF_EQUAL_TEST(GPU)
 }
 
-#define TENSOR_COPY_CONSTRUCT_CLASS(device)                          \
-  class TensorCopyConstruct##device##Test : public ::testing::Test { \
-   protected:                                                        \
-    void SetUp() override {                                          \
-      const std::vector<int> shape = {2, 3};                         \
-      DEFINE_DATA_AND_DIFF(data, diff)                               \
-      try {                                                          \
-        my_tensor::TensorPtr<> another =                             \
-            std::make_shared<my_tensor::Tensor<>>(shape);            \
-        another->Set##device##Data(data.data(), data.size());                            \
-        another->Set##device##Diff(diff.data(), diff.size());                            \
-        tensor = std::make_shared<my_tensor::Tensor<>>(*another);    \
-      } catch (my_tensor::ShapeError & e) {                          \
-        std::cerr << e.what() << std::endl;                          \
-        FAIL() << "Failed to construct tensor.";                     \
-      }                                                              \
-    }                                                                \
-    std::vector<float> data;                                         \
-    std::vector<float> diff;                                         \
-    my_tensor::TensorPtr<> tensor;                                   \
+#define TENSOR_COPY_CONSTRUCT_CLASS(device)                            \
+  class TensorCopyConstruct##device##Test : public ::testing::Test {   \
+   protected:                                                          \
+    void SetUp() override {                                            \
+      const std::vector<int> shape = {2, 3};                           \
+      DEFINE_DATA_AND_DIFF(data, diff)                                 \
+      try {                                                            \
+        my_tensor::TensorPtr<float> another =                          \
+            std::make_shared<my_tensor::Tensor<float>>(shape);         \
+        another->Set##device##Data(data.data(), data.size());          \
+        another->Set##device##Diff(diff.data(), diff.size());          \
+        tensor = std::make_shared<my_tensor::Tensor<float>>(*another); \
+      } catch (my_tensor::ShapeError & e) {                            \
+        std::cerr << e.what() << std::endl;                            \
+        FAIL() << "Failed to construct tensor.";                       \
+      }                                                                \
+    }                                                                  \
+    std::vector<float> data;                                           \
+    std::vector<float> diff;                                           \
+    my_tensor::TensorPtr<float> tensor;                                \
   };
 
 TENSOR_COPY_CONSTRUCT_CLASS(CPU)
@@ -117,11 +118,12 @@ TEST_DATA_AND_DIFF(TensorCopyConstructGPU)
       const std::vector<int> shape = {2, 3};                                 \
       DEFINE_DATA_AND_DIFF(data, diff)                                       \
       try {                                                                  \
-        my_tensor::TensorPtr<> another =                                     \
-            std::make_shared<my_tensor::Tensor<>>(shape);                    \
-        another->Set##device##Data(data.data(), data.size());                                    \
-        another->Set##device##Diff(diff.data(), diff.size());                                    \
-        tensor = std::make_shared<my_tensor::Tensor<>>(std::move(*another)); \
+        my_tensor::TensorPtr<float> another =                                \
+            std::make_shared<my_tensor::Tensor<float>>(shape);               \
+        another->Set##device##Data(data.data(), data.size());                \
+        another->Set##device##Diff(diff.data(), diff.size());                \
+        tensor =                                                             \
+            std::make_shared<my_tensor::Tensor<float>>(std::move(*another)); \
       } catch (my_tensor::ShapeError & e) {                                  \
         std::cerr << e.what() << std::endl;                                  \
         FAIL() << "Failed to construct tensor.";                             \
@@ -129,7 +131,7 @@ TEST_DATA_AND_DIFF(TensorCopyConstructGPU)
     }                                                                        \
     std::vector<float> data;                                                 \
     std::vector<float> diff;                                                 \
-    my_tensor::TensorPtr<> tensor;                                           \
+    my_tensor::TensorPtr<float> tensor;                                      \
   };
 
 TENSOR_MOVE_CONSTRUCT_CLASS(CPU)
@@ -155,11 +157,13 @@ TEST_DATA_AND_DIFF(TensorMoveConstructGPU)
         diff[i] = i + 1;                                                       \
       }                                                                        \
       try {                                                                    \
-        another->Set##device_from##Data(another_data.data(), another_data.size());                         \
-        another->Set##device_from##Diff(another_diff.data(), another_diff.size());                         \
-        tensor = std::make_shared<my_tensor::Tensor<>>(shape);                 \
-        tensor->Set##device_to##Data(data.data(), data.size());                                    \
-        tensor->Set##device_to##Diff(diff.data(), diff.size());                                    \
+        another->Set##device_from##Data(another_data.data(),                   \
+                                        another_data.size());                  \
+        another->Set##device_from##Diff(another_diff.data(),                   \
+                                        another_diff.size());                  \
+        tensor = std::make_shared<my_tensor::Tensor<float>>(shape);            \
+        tensor->Set##device_to##Data(data.data(), data.size());                \
+        tensor->Set##device_to##Diff(diff.data(), diff.size());                \
         *tensor = *another;                                                    \
       } catch (my_tensor::ShapeError & e) {                                    \
         std::cerr << e.what() << std::endl;                                    \
@@ -170,8 +174,8 @@ TEST_DATA_AND_DIFF(TensorMoveConstructGPU)
     std::vector<float> another_diff;                                           \
     std::vector<float> data;                                                   \
     std::vector<float> diff;                                                   \
-    my_tensor::TensorPtr<> tensor;                                             \
-    my_tensor::TensorPtr<> another;                                            \
+    my_tensor::TensorPtr<float> tensor;                                        \
+    my_tensor::TensorPtr<float> another;                                       \
   };
 
 TENSOR_COPY_CLASS(CPU, CPU)
@@ -203,11 +207,13 @@ TEST_DATA_AND_DIFF(TensorCopyGPU2GPU)
         diff[i] = i + 1;                                                       \
       }                                                                        \
       try {                                                                    \
-        another->Set##device_from##Data(another_data.data(), another_data.size());                         \
-        another->Set##device_from##Diff(another_diff.data(), another_diff.size());                         \
-        tensor = std::make_shared<my_tensor::Tensor<>>(shape);                 \
-        tensor->Set##device_to##Data(data.data(), data.size());                                    \
-        tensor->Set##device_to##Diff(diff.data(), diff.size());                                    \
+        another->Set##device_from##Data(another_data.data(),                   \
+                                        another_data.size());                  \
+        another->Set##device_from##Diff(another_diff.data(),                   \
+                                        another_diff.size());                  \
+        tensor = std::make_shared<my_tensor::Tensor<float>>(shape);            \
+        tensor->Set##device_to##Data(data.data(), data.size());                \
+        tensor->Set##device_to##Diff(diff.data(), diff.size());                \
         *tensor = std::move(*another);                                         \
       } catch (my_tensor::ShapeError & e) {                                    \
         std::cerr << e.what() << std::endl;                                    \
@@ -218,8 +224,8 @@ TEST_DATA_AND_DIFF(TensorCopyGPU2GPU)
     std::vector<float> another_diff;                                           \
     std::vector<float> data;                                                   \
     std::vector<float> diff;                                                   \
-    my_tensor::TensorPtr<> tensor;                                             \
-    my_tensor::TensorPtr<> another;                                            \
+    my_tensor::TensorPtr<float> tensor;                                        \
+    my_tensor::TensorPtr<float> another;                                       \
   };
 
 TENSOR_MOVE_CLASS(CPU, CPU)

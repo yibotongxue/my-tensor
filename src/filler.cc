@@ -20,7 +20,7 @@ void ConstantFiller<T>::FillCPU(TensorPtr<T> tensor) {
 }
 
 template <>
-void XavierFiller<>::FillCPU(TensorPtr<> tensor) {
+void XavierFiller<>::FillCPU(TensorPtr<float> tensor) {
   int n = tensor->GetSize();
   float limit = std::sqrt(6.0f / (n_in_ + n_out_));
   auto& gen = MyTensorContext::random_eigine();
@@ -31,7 +31,7 @@ void XavierFiller<>::FillCPU(TensorPtr<> tensor) {
 }
 
 template <>
-void HeFiller<>::FillCPU(TensorPtr<> tensor) {
+void HeFiller<>::FillCPU(TensorPtr<float> tensor) {
   int n = tensor->GetSize();
   float limit = std::sqrt(2.0f / n_);
   auto& gen = MyTensorContext::random_eigine();

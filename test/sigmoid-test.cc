@@ -37,8 +37,8 @@
       bottom.reset();                                                          \
       top.reset();                                                             \
       sigmoid = my_tensor::CreateLayer<>(layer_parameters[0]);                 \
-      bottom = std::make_shared<my_tensor::Tensor<>>(shape);                   \
-      top = std::make_shared<my_tensor::Tensor<>>(shape);                      \
+      bottom = std::make_shared<my_tensor::Tensor<float>>(shape);              \
+      top = std::make_shared<my_tensor::Tensor<float>>(shape);                 \
       bottom->Set##device##Data(data.data(), data.size());                     \
       top->Set##device##Diff(diff.data(), diff.size());                        \
       bottom_vec.clear();                                                      \
@@ -51,10 +51,10 @@
     std::vector<float> data;                                                   \
     std::vector<float> diff;                                                   \
     my_tensor::LayerPtr<> sigmoid;                                             \
-    my_tensor::TensorPtr<> bottom;                                             \
-    my_tensor::TensorPtr<> top;                                                \
-    std::vector<my_tensor::TensorPtr<>> bottom_vec;                            \
-    std::vector<my_tensor::TensorPtr<>> top_vec;                               \
+    my_tensor::TensorPtr<float> bottom;                                        \
+    my_tensor::TensorPtr<float> top;                                           \
+    std::vector<my_tensor::TensorPtr<float>> bottom_vec;                       \
+    std::vector<my_tensor::TensorPtr<float>> top_vec;                          \
   };
 
 SIGMOID_TEST_CLASS(CPU)

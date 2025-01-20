@@ -30,9 +30,9 @@
     const std::vector<int> bottom_shape{1024, 10};                            \
     const std::vector<int> label_shape{1024};                                 \
     const std::vector<int> top_shape{1};                                      \
-    auto bottom = std::make_shared<my_tensor::Tensor<>>(bottom_shape);        \
-    auto label = std::make_shared<my_tensor::Tensor<>>(label_shape);          \
-    auto top = std::make_shared<my_tensor::Tensor<>>(top_shape);              \
+    auto bottom = std::make_shared<my_tensor::Tensor<float>>(bottom_shape);   \
+    auto label = std::make_shared<my_tensor::Tensor<float>>(label_shape);     \
+    auto top = std::make_shared<my_tensor::Tensor<float>>(top_shape);         \
     std::vector<float> label_data(1024);                                      \
     std::vector<float> bottom_data(10240);                                    \
     std::random_device rd;                                                    \

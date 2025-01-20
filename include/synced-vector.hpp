@@ -9,6 +9,9 @@
 
 namespace my_tensor {
 
+template <typename T>
+concept Arithmetic = std::is_arithmetic<T>::value;
+
 /**
  * @brief 同步向量，用于在CPU和GPU之间同步数据
  *
@@ -16,8 +19,7 @@ namespace my_tensor {
  *
  * SyncedVector类用于在CPU和GPU之间同步数据，支持在CPU和GPU上分别获取和设置数据
  */
-template <typename T = float>
-  requires std::is_arithmetic<T>::value
+template <Arithmetic T>
 class SyncedVector {
  public:
   /**
@@ -209,7 +211,7 @@ class SyncedVector {
 template <typename T>
 using SyncedVectorPtr = std::shared_ptr<SyncedVector<T>>;
 
-extern template class SyncedVector<>;
+extern template class SyncedVector<float>;
 extern template class SyncedVector<int>;
 }  // namespace my_tensor
 

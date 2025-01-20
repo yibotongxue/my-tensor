@@ -1,5 +1,7 @@
 // Copyright 2024 yibotongxue
 
+#include "im2col.hpp"
+
 #include <gtest/gtest.h>
 
 #include <algorithm>
@@ -8,7 +10,6 @@
 #include <ranges>  //NOLINT
 #include <vector>
 
-#include "im2col.hpp"
 #include "tensor.hpp"
 
 // TEST(TrivialTest, always_succeed) {
@@ -22,7 +23,7 @@
 #define TEST_IM2COL(device)                                                  \
   TEST(Im2col##device##Test, test_one_channel) {                             \
     const std::vector<int> im_shape = {1, 8, 6};                             \
-    auto im_tensor = std::make_shared<my_tensor::Tensor<>>(im_shape);        \
+    auto im_tensor = std::make_shared<my_tensor::Tensor<float>>(im_shape);   \
     std::vector<float> data(48);                                             \
     float i = 0.0f;                                                          \
     auto func = [&i]() -> float {                                            \
@@ -30,10 +31,10 @@
       return i;                                                              \
     };                                                                       \
     std::ranges::generate(data, func);                                       \
-    im_tensor->Set##device##Data(data.data(), data.size());                                      \
+    im_tensor->Set##device##Data(data.data(), data.size());                  \
                                                                              \
     const std::vector<int> col_shape = {1, 48, 9};                           \
-    auto col_tensor = std::make_shared<my_tensor::Tensor<>>(col_shape);      \
+    auto col_tensor = std::make_shared<my_tensor::Tensor<float>>(col_shape); \
     ASSERT_NO_THROW(my_tensor::Im2col_##device(                              \
         1, im_tensor->Get##device##DataPtr(), 1, 6, 8, 3, 3,                 \
         col_tensor->Get##device##DataPtr()));                                \
@@ -82,31 +83,31 @@
     }                                                                        \
   }
 
-#define IM2COL_TEST_CLASS(device)                                      \
-  class Im2col##device##Test : public ::testing::Test {                \
-   protected:                                                          \
-    void SetUp() override {                                            \
-      im_data.resize(61440);                                           \
-      col_diff.resize(552960);                                         \
-      im_tensor.reset();                                               \
-      im_tensor = std::make_shared<my_tensor::Tensor<>>(im_shape);     \
-      col_tensor.reset();                                              \
-      col_tensor = std::make_shared<my_tensor::Tensor<>>(col_shape);   \
-      std::random_device rd;                                           \
-      std::mt19937 gen(rd());                                          \
-      std::uniform_real_distribution<float> dis(-10.0f, 10.0f);        \
-      auto random_func = [&gen, &dis]() -> float { return dis(gen); }; \
-      std::ranges::generate(im_data, random_func);                     \
-      std::ranges::generate(col_diff, random_func);                    \
-      im_tensor->Set##device##Data(im_data.data(), im_data.size());                           \
-      col_tensor->Set##device##Diff(col_diff.data(), col_diff.size());                         \
-    }                                                                  \
-    const std::vector<int> im_shape{10, 3, 32, 64};                    \
-    const std::vector<int> col_shape{10, 27, 2048};                    \
-    my_tensor::TensorPtr<> im_tensor;                                  \
-    my_tensor::TensorPtr<> col_tensor;                                 \
-    std::vector<float> im_data;                                        \
-    std::vector<float> col_diff;                                       \
+#define IM2COL_TEST_CLASS(device)                                         \
+  class Im2col##device##Test : public ::testing::Test {                   \
+   protected:                                                             \
+    void SetUp() override {                                               \
+      im_data.resize(61440);                                              \
+      col_diff.resize(552960);                                            \
+      im_tensor.reset();                                                  \
+      im_tensor = std::make_shared<my_tensor::Tensor<float>>(im_shape);   \
+      col_tensor.reset();                                                 \
+      col_tensor = std::make_shared<my_tensor::Tensor<float>>(col_shape); \
+      std::random_device rd;                                              \
+      std::mt19937 gen(rd());                                             \
+      std::uniform_real_distribution<float> dis(-10.0f, 10.0f);           \
+      auto random_func = [&gen, &dis]() -> float { return dis(gen); };    \
+      std::ranges::generate(im_data, random_func);                        \
+      std::ranges::generate(col_diff, random_func);                       \
+      im_tensor->Set##device##Data(im_data.data(), im_data.size());       \
+      col_tensor->Set##device##Diff(col_diff.data(), col_diff.size());    \
+    }                                                                     \
+    const std::vector<int> im_shape{10, 3, 32, 64};                       \
+    const std::vector<int> col_shape{10, 27, 2048};                       \
+    my_tensor::TensorPtr<float> im_tensor;                                \
+    my_tensor::TensorPtr<float> col_tensor;                               \
+    std::vector<float> im_data;                                           \
+    std::vector<float> col_diff;                                          \
   };
 
 IM2COL_TEST_CLASS(CPU)
@@ -135,7 +136,7 @@ IM2COL_TEST_CLASS(GPU)
       }                                                                       \
     }                                                                         \
     for (int i = 0; i < 552960; i++) {                                        \
-      ASSERT_NEAR(expect[i], col_tensor->Get##device##Data(i), 0.01);                                \
+      ASSERT_NEAR(expect[i], col_tensor->Get##device##Data(i), 0.01);         \
     }                                                                         \
   }
 
@@ -165,7 +166,7 @@ IM2COL_TEST(GPU)
       }                                                                       \
     }                                                                         \
     for (int i = 0; i < 61440; i++) {                                         \
-      ASSERT_NEAR(expect[i], im_tensor->Get##device##Diff(i), 0.01);                                \
+      ASSERT_NEAR(expect[i], im_tensor->Get##device##Diff(i), 0.01);          \
     }                                                                         \
   }
 

@@ -29,13 +29,14 @@
   diff_name[4] = 4;                                \
   diff_name[5] = 6;
 
-#define DEFINE_TESNOR(tensor_name)                                            \
-  const std::vector<int> tensor_name##_shape{2, 3};                           \
-  try {                                                                       \
-    tensor_name = std::make_shared<my_tensor::Tensor<>>(tensor_name##_shape); \
-  } catch (my_tensor::ShapeError & e) {                                       \
-    std::cerr << e.what() << std::endl;                                       \
-    FAIL() << "Failed to construct tensor.";                                  \
+#define DEFINE_TESNOR(tensor_name)                                       \
+  const std::vector<int> tensor_name##_shape{2, 3};                      \
+  try {                                                                  \
+    tensor_name =                                                        \
+        std::make_shared<my_tensor::Tensor<float>>(tensor_name##_shape); \
+  } catch (my_tensor::ShapeError & e) {                                  \
+    std::cerr << e.what() << std::endl;                                  \
+    FAIL() << "Failed to construct tensor.";                             \
   }
 
 #define DATA_EQUAL_TEST(device)                     \

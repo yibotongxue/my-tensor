@@ -40,9 +40,9 @@
       std::ranges::generate(output_diff, random_func);                       \
       std::ranges::generate(kernels_data, random_func);                      \
       std::ranges::generate(bias_data, random_func);                         \
-      input = std::make_shared<my_tensor::Tensor<>>(input_shape);            \
+      input = std::make_shared<my_tensor::Tensor<float>>(input_shape);       \
       input->Set##device##Data(input_data.data(), input_data.size());        \
-      output = std::make_shared<my_tensor::Tensor<>>(output_shape);          \
+      output = std::make_shared<my_tensor::Tensor<float>>(output_shape);     \
       output->Set##device##Diff(output_diff.data(), output_diff.size());     \
       bottom.clear();                                                        \
       top.clear();                                                           \
@@ -64,12 +64,12 @@
     std::vector<float> output_diff;                                          \
     std::vector<float> kernels_data;                                         \
     std::vector<float> bias_data;                                            \
-    my_tensor::TensorPtr<> input;                                            \
-    my_tensor::TensorPtr<> output;                                           \
-    std::vector<my_tensor::TensorPtr<>> bottom;                              \
-    std::vector<my_tensor::TensorPtr<>> top;                                 \
-    my_tensor::TensorPtr<> kernels;                                          \
-    my_tensor::TensorPtr<> bias;                                             \
+    my_tensor::TensorPtr<float> input;                                       \
+    my_tensor::TensorPtr<float> output;                                      \
+    std::vector<my_tensor::TensorPtr<float>> bottom;                         \
+    std::vector<my_tensor::TensorPtr<float>> top;                            \
+    my_tensor::TensorPtr<float> kernels;                                     \
+    my_tensor::TensorPtr<float> bias;                                        \
     my_tensor::LayerPtr<> conv;                                              \
   };
 

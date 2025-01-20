@@ -28,7 +28,7 @@ __global__ static void XavierFillerKernel(float *data, float limit, int n) {
 }
 
 template <>
-void XavierFiller<>::FillGPU(TensorPtr<> tensor) {
+void XavierFiller<>::FillGPU(TensorPtr<float> tensor) {
   int n = tensor->GetSize();
   float limit = std::sqrt(6.0f / (n_in_ + n_out_));
   XavierFillerKernel<<<CudaGetBlocks(n), kCudaThreadNum>>>(
@@ -44,7 +44,7 @@ __global__ static void HeFillKernel(float *data, float limit, int n) {
 }
 
 template <>
-void HeFiller<>::FillGPU(TensorPtr<> tensor) {
+void HeFiller<>::FillGPU(TensorPtr<float> tensor) {
   float *data = tensor->GetGPUDataPtr();
   int n = tensor->GetSize();
   float limit = std::sqrt(2.0f / n_);

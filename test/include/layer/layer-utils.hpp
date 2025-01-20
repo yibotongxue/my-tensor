@@ -14,15 +14,15 @@
   TEST_F(layer_class##device##Test, BackwardDiff) {                            \
     layer_name->Forward##device(bottom_vec, top_vec);                          \
     layer_name->Backward##device(top_vec, bottom_vec);                         \
-    my_tensor::TensorPtr<> new_bottom =                                        \
-        std::make_shared<my_tensor::Tensor<>>(shape);                          \
+    my_tensor::TensorPtr<float> new_bottom =                                   \
+        std::make_shared<my_tensor::Tensor<float>>(shape);                     \
     std::vector<float> new_bottom_data(30000);                                 \
     std::ranges::transform(data, new_bottom_data.begin(),                      \
                            [](float x) { return x + 0.001; });                 \
     new_bottom->Set##device##Data(new_bottom_data.data(),                      \
                                   new_bottom_data.size());                     \
-    my_tensor::TensorPtr<> new_top =                                           \
-        std::make_shared<my_tensor::Tensor<>>(shape);                          \
+    my_tensor::TensorPtr<float> new_top =                                      \
+        std::make_shared<my_tensor::Tensor<float>>(shape);                     \
     layer_name->Forward##device({new_bottom}, {new_top});                      \
     std::vector<float> results(new_top->GetSize());                            \
                                                                                \

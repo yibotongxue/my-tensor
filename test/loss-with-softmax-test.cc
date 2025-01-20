@@ -48,18 +48,18 @@
         return label_dis(gen);                                              \
       };                                                                    \
       std::ranges::generate(label_data, label_random);                      \
-      input = std::make_shared<my_tensor::Tensor<>>(input_shape);           \
-      label = std::make_shared<my_tensor::Tensor<>>(label_shape);           \
-      loss = std::make_shared<my_tensor::Tensor<>>(loss_shape);             \
+      input = std::make_shared<my_tensor::Tensor<float>>(input_shape);      \
+      label = std::make_shared<my_tensor::Tensor<float>>(label_shape);      \
+      loss = std::make_shared<my_tensor::Tensor<float>>(loss_shape);        \
       input->Set##device##Data(input_data.data(), input_data.size());       \
       label->Set##device##Data(label_data.data(), label_data.size());       \
       loss_with_softmax->SetUp({input, label}, {loss});                     \
     }                                                                       \
     std::vector<float> input_data;                                          \
     std::vector<float> label_data;                                          \
-    my_tensor::TensorPtr<> input;                                           \
-    my_tensor::TensorPtr<> label;                                           \
-    my_tensor::TensorPtr<> loss;                                            \
+    my_tensor::TensorPtr<float> input;                                      \
+    my_tensor::TensorPtr<float> label;                                      \
+    my_tensor::TensorPtr<float> loss;                                       \
     my_tensor::LayerPtr<> loss_with_softmax;                                \
   };
 
