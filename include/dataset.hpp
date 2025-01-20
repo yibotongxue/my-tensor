@@ -14,6 +14,18 @@
 
 namespace my_tensor {
 
+/**
+ * @brief 数据集基类
+ *
+ * @details 数据集基类，定义了数据集的基本属性和方法，包括以下公共接口
+ * - LoadData: 加载数据集
+ * - GetHeight: 获取图像高度
+ * - GetWidth: 获取图像宽度
+ * - GetChannel: 获取图像通道数
+ * - GetSize: 获取数据集大小
+ * - GetImageSpanBetweenAnd: 获取指定范围内的图像数据
+ * - GetLabelSpanBetweenAnd: 获取指定范围内的标签数据
+ */
 class Dataset {
  public:
   explicit Dataset(const std::string& data_files_path, bool is_train)
@@ -37,23 +49,28 @@ class Dataset {
   bool is_train_;
 };  // class Dataset
 
+/**
+ * @brief 内存加载数据集，用于可以全部加载到内存的数据集
+ *
+ * @details 内存加载数据集，继承自数据集基类，实现了数据集的加载方法
+ */
 class LoadInMemoryDataset : public Dataset {
  public:
   explicit LoadInMemoryDataset(const std::string& data_files_path,
                                bool is_train)
       : Dataset(data_files_path, is_train) {}
 
-  int GetHeight() const override { return height_; }
-  int GetWidth() const override { return width_; }
-  int GetSize() const override { return label_.size(); }
-  std::span<const float> GetImageSpanBetweenAnd(int start,
-                                                int end) const override {
+  [[nodiscard]] int GetHeight() const override { return height_; }
+  [[nodiscard]] int GetWidth() const override { return width_; }
+  [[nodiscard]] int GetSize() const override { return label_.size(); }
+  [[nodiscard]] std::span<const float> GetImageSpanBetweenAnd(
+      int start, int end) const override {
     return {
         image_.data() + start * GetChannel() * height_ * width_,
         static_cast<size_t>((end - start) * height_ * GetChannel() * width_)};
   }
-  std::span<const float> GetLabelSpanBetweenAnd(int start,
-                                                int end) const override {
+  [[nodiscard]] std::span<const float> GetLabelSpanBetweenAnd(
+      int start, int end) const override {
     return {label_.data() + start, static_cast<size_t>(end - start)};
   }
 
@@ -64,6 +81,11 @@ class LoadInMemoryDataset : public Dataset {
   int width_;
 };  // class LoadInMemoryDataset
 
+/**
+ * @brief MNIST数据集
+ *
+ * @details MNIST数据集，继承自内存加载数据集，实现了数据集的加载方法
+ */
 class MnistDataset final : public LoadInMemoryDataset {
  public:
   explicit MnistDataset(const std::string& data_files_root, bool is_train)
@@ -77,7 +99,7 @@ class MnistDataset final : public LoadInMemoryDataset {
     }
   }
 
-  int GetChannel() const override { return 1; }
+  [[nodiscard]] int GetChannel() const override { return 1; }
 
   void LoadData() override {
     ReadImageFile();
@@ -92,6 +114,11 @@ class MnistDataset final : public LoadInMemoryDataset {
   std::string label_file_path_;
 };  // class MnistDataset
 
+/**
+ * @brief CIFAR-10数据集
+ *
+ * @details CIFAR-10数据集，继承自内存加载数据集，实现了数据集的加载方法
+ */
 class Cifar10Dataset final : public LoadInMemoryDataset {
  public:
   explicit Cifar10Dataset(const std::string& data_files_root, bool is_train)
@@ -109,7 +136,7 @@ class Cifar10Dataset final : public LoadInMemoryDataset {
     }
   }
 
-  int GetChannel() const override { return 3; }
+  [[nodiscard]] constexpr int GetChannel() const override { return 3; }
 
   void LoadData() override;
 
@@ -119,14 +146,22 @@ class Cifar10Dataset final : public LoadInMemoryDataset {
 
 using DatasetPtr = std::shared_ptr<Dataset>;
 
-inline std::function<DatasetPtr(const std::string&, bool)> GetDatasetCreater(
-    const std::string& type) {
+/**
+ * @brief 获取数据集创建函数
+ *
+ * @details 获取数据集创建函数，根据数据集类型返回对应的数据集创建函数
+ *
+ * @param type 数据集类型
+ * @return 数据集创建函数
+ */
+[[nodiscard]] inline std::function<DatasetPtr(const std::string&, bool)>
+GetDatasetCreater(const std::string& type) {
   if (type == "mnist") {
-    return [](const std::string& data_files_root, bool is_train) {
+    return [](const std::string& data_files_root, bool is_train) -> DatasetPtr {
       return std::make_shared<MnistDataset>(data_files_root, is_train);
     };
   } else if (type == "cifar-10") {
-    return [](const std::string& data_files_root, bool is_train) {
+    return [](const std::string& data_files_root, bool is_train) -> DatasetPtr {
       return std::make_shared<Cifar10Dataset>(data_files_root, is_train);
     };
   } else {
