@@ -26,7 +26,7 @@
    protected:                                                               \
     void SetUp() override {                                                 \
       my_tensor::JsonLoader loader(                                         \
-          "/home/linyibo/Code/my-tensor/test/json-test/"                    \
+          "../../../../test/json-test/"                                     \
           "loss-with-softmax.json");                                        \
       loss_with_softmax.reset();                                            \
       loss_with_softmax = my_tensor::CreateLayer<>(loader.LoadLayers()[0]); \

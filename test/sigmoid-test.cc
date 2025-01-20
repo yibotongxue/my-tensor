@@ -16,46 +16,45 @@
 #include "layer.hpp"
 #include "layer/layer-utils.hpp"
 
-#define SIGMOID_TEST_CLASS(device)                                     \
-  class Sigmoid##device##Test : public ::testing::Test {               \
-   protected:                                                          \
-    void SetUp() override {                                            \
-      my_tensor::JsonLoader loader(                                    \
-          "/home/linyibo/Code/my-tensor/test/json-test/sigmoid.json"); \
-      auto&& layer_parameters = loader.LoadLayers();                   \
-      data.resize(30000);                                              \
-      diff.resize(30000);                                              \
-      std::random_device rd;                                           \
-      std::mt19937 gen(rd());                                          \
-      std::uniform_real_distribution<float> dis(-3.0f, 3.0f);          \
-      for (int i = 0; i < 30000; i++) {                                \
-        data[i] = dis(gen);                                            \
-      }                                                                \
-      for (int i = 0; i < 30000; i++) {                                \
-        diff[i] = dis(gen);                                            \
-      }                                                                \
-      sigmoid.reset();                                                 \
-      bottom.reset();                                                  \
-      top.reset();                                                     \
-      sigmoid = my_tensor::CreateLayer<>(layer_parameters[0]);         \
-      bottom = std::make_shared<my_tensor::Tensor<>>(shape);           \
-      top = std::make_shared<my_tensor::Tensor<>>(shape);              \
-      bottom->Set##device##Data(data.data(), data.size());             \
-      top->Set##device##Diff(diff.data(), diff.size());                \
-      bottom_vec.clear();                                              \
-      top_vec.clear();                                                 \
-      bottom_vec.push_back(bottom);                                    \
-      top_vec.push_back(top);                                          \
-      sigmoid->SetUp(bottom_vec, top_vec);                             \
-    }                                                                  \
-    const std::vector<int> shape{10000, 3};                            \
-    std::vector<float> data;                                           \
-    std::vector<float> diff;                                           \
-    my_tensor::LayerPtr<> sigmoid;                                     \
-    my_tensor::TensorPtr<> bottom;                                     \
-    my_tensor::TensorPtr<> top;                                        \
-    std::vector<my_tensor::TensorPtr<>> bottom_vec;                    \
-    std::vector<my_tensor::TensorPtr<>> top_vec;                       \
+#define SIGMOID_TEST_CLASS(device)                                             \
+  class Sigmoid##device##Test : public ::testing::Test {                       \
+   protected:                                                                  \
+    void SetUp() override {                                                    \
+      my_tensor::JsonLoader loader("../../../../test/json-test/sigmoid.json"); \
+      auto&& layer_parameters = loader.LoadLayers();                           \
+      data.resize(30000);                                                      \
+      diff.resize(30000);                                                      \
+      std::random_device rd;                                                   \
+      std::mt19937 gen(rd());                                                  \
+      std::uniform_real_distribution<float> dis(-3.0f, 3.0f);                  \
+      for (int i = 0; i < 30000; i++) {                                        \
+        data[i] = dis(gen);                                                    \
+      }                                                                        \
+      for (int i = 0; i < 30000; i++) {                                        \
+        diff[i] = dis(gen);                                                    \
+      }                                                                        \
+      sigmoid.reset();                                                         \
+      bottom.reset();                                                          \
+      top.reset();                                                             \
+      sigmoid = my_tensor::CreateLayer<>(layer_parameters[0]);                 \
+      bottom = std::make_shared<my_tensor::Tensor<>>(shape);                   \
+      top = std::make_shared<my_tensor::Tensor<>>(shape);                      \
+      bottom->Set##device##Data(data.data(), data.size());                     \
+      top->Set##device##Diff(diff.data(), diff.size());                        \
+      bottom_vec.clear();                                                      \
+      top_vec.clear();                                                         \
+      bottom_vec.push_back(bottom);                                            \
+      top_vec.push_back(top);                                                  \
+      sigmoid->SetUp(bottom_vec, top_vec);                                     \
+    }                                                                          \
+    const std::vector<int> shape{10000, 3};                                    \
+    std::vector<float> data;                                                   \
+    std::vector<float> diff;                                                   \
+    my_tensor::LayerPtr<> sigmoid;                                             \
+    my_tensor::TensorPtr<> bottom;                                             \
+    my_tensor::TensorPtr<> top;                                                \
+    std::vector<my_tensor::TensorPtr<>> bottom_vec;                            \
+    std::vector<my_tensor::TensorPtr<>> top_vec;                               \
   };
 
 SIGMOID_TEST_CLASS(CPU)

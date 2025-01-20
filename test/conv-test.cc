@@ -26,8 +26,7 @@
   class Convolution##device##Test : public ::testing::Test {                 \
    protected:                                                                \
     void SetUp() override {                                                  \
-      my_tensor::JsonLoader loader(                                          \
-          "/home/linyibo/Code/my-tensor/test/json-test/conv.json");          \
+      my_tensor::JsonLoader loader("../../../../test/json-test/conv.json");  \
       auto&& layer_parameters = loader.LoadLayers();                         \
       input_data.resize(102400);                                             \
       output_diff.resize(184320);                                            \

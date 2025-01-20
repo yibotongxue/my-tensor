@@ -26,7 +26,7 @@
    protected:                                                            \
     void SetUp() override {                                              \
       my_tensor::JsonLoader loader(                                      \
-          "/home/linyibo/Code/my-tensor/test/json-test/batchnorm.json"); \
+          "../../../../test/json-test/batchnorm.json");                  \
       auto&& layer_parameters = loader.LoadLayers();                     \
       gama_data.resize(100);                                             \
       beta_data.resize(100);                                             \
