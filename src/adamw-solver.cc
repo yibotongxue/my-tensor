@@ -7,7 +7,7 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 void AdamWSolver<T>::UpdateParam() {
   time_step_++;
   const auto& learnable_params = this->net_->GetLearnableParams();
@@ -60,7 +60,7 @@ void AdamWSolver<T>::UpdateParam() {
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void AdamWSolver<T>::SpecialSetUp() {
   const auto& learnable_params = this->net_->GetLearnableParams();
   m_data_.resize(learnable_params.size());

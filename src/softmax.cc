@@ -14,7 +14,7 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 void Softmax<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
                                   const std::vector<TensorPtr<T>>& top) const {
   if (bottom.size() != 1) {
@@ -26,13 +26,13 @@ void Softmax<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Softmax<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
                          const std::vector<TensorPtr<T>>& top) const {
   top[0]->Resize({batch_size_, channels_});
 }
 
-template <typename T>
+template <Arithmetic T>
 void Softmax<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
                             const std::vector<TensorPtr<T>>& top) {
   if (bottom[0]->GetShape().size() != 2) {
@@ -48,7 +48,7 @@ void Softmax<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
   batch_size_ = bottom[0]->GetShape()[0];
 }
 
-template <typename T>
+template <Arithmetic T>
 void Softmax<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                             const std::vector<TensorPtr<T>>& top) {
   CheckShape(bottom[0], top[0]);
@@ -72,7 +72,7 @@ void Softmax<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Softmax<T>::CheckShape(const TensorPtr<T> bottom,
                             const TensorPtr<T> top) const {
 #ifdef DEBUG

@@ -13,7 +13,7 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 void ModelSaver::Save(const std::vector<std::vector<T>>& data,
                       const std::string& file_path) {
   std::ofstream out(
@@ -37,7 +37,7 @@ void ModelSaver::Save(const std::vector<std::vector<T>>& data,
 }
 
 // 从文件读取数据
-template <typename T>
+template <Arithmetic T>
 std::vector<std::vector<T>> ModelSaver::Load(const std::string& file_path) {
   std::ifstream in(file_path, std::ios::binary);
   if (!in) {

@@ -12,7 +12,7 @@
 
 namespace my_tensor {
 
-template <typename T = float>
+template <Arithmetic T = float>
 class Convolution final : public Layer<T> {
  public:
   explicit Convolution(LayerParameterPtr param) : Layer<T>(param) {}

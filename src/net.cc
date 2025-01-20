@@ -11,7 +11,7 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 bool Net<T>::RefetchData() {
   bool result = false;
   if (!GetDataLoader()->HasNext()) {
@@ -27,7 +27,7 @@ bool Net<T>::RefetchData() {
   return result;
 }
 
-template <typename T>
+template <Arithmetic T>
 void Net<T>::SetUp() {
   net_name_ = net_parameter_->name_;
   train_dataloader_ = CreateDataLoader(net_parameter_->data_parameter_, true);
@@ -56,7 +56,7 @@ void Net<T>::SetUp() {
   spdlog::info("Net {} setup successfully.", net_name_);
 }
 
-template <typename T>
+template <Arithmetic T>
 T Net<T>::GetOutput() const {
   if (phase_ == Phase::kTrain) {
     return top_vec_[top_vec_.size() - 2][0]->GetCPUData(0);
@@ -67,7 +67,7 @@ T Net<T>::GetOutput() const {
   throw NetError("Unsupport phase.");
 }
 
-template <typename T>
+template <Arithmetic T>
 std::vector<std::vector<T>> Net<T>::GetModelData() const {
   std::vector<std::vector<T>> result;
   for (auto&& learnable_param : GetLearnableParams()) {
@@ -77,7 +77,7 @@ std::vector<std::vector<T>> Net<T>::GetModelData() const {
   return result;
 }
 
-template <typename T>
+template <Arithmetic T>
 void Net<T>::SetModelData(std::vector<std::vector<T>>&& data) {
   for (int i = 0; i < data.size(); i++) {
     // TODO(yibotongxue) should turn to SetData, auto detect the device.
@@ -85,14 +85,14 @@ void Net<T>::SetModelData(std::vector<std::vector<T>>&& data) {
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Net<T>::CopyFrom(const std::vector<TensorPtr<T>>& learnable_params) {
   for (int i = 0; i < learnable_params.size(); i++) {
     *(learnable_params_[i]) = *(learnable_params[i]);
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Net<T>::SetTrain() {
   phase_ = Phase::kTrain;
   for (auto&& layer : layers_) {
@@ -101,7 +101,7 @@ void Net<T>::SetTrain() {
   spdlog::info("Set phase to train.");
 }
 
-template <typename T>
+template <Arithmetic T>
 void Net<T>::SetTest() {
   phase_ = Phase::kTest;
   for (auto&& layer : layers_) {
@@ -110,7 +110,7 @@ void Net<T>::SetTest() {
   spdlog::info("Set phase to test.");
 }
 
-template <typename T>
+template <Arithmetic T>
 std::shared_ptr<DataLoader> Net<T>::GetDataLoader() const {
   if (phase_ == Phase::kTrain) {
     return train_dataloader_;
@@ -121,13 +121,13 @@ std::shared_ptr<DataLoader> Net<T>::GetDataLoader() const {
   throw NetError("Unsupport phase.");
 }
 
-template <typename T>
+template <Arithmetic T>
 std::vector<LayerParameterPtr> Net<T>::TopoSort(
     const std::vector<LayerParameterPtr>& layers) {
   return layers;
 }
 
-template <typename T>
+template <Arithmetic T>
 void Net<T>::CheckNoSplitPoint(
     const std::vector<LayerParameterPtr>& layer_parameters) {
   for (auto&& layer : layer_parameters) {
@@ -137,7 +137,7 @@ void Net<T>::CheckNoSplitPoint(
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Net<T>::CheckOneInput(
     const std::vector<LayerParameterPtr>& layer_parameters) {
   int input_cnt = 0;
@@ -153,7 +153,7 @@ void Net<T>::CheckOneInput(
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Net<T>::CheckTwoOutput(
     const std::vector<LayerParameterPtr>& layer_parameters) {
   for (int i = 0; i < layer_parameters.size() - 2; i++) {
@@ -170,20 +170,20 @@ void Net<T>::CheckTwoOutput(
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Net<T>::CheckNoCircle(
     const std::vector<LayerParameterPtr>& layer_parameters) {
   // TODO(yibotongxue)
 }
 
-template <typename T>
+template <Arithmetic T>
 void Net<T>::InitTop() {
   for (int i = 0; i < top_vec_.size(); i++) {
     top_vec_[i] = {std::make_shared<Tensor<T>>()};
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Net<T>::ConnectBottomAndTop() {
   for (int i = 1; i < layers_.size(); i++) {
     for (auto&& bottom : net_parameter_->layer_params_[i]->bottoms_) {
@@ -206,7 +206,7 @@ void Net<T>::ConnectBottomAndTop() {
   bottom_vec_[bottom_vec_.size() - 2].push_back(curr_label_);
 }
 
-template <typename T>
+template <Arithmetic T>
 void Net<T>::SetUpBottomAndTop() {
   for (int i = 0; i < layers_.size(); i++) {
     layers_[i]->SetUp(bottom_vec_[i], top_vec_[i]);

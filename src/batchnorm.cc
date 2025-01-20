@@ -11,7 +11,7 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 void BatchNorm<T>::CheckTensorCount(
     const std::vector<TensorPtr<T>>& bottom,
     const std::vector<TensorPtr<T>>& top) const {
@@ -24,13 +24,13 @@ void BatchNorm<T>::CheckTensorCount(
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void BatchNorm<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
                            const std::vector<TensorPtr<T>>& top) const {
   top[0]->Resize(bottom[0]->GetShape());
 }
 
-template <typename T>
+template <Arithmetic T>
 void BatchNorm<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
                               const std::vector<TensorPtr<T>>& top) {
   if (bottom[0]->GetShape().size() != 4) {
@@ -80,7 +80,7 @@ void BatchNorm<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
   Fill_CPU<T>(all_ones_->GetCPUDataPtr(), one_size, 1);
 }
 
-template <typename T>
+template <Arithmetic T>
 void BatchNorm<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                               const std::vector<TensorPtr<T>>& top) {
   const T* bottom_data = bottom[0]->GetCPUDataPtr();
@@ -144,7 +144,7 @@ void BatchNorm<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                         batch_size_);
 }
 
-template <typename T>
+template <Arithmetic T>
 void BatchNorm<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
                                const std::vector<TensorPtr<T>>& bottom) {
   const T* top_diff = top[0]->GetCPUDiffPtr();

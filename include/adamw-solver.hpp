@@ -9,7 +9,7 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 class AdamWSolver final : public Solver<T> {
  public:
   explicit AdamWSolver(SolverParameterPtr param) : Solver<T>(param) {}

@@ -1,16 +1,17 @@
 // Copyright 2024 yibotongxue
 
+#include "flatten.hpp"
+
 #include <thrust/copy.h>
 
 #include <vector>
 
 #include "error.hpp"
-#include "flatten.hpp"
 #include "memory-util.hpp"
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 void Flatten<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
                                   const std::vector<TensorPtr<T>>& top) const {
   if (bottom.size() != 1) {
@@ -22,7 +23,7 @@ void Flatten<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Flatten<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
                             const std::vector<TensorPtr<T>>& top) {
   if (bottom[0]->GetShape().size() < 2) {
@@ -39,7 +40,7 @@ void Flatten<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
   inplace_ = param->inplace_;
 }
 
-template <typename T>
+template <Arithmetic T>
 void Flatten<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
                          const std::vector<TensorPtr<T>>& top) const {
   if (inplace_) {
@@ -49,7 +50,7 @@ void Flatten<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Flatten<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                             const std::vector<TensorPtr<T>>& top) {
   if (inplace_) {
@@ -60,7 +61,7 @@ void Flatten<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Flatten<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
                              const std::vector<TensorPtr<T>>& bottom) {
   if (inplace_) {
@@ -71,7 +72,7 @@ void Flatten<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Flatten<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                             const std::vector<TensorPtr<T>>& top) {
   if (inplace_) {
@@ -82,7 +83,7 @@ void Flatten<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Flatten<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
                              const std::vector<TensorPtr<T>>& bottom) {
   if (inplace_) {

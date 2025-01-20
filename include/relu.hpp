@@ -12,7 +12,7 @@
 
 namespace my_tensor {
 // Relu class, implements Layer.
-template <typename T = float>
+template <Arithmetic T = float>
 class Relu final : public Layer<T> {
  public:
   explicit Relu(LayerParameterPtr param) : Layer<T>(param) {}

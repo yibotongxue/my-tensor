@@ -8,7 +8,7 @@
 #include "error.hpp"
 
 namespace my_tensor {
-template <typename T>
+template <Arithmetic T>
 void Sigmoid<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
                                   const std::vector<TensorPtr<T>>& top) const {
   if (bottom.size() != 1) {
@@ -19,13 +19,13 @@ void Sigmoid<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Sigmoid<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
                          const std::vector<TensorPtr<T>>& top) const {
   top[0]->Resize(bottom[0]->GetShape());
 }
 
-template <typename T>
+template <Arithmetic T>
 void Sigmoid<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                             const std::vector<TensorPtr<T>>& top) {
   auto&& bottom_data = SPAN_DATA(bottom[0], T);
@@ -34,7 +34,7 @@ void Sigmoid<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
   });
 }
 
-template <typename T>
+template <Arithmetic T>
 void Sigmoid<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
                              const std::vector<TensorPtr<T>>& bottom) {
   auto&& top_diff = SPAN_DIFF(top[0], T);

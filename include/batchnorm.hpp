@@ -11,7 +11,7 @@
 #include "tensor.hpp"
 
 namespace my_tensor {
-template <typename T = float>
+template <Arithmetic T = float>
 class BatchNorm final : public Layer<T> {
  public:
   explicit BatchNorm(LayerParameterPtr param) : Layer<T>(param) {}

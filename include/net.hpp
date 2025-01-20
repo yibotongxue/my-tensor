@@ -25,7 +25,7 @@ namespace my_tensor {
  *
  * @todo Add mutiple bottom and mutiple top hidden layers support.
  */
-template <typename T>
+template <Arithmetic T>
 class Net {
  public:
   enum class Phase { kTrain, kTest };  // enum class Phase
@@ -170,7 +170,7 @@ class Net {
   void SetUpBottomAndTop();
 };  // class Net
 
-template <typename T = float>
+template <Arithmetic T = float>
 using NetPtr = std::shared_ptr<Net<T>>;
 
 extern template class Net<float>;

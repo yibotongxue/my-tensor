@@ -11,7 +11,7 @@
 
 namespace my_tensor {
 
-template <typename T = float>
+template <Arithmetic T = float>
 class LossWithSoftmax final : public Layer<T> {
  public:
   explicit LossWithSoftmax(LayerParameterPtr param) : Layer<T>(param) {}

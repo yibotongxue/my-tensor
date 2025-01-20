@@ -7,7 +7,7 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 void SgdWithMomentumSolver<T>::UpdateParam() {
   const auto& learnable_params = this->net_->GetLearnableParams();
   for (int i = 0; i < learnable_params.size(); i++) {
@@ -23,7 +23,7 @@ void SgdWithMomentumSolver<T>::UpdateParam() {
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void SgdWithMomentumSolver<T>::SpecialSetUp() {
   const auto& learnable_params = this->net_->GetLearnableParams();
   history_data_ = std::vector<TensorPtr<T>>(learnable_params.size());

@@ -12,7 +12,7 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 void Pooling<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
                                   const std::vector<TensorPtr<T>>& top) const {
   if (bottom.size() != 1) {
@@ -24,13 +24,13 @@ void Pooling<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Pooling<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
                          const std::vector<TensorPtr<T>>& top) const {
   top[0]->Resize({batch_size_, input_channels_, output_height_, output_width_});
 }
 
-template <typename T>
+template <Arithmetic T>
 void Pooling<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
                             const std::vector<TensorPtr<T>>& top) {
   std::shared_ptr<PoolingParameter> param =
@@ -59,7 +59,7 @@ void Pooling<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
   mask_ = std::make_shared<Tensor<int>>(mask_shape);
 }
 
-template <typename T>
+template <Arithmetic T>
 void Pooling<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                             const std::vector<TensorPtr<T>>& top) {
   CheckShape(bottom[0], top[0]);
@@ -93,7 +93,7 @@ void Pooling<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Pooling<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
                              const std::vector<TensorPtr<T>>& bottom) {
   CheckShape(bottom[0], top[0]);
@@ -109,7 +109,7 @@ void Pooling<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Pooling<T>::CheckShape(const TensorPtr<T> bottom,
                             const TensorPtr<T> top) const {
 #ifdef DEBUG

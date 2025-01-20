@@ -29,13 +29,13 @@ void MyMemFreeCPU(void* ptr) { free(ptr); }
 void MyMemFreeGPU(void* ptr) { CUDA_CHECK(cudaFree(ptr)); }
 
 namespace {
-template <typename T>
+template <Arithmetic T>
 __global__ void SetAllValue(T* const data, std::size_t count, T value) {
   CUDA_KERNEL_LOOP(i, count) { data[i] = value; }
 }
 }  // namespace
 
-template <typename T>
+template <Arithmetic T>
 void Fill_GPU(T* const data, std::size_t count, T value) {
   SetAllValue<<<CudaGetBlocks(count), kCudaThreadNum>>>(data, count, value);
 }

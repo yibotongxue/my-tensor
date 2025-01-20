@@ -11,7 +11,7 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 void Linear<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
                                  const std::vector<TensorPtr<T>>& top) const {
   if (bottom.size() != 1) {
@@ -22,13 +22,13 @@ void Linear<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Linear<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
                         const std::vector<TensorPtr<T>>& top) const {
   top[0]->Resize({m, n});
 }
 
-template <typename T>
+template <Arithmetic T>
 void Linear<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
                            const std::vector<TensorPtr<T>>& top) {
   if (bottom[0]->GetShape().size() != 2) {
@@ -52,7 +52,7 @@ void Linear<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
   bias_filler->Fill(bias_);
 }
 
-template <typename T>
+template <Arithmetic T>
 void Linear<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                            const std::vector<TensorPtr<T>>& top) {
   CheckShape(bottom[0], top[0]);
@@ -75,7 +75,7 @@ void Linear<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Linear<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
                             const std::vector<TensorPtr<T>>& bottom) {
   CheckShape(bottom[0], top[0]);
@@ -124,7 +124,7 @@ void Linear<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Linear<T>::CheckShape(const TensorPtr<T> bottom,
                            const TensorPtr<T> top) const {
 #ifdef DEBUG

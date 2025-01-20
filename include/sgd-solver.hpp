@@ -7,7 +7,7 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 class SgdSolver final : public Solver<T> {
  public:
   explicit SgdSolver(SolverParameterPtr param) : Solver<T>(param) {}

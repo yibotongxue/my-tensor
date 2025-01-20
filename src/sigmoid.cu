@@ -11,14 +11,14 @@
 
 namespace my_tensor {
 namespace {
-template <typename T>
+template <Arithmetic T>
 struct SigmoidOperator {
   __device__ T operator()(T x) {
     return static_cast<T>(1) / (static_cast<T>(1) + std::exp(-x));
   }
 };
 
-template <typename T>
+template <Arithmetic T>
 struct SigmoidGradOperator {
   __device__ T operator()(T top_diff, T top_data) {
     return top_diff * top_data * (1 - top_data);
@@ -26,7 +26,7 @@ struct SigmoidGradOperator {
 };
 }  // namespace
 
-template <typename T>
+template <Arithmetic T>
 void Sigmoid<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                             const std::vector<TensorPtr<T>>& top) {
   CHECK_SAME_SHAPE(top[0], bottom[0])
@@ -36,7 +36,7 @@ void Sigmoid<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                     SigmoidOperator<T>());
 }
 
-template <typename T>
+template <Arithmetic T>
 void Sigmoid<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
                              const std::vector<TensorPtr<T>>& bottom) {
   CHECK_SAME_SHAPE(top[0], bottom[0])

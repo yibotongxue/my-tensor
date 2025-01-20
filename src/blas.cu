@@ -11,18 +11,20 @@
 namespace my_tensor {
 
 template <typename T>
+  requires std::is_pointer_v<T> &&
+           std::is_arithmetic_v<std::remove_pointer_t<T>>
 __global__ static void AssignRisingValues(T *data, const int n, T start,
                                           int stride) {
   CUDA_KERNEL_LOOP(i, n) { data[i] = start + i * stride; }
 }
 
 #define DEFINE_ABC_VEC(broadcast)                                          \
-  const_float_ptr *A_vec_raw = nullptr;                                    \
+  const float **A_vec_raw = nullptr;                                       \
   CUDA_CHECK(cudaMalloc(&A_vec_raw, batch_count * sizeof(const float *))); \
   int stride_A = (broadcast == 1) ? 0 : (m * k);                           \
   AssignRisingValues<<<CudaGetBlocks(batch_count), kCudaThreadNum>>>(      \
       A_vec_raw, batch_count, A, stride_A);                                \
-  const_float_ptr *B_vec_raw = nullptr;                                    \
+  const float **B_vec_raw = nullptr;                                       \
   CUDA_CHECK(cudaMalloc(&B_vec_raw, batch_count * sizeof(const float *))); \
   int stride_B = (broadcast == 2) ? 0 : (k * n);                           \
   AssignRisingValues<<<CudaGetBlocks(batch_count), kCudaThreadNum>>>(      \
@@ -36,8 +38,6 @@ __global__ static void AssignRisingValues(T *data, const int n, T start,
   CUDA_CHECK(cudaFree(A_vec_raw)); \
   CUDA_CHECK(cudaFree(B_vec_raw)); \
   CUDA_CHECK(cudaFree(C_vec_raw));
-
-using const_float_ptr = const float *;
 
 template <>
 void matmul_gpu(const float *A, const float *B, float *C, const int m,
@@ -194,7 +194,7 @@ void add_col_vector_gpu(float *mat, const float *vec, const int m, const int n,
 }
 
 namespace {
-template <typename T>
+template <Arithmetic T>
 __global__ void MutiplyRowVecDevice(T *mat, const T *vec, const int m,
                                     const int n, const int total_cnt) {
   extern __shared__ T shared_vec[];
@@ -207,7 +207,7 @@ __global__ void MutiplyRowVecDevice(T *mat, const T *vec, const int m,
 }
 }  // namespace
 
-template <typename T>
+template <Arithmetic T>
 void multiply_row_vector_gpu(T *mat, const T *vec, const int m, const int n,
                              const int batch_count) {
   int total_cnt = m * n * batch_count;
@@ -220,7 +220,7 @@ template void multiply_row_vector_gpu<float>(float *mat, const float *vec,
                                              const int batch_count);
 
 namespace {
-template <typename T>
+template <Arithmetic T>
 __global__ void MultiplyColVecDevice(T *mat, const T *vec, const int m,
                                      const int n, const int total_cnt) {
   CUDA_KERNEL_LOOP(i, total_cnt) {
@@ -230,7 +230,7 @@ __global__ void MultiplyColVecDevice(T *mat, const T *vec, const int m,
 }
 }  // namespace
 
-template <typename T>
+template <Arithmetic T>
 void multiply_col_vector_gpu(T *mat, const T *vec, const int m, const int n,
                              const int batch_count) {
   int total_cnt = m * n * batch_count;
@@ -243,7 +243,7 @@ template void multiply_col_vector_gpu<float>(float *mat, const float *vec,
                                              const int batch_count);
 
 namespace {
-template <typename T>
+template <Arithmetic T>
 __global__ void DivideRowVecDevice(T *mat, const T *vec, const int m,
                                    const int n, const int total_cnt,
                                    const T eps) {
@@ -257,7 +257,7 @@ __global__ void DivideRowVecDevice(T *mat, const T *vec, const int m,
 }
 }  // namespace
 
-template <typename T>
+template <Arithmetic T>
 void divide_row_vector_gpu(T *mat, const T *vec, const int m, const int n,
                            const int batch_count, const T eps) {
   int total_cnt = m * n * batch_count;
@@ -271,7 +271,7 @@ template void divide_row_vector_gpu<float>(float *mat, const float *vec,
                                            const float eps);
 
 namespace {
-template <typename T>
+template <Arithmetic T>
 __global__ void DivideColVecDevice(T *mat, const T *vec, const int m,
                                    const int n, const int total_cnt,
                                    const T eps) {
@@ -282,7 +282,7 @@ __global__ void DivideColVecDevice(T *mat, const T *vec, const int m,
 }
 }  // namespace
 
-template <typename T>
+template <Arithmetic T>
 void divide_col_vector_gpu(T *mat, const T *vec, const int m, const int n,
                            const int batch_count, const T eps) {
   int total_cnt = m * n * batch_count;
@@ -364,7 +364,7 @@ void scale_gpu(float *x, const int n, const float k) {
   CUBLAS_CHECK(cublasSscal(CudaContext::cublas_handle(), n, &k, x, 1));
 }
 
-template <typename T>
+template <Arithmetic T>
 void square_gpu(const T *x, T *y, const int n) {
   thrust::device_ptr<const T> x_ptr(x);
   thrust::device_ptr<T> y_ptr(y);
@@ -373,7 +373,7 @@ void square_gpu(const T *x, T *y, const int n) {
 
 template void square_gpu<float>(const float *x, float *y, const int n);
 
-template <typename T>
+template <Arithmetic T>
 void sqrt_gpu(const T *x, T *y, const int n) {
   thrust::device_ptr<const T> x_ptr(x);
   thrust::device_ptr<T> y_ptr(y);
@@ -384,7 +384,7 @@ void sqrt_gpu(const T *x, T *y, const int n) {
 
 template void sqrt_gpu<float>(const float *x, float *y, const int n);
 
-template <typename T>
+template <Arithmetic T>
 void divide_two_vec_gpu(const T *lhs, const T *rhs, T *result, const int n) {
   thrust::device_ptr<const T> lhs_ptr(lhs);
   thrust::device_ptr<const T> rhs_ptr(rhs);
@@ -396,7 +396,7 @@ void divide_two_vec_gpu(const T *lhs, const T *rhs, T *result, const int n) {
 template void divide_two_vec_gpu<float>(const float *lhs, const float *rhs,
                                         float *result, const int n);
 
-template <typename T>
+template <Arithmetic T>
 void multiply_two_vec_gpu(const T *lhs, const T *rhs, T *result, const int n) {
   thrust::device_ptr<const T> lhs_ptr(lhs);
   thrust::device_ptr<const T> rhs_ptr(rhs);
@@ -408,7 +408,7 @@ void multiply_two_vec_gpu(const T *lhs, const T *rhs, T *result, const int n) {
 template void multiply_two_vec_gpu<float>(const float *lhs, const float *rhs,
                                           float *result, const int n);
 
-template <typename T>
+template <Arithmetic T>
 void vec_add_num_gpu(const T *vec, T *result, const T num, const int n) {
   thrust::device_ptr<const T> vec_ptr(vec);
   thrust::device_ptr<T> result_ptr(result);
@@ -419,7 +419,7 @@ void vec_add_num_gpu(const T *vec, T *result, const T num, const int n) {
 template void vec_add_num_gpu<float>(const float *vec, float *result,
                                      const float num, const int n);
 
-template <typename T>
+template <Arithmetic T>
 void vec_divide_num_gpu(const T *vec, T *result, const T num, const int n) {
   thrust::device_ptr<const T> vec_ptr(vec);
   thrust::device_ptr<T> result_ptr(result);

@@ -12,7 +12,7 @@
 
 namespace my_tensor {
 
-template <typename T = float>
+template <Arithmetic T = float>
 class Softmax final : public Layer<T> {
  public:
   explicit Softmax(LayerParameterPtr param) : Layer<T>(param) {}

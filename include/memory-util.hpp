@@ -4,6 +4,7 @@
 #define INCLUDE_MEMORY_UTIL_HPP_
 
 #include "common.hpp"
+#include "utils.hpp"
 
 namespace my_tensor {
 
@@ -23,26 +24,26 @@ void MyMemFreeCPU(void* ptr);
 
 void MyMemFreeGPU(void* ptr);
 
-template <typename T>
+template <Arithmetic T>
 inline T Visit_CPU(const T* const data, std::size_t index) {
   return data[index];
 }
 
-template <typename T>
+template <Arithmetic T>
 inline T Visit_GPU(const T* const data, std::size_t index) {
   T result;
   MyMemcpyGPU2CPU(&result, data + index, sizeof(T));
   return result;
 }
 
-template <typename T>
+template <Arithmetic T>
 inline void Fill_CPU(T* const data, std::size_t count, T value) {
   for (std::size_t i = 0; i < count; i++) {
     data[i] = value;
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Fill_GPU(T* const data, std::size_t count, T value);
 
 extern template void Fill_GPU(float* const data, std::size_t count,

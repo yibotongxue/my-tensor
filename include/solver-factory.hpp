@@ -12,7 +12,7 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 inline SolverPtr<T> CreateSolver(SolverParameterPtr param) {
   if (param->type_ == SolverType::kSgd) {
     return std::make_shared<SgdSolver<T>>(param);

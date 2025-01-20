@@ -8,22 +8,22 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 void Im2col_CPU(const int n, const T *data_im, const int channels,
                 const int height, const int width, const int kernel_h,
                 const int kernel_w, T *data_col);
 
-template <typename T>
+template <Arithmetic T>
 void Col2im_CPU(const int n, const T *data_col, const int channels,
                 const int height, const int width, const int kernel_h,
                 const int kernel_w, T *data_im);
 
-template <typename T>
+template <Arithmetic T>
 void Im2col_GPU(const int n, const T *data_im, const int channels,
                 const int height, const int width, const int kernel_h,
                 const int kernel_w, T *data_col);
 
-template <typename T>
+template <Arithmetic T>
 void Col2im_GPU(const int n, const T *data_col, const int channels,
                 const int height, const int width, const int kernel_h,
                 const int kernel_w, T *data_im);

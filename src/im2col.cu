@@ -12,7 +12,7 @@ namespace {
 // kernel_w: kernel width = 3
 // im_size = height * width = 48
 // col_size = kernel_w * kernel_h * im_size = 9 * 48
-template <typename T>
+template <Arithmetic T>
 __global__ void Im2col_kernel(const T *data_im, const int kernel_nums,
                               const int height, const int width,
                               const int kernel_h, const int kernel_w,
@@ -49,7 +49,7 @@ __global__ void Im2col_kernel(const T *data_im, const int kernel_nums,
 // kernel_w: kernel width
 // im_size = height * width
 // col_size = im_size * kernel_w * kernel_h
-template <typename T>
+template <Arithmetic T>
 void Im2col_GPU(const int n, const T *data_im, const int channels,
                 const int height, const int width, const int kernel_h,
                 const int kernel_w, T *data_col) {
@@ -63,7 +63,7 @@ void Im2col_GPU(const int n, const T *data_im, const int channels,
 }
 
 namespace {
-template <typename T>
+template <Arithmetic T>
 __global__ void Col2im_kernel(const T *data_col, const int kernel_nums,
                               const int height, const int width,
                               const int kernel_h, const int kernel_w,
@@ -93,7 +93,7 @@ __global__ void Col2im_kernel(const T *data_col, const int kernel_nums,
 }
 }  // namespace
 
-template <typename T>
+template <Arithmetic T>
 void Col2im_GPU(const int n, const T *data_col, const int channels,
                 const int height, const int width, const int kernel_h,
                 const int kernel_w, T *data_im) {

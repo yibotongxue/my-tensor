@@ -18,7 +18,7 @@
 namespace my_tensor {
 
 namespace {
-template <typename T>
+template <Arithmetic T>
 __global__ void GetCorrect(const T* data, const T* label, const int n,
                            const int c, int* correct) {
   CUDA_KERNEL_LOOP(i, n) {
@@ -36,7 +36,7 @@ __global__ void GetCorrect(const T* data, const T* label, const int n,
 }
 }  // namespace
 
-template <typename T>
+template <Arithmetic T>
 void Accuracy<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                              const std::vector<TensorPtr<T>>& top) {
   CheckShape(bottom[0], bottom[1], top[0]);
@@ -52,7 +52,7 @@ void Accuracy<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
   [0] = static_cast<T>(correct) / static_cast<T>(batch_size_);
 }
 
-template <typename T>
+template <Arithmetic T>
 void Accuracy<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
                               const std::vector<TensorPtr<T>>& bottom) {
   throw AccuracyError("Unimplemention error.");

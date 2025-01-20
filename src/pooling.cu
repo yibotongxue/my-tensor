@@ -16,7 +16,7 @@
 namespace my_tensor {
 
 namespace {
-template <typename T>
+template <Arithmetic T>
 __global__ void PoolingKernel(const int nthreads, const T* const bottom_data,
                               const int n, const int input_w,
                               const int input_size, const int output_w,
@@ -47,7 +47,7 @@ __global__ void PoolingKernel(const int nthreads, const T* const bottom_data,
 }
 }  // namespace
 
-template <typename T>
+template <Arithmetic T>
 void Pooling<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                             const std::vector<TensorPtr<T>>& top) {
   CheckShape(bottom[0], top[0]);
@@ -61,7 +61,7 @@ void Pooling<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
       top[0]->GetGPUDataPtr(), mask_->GetGPUDataPtr());
 }
 
-template <typename T>
+template <Arithmetic T>
 void Pooling<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
                              const std::vector<TensorPtr<T>>& bottom) {
   CheckShape(bottom[0], top[0]);

@@ -12,7 +12,7 @@
 
 namespace my_tensor {
 
-template <typename T = float>
+template <Arithmetic T = float>
 class Pooling final : public Layer<T> {
  public:
   explicit Pooling(LayerParameterPtr param) : Layer<T>(param) {}

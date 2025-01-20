@@ -12,7 +12,7 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 void Convolution<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                                 const std::vector<TensorPtr<T>>& top) {
   CheckShape(bottom[0], top[0]);
@@ -28,7 +28,7 @@ void Convolution<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                      output_channels_, im_size, batch_size_);
 }
 
-template <typename T>
+template <Arithmetic T>
 void Convolution<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
                                  const std::vector<TensorPtr<T>>& bottom) {
   CheckShape(bottom[0], top[0]);

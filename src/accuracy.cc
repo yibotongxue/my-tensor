@@ -13,7 +13,7 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 void Accuracy<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
                                    const std::vector<TensorPtr<T>>& top) const {
   if (bottom.size() != 2) {
@@ -26,13 +26,13 @@ void Accuracy<T>::CheckTensorCount(const std::vector<TensorPtr<T>>& bottom,
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Accuracy<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
                           const std::vector<TensorPtr<T>>& top) const {
   top[0]->Resize({1});
 }
 
-template <typename T>
+template <Arithmetic T>
 void Accuracy<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
                              const std::vector<TensorPtr<T>>& top) {
   if (bottom[0]->GetShape().size() != 2) {
@@ -51,7 +51,7 @@ void Accuracy<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
   batch_size_ = bottom[0]->GetShape()[0];
 }
 
-template <typename T>
+template <Arithmetic T>
 void Accuracy<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                              const std::vector<TensorPtr<T>>& top) {
   CheckShape(bottom[0], bottom[1], top[0]);
@@ -71,13 +71,13 @@ void Accuracy<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
       static_cast<T>(correct) / static_cast<T>(batch_size_);
 }
 
-template <typename T>
+template <Arithmetic T>
 void Accuracy<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
                               const std::vector<TensorPtr<T>>& bottom) {
   throw AccuracyError("Unimplemention error.");
 }
 
-template <typename T>
+template <Arithmetic T>
 void Accuracy<T>::CheckShape(const TensorPtr<T> input, const TensorPtr<T> label,
                              const TensorPtr<T> output) const {
 #ifdef DEBUG

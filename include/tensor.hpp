@@ -388,7 +388,7 @@ class Tensor {
   void CheckShape() const;
 };  // class Tensor
 
-template <typename T>
+template <Arithmetic T>
 using TensorPtr = std::shared_ptr<my_tensor::Tensor<T>>;
 
 extern template class my_tensor::Tensor<float>;

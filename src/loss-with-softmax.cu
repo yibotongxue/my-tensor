@@ -18,7 +18,7 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 void LossWithSoftmax<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                                     const std::vector<TensorPtr<T>>& top) {
   CheckShape(bottom[0], bottom[1], top[0]);
@@ -39,7 +39,7 @@ void LossWithSoftmax<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
       thrust::reduce(temp_data.begin(), temp_data.end()) / batch_size_;
 }
 
-template <typename T>
+template <Arithmetic T>
 void LossWithSoftmax<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
                                      const std::vector<TensorPtr<T>>& bottom) {
   CheckShape(bottom[0], bottom[1], top[0]);

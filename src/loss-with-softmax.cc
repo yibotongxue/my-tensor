@@ -13,7 +13,7 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 void LossWithSoftmax<T>::CheckTensorCount(
     const std::vector<TensorPtr<T>>& bottom,
     const std::vector<TensorPtr<T>>& top) const {
@@ -28,13 +28,13 @@ void LossWithSoftmax<T>::CheckTensorCount(
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void LossWithSoftmax<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
                                  const std::vector<TensorPtr<T>>& top) const {
   top[0]->Resize({1});
 }
 
-template <typename T>
+template <Arithmetic T>
 void LossWithSoftmax<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
                                     const std::vector<TensorPtr<T>>& top) {
   if (bottom[0]->GetShape().size() != 2) {
@@ -64,7 +64,7 @@ void LossWithSoftmax<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
   softmax_->SetUp(softmax_bottom_, softmax_top_);
 }
 
-template <typename T>
+template <Arithmetic T>
 void LossWithSoftmax<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                                     const std::vector<TensorPtr<T>>& top) {
   CheckShape(bottom[0], bottom[1], top[0]);
@@ -79,7 +79,7 @@ void LossWithSoftmax<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
   top_data[0] = result / batch_size_;
 }
 
-template <typename T>
+template <Arithmetic T>
 void LossWithSoftmax<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
                                      const std::vector<TensorPtr<T>>& bottom) {
   CheckShape(bottom[0], bottom[1], top[0]);
@@ -95,7 +95,7 @@ void LossWithSoftmax<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void LossWithSoftmax<T>::CheckShape(const TensorPtr<T> input,
                                     const TensorPtr<T> label,
                                     const TensorPtr<T> output) const {

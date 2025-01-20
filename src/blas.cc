@@ -109,7 +109,7 @@ void add_col_vector_cpu(float *mat, const float *vec, const int m, const int n,
   }
 }
 
-template <typename T>
+template <Arithmetic T>
   requires std::is_arithmetic<T>::value
 void multiply_row_vector_cpu(T *mat, const T *vec, const int m, const int n,
                              const int batch_count) {
@@ -125,7 +125,7 @@ void multiply_row_vector_cpu(T *mat, const T *vec, const int m, const int n,
 template void multiply_row_vector_cpu(float *mat, const float *vec, const int m,
                                       const int n, const int batch_count);
 
-template <typename T>
+template <Arithmetic T>
   requires std::is_arithmetic<T>::value
 void multiply_col_vector_cpu(T *mat, const T *vec, const int m, const int n,
                              const int batch_count) {
@@ -139,7 +139,7 @@ void multiply_col_vector_cpu(T *mat, const T *vec, const int m, const int n,
 template void multiply_col_vector_cpu(float *mat, const float *vec, const int m,
                                       const int n, const int batch_count);
 
-template <typename T>
+template <Arithmetic T>
   requires std::is_arithmetic<T>::value
 void divide_row_vector_cpu(T *mat, const T *vec, const int m, const int n,
                            const int batch_count, const T eps) {
@@ -156,7 +156,7 @@ template void divide_row_vector_cpu(float *mat, const float *vec, const int m,
                                     const int n, const int batch_count,
                                     const float eps);
 
-template <typename T>
+template <Arithmetic T>
   requires std::is_arithmetic<T>::value
 void divide_col_vector_cpu(T *mat, const T *vec, const int m, const int n,
                            const int batch_count, const T eps) {
@@ -214,7 +214,7 @@ void scale_cpu(float *x, const int n, const float k) {
   cblas_sscal(n, k, x, 1);
 }
 
-template <typename T>
+template <Arithmetic T>
   requires std::is_arithmetic<T>::value
 void square_cpu(const T *x, T *y, const int n) {
   for (int i = 0; i < n; i++) {
@@ -224,7 +224,7 @@ void square_cpu(const T *x, T *y, const int n) {
 
 template void square_cpu(const float *x, float *y, const int n);
 
-template <typename T>
+template <Arithmetic T>
   requires std::is_arithmetic<T>::value
 void sqrt_cpu(const T *x, T *y, const int n) {
   for (int i = 0; i < n; i++) {
@@ -234,7 +234,7 @@ void sqrt_cpu(const T *x, T *y, const int n) {
 
 template void sqrt_cpu(const float *x, float *y, const int n);
 
-template <typename T>
+template <Arithmetic T>
   requires std::is_arithmetic<T>::value
 void divide_two_vec_cpu(const T *lhs, const T *rhs, T *result, const int n) {
   for (int i = 0; i < n; i++) {
@@ -245,7 +245,7 @@ void divide_two_vec_cpu(const T *lhs, const T *rhs, T *result, const int n) {
 template void divide_two_vec_cpu(const float *lhs, const float *rhs,
                                  float *result, const int n);
 
-template <typename T>
+template <Arithmetic T>
   requires std::is_arithmetic<T>::value
 void multiply_two_vec_cpu(const T *lhs, const T *rhs, T *result, const int n) {
   for (int i = 0; i < n; i++) {
@@ -256,7 +256,7 @@ void multiply_two_vec_cpu(const T *lhs, const T *rhs, T *result, const int n) {
 template void multiply_two_vec_cpu(const float *lhs, const float *rhs,
                                    float *result, const int n);
 
-template <typename T>
+template <Arithmetic T>
   requires std::is_arithmetic<T>::value
 void vec_add_num_cpu(const T *vec, T *result, const T num, const int n) {
   for (int i = 0; i < n; i++) {
@@ -267,7 +267,7 @@ void vec_add_num_cpu(const T *vec, T *result, const T num, const int n) {
 template void vec_add_num_cpu(const float *vec, float *result, const float num,
                               const int n);
 
-template <typename T>
+template <Arithmetic T>
   requires std::is_arithmetic<T>::value
 void vec_divide_num_cpu(const T *vec, T *result, const T num, const int n) {
   for (int i = 0; i < n; i++) {

@@ -20,7 +20,7 @@
 #include "softmax.hpp"
 
 namespace my_tensor {
-template <typename T = float>
+template <Arithmetic T = float>
 inline LayerPtr<T> CreateLayer(const LayerParameterPtr param) {
   switch (param->type_) {
     case ParamType::kRelu:

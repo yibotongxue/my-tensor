@@ -13,7 +13,7 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 void Convolution<T>::CheckTensorCount(
     const std::vector<TensorPtr<T>>& bottom,
     const std::vector<TensorPtr<T>>& top) const {
@@ -25,7 +25,7 @@ void Convolution<T>::CheckTensorCount(
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Convolution<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
                                 const std::vector<TensorPtr<T>>& top) {
   if (bottom[0]->GetShape().size() != 4) {
@@ -62,7 +62,7 @@ void Convolution<T>::LayerSetUp(const std::vector<TensorPtr<T>>& bottom,
   col_cache_ = std::make_shared<Tensor<T>>(col_shape);
 }
 
-template <typename T>
+template <Arithmetic T>
 void Convolution<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
                              const std::vector<TensorPtr<T>>& top) const {
   const std::vector<int> top_shape = {batch_size_, output_channels_, height_,
@@ -70,7 +70,7 @@ void Convolution<T>::Reshape(const std::vector<TensorPtr<T>>& bottom,
   top[0]->Resize(top_shape);
 }
 
-template <typename T>
+template <Arithmetic T>
 void Convolution<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
                                 const std::vector<TensorPtr<T>>& top) {
   CheckShape(bottom[0], top[0]);
@@ -99,7 +99,7 @@ void Convolution<T>::ForwardCPU(const std::vector<TensorPtr<T>>& bottom,
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Convolution<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
                                  const std::vector<TensorPtr<T>>& bottom) {
   CheckShape(bottom[0], top[0]);
@@ -159,7 +159,7 @@ void Convolution<T>::BackwardCPU(const std::vector<TensorPtr<T>>& top,
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Convolution<T>::CheckShape(const TensorPtr<T> bottom,
                                 const TensorPtr<T> top) const {
 #ifdef DEBUG

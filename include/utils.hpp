@@ -7,6 +7,9 @@
 #include <iostream>
 #include <ranges>  // NOLINT
 
+template <typename T>
+concept Arithmetic = std::is_arithmetic<T>::value;
+
 constexpr int kCudaThreadNum = 512;
 
 inline int CudaGetBlocks(const int N) {

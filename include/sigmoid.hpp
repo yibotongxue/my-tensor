@@ -12,7 +12,7 @@
 
 namespace my_tensor {
 // Sigmoid class, implements Layer class.
-template <typename T = float>
+template <Arithmetic T = float>
 class Sigmoid final : public Layer<T> {
  public:
   explicit Sigmoid(LayerParameterPtr param) : Layer<T>(param) {}

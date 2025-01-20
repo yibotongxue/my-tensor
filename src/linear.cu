@@ -13,7 +13,7 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 void Linear<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                            const std::vector<TensorPtr<T>>& top) {
   CheckShape(bottom[0], top[0]);
@@ -26,7 +26,7 @@ void Linear<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
   add_col_vector_gpu(top[0]->GetGPUDataPtr(), bias_->GetGPUDataPtr(), m, n);
 }
 
-template <typename T>
+template <Arithmetic T>
 void Linear<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
                             const std::vector<TensorPtr<T>>& bottom) {
   CheckShape(bottom[0], top[0]);

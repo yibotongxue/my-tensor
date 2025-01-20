@@ -6,14 +6,16 @@
 #include <string>
 #include <vector>
 
+#include "utils.hpp"
+
 namespace my_tensor {
 
 namespace ModelSaver {
-template <typename T>
+template <Arithmetic T>
 void Save(const std::vector<std::vector<T>>& data,
           const std::string& file_path);
 
-template <typename T>
+template <Arithmetic T>
 std::vector<std::vector<T>> Load(const std::string& file_path);
 
 extern template void Save<float>(const std::vector<std::vector<float>>& data,

@@ -9,13 +9,13 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 void Solver<T>::SetUp() {
   CommonSetUp();
   SpecialSetUp();
 }
 
-template <typename T>
+template <Arithmetic T>
 void Solver<T>::CommonSetUp() {
   training_iter_ = 0;
   max_iter_ = param_->max_iter_;
@@ -37,7 +37,7 @@ void Solver<T>::CommonSetUp() {
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Solver<T>::Solve() {
   while (training_iter_ < max_iter_) {
     Step();
@@ -49,7 +49,7 @@ void Solver<T>::Solve() {
   SaveModel(save_model_path_);
 }
 
-template <typename T>
+template <Arithmetic T>
 float Solver<T>::Test() {
   net_->Reset();
   net_->SetTest();
@@ -63,7 +63,7 @@ float Solver<T>::Test() {
   return accuracy / static_cast<float>(total);
 }
 
-template <typename T>
+template <Arithmetic T>
 void Solver<T>::SaveModel(const std::string& model_path) {
   try {
     ModelSaver::Save<T>(this->net_->GetModelData(), model_path);
@@ -73,7 +73,7 @@ void Solver<T>::SaveModel(const std::string& model_path) {
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Solver<T>::LoadModel(const std::string& model_path) {
   try {
     this->net_->SetModelData(ModelSaver::Load<T>(model_path));
@@ -83,7 +83,7 @@ void Solver<T>::LoadModel(const std::string& model_path) {
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 void Solver<T>::Step() {
   if (net_->RefetchData()) {
     current_epoch_++;

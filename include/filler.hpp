@@ -20,7 +20,7 @@
 
 namespace my_tensor {
 
-template <typename T = float>
+template <Arithmetic T = float>
 class Filler {
  public:
   explicit Filler(FillerParameterPtr param) : filler_parameter_(param) {}
@@ -42,7 +42,7 @@ class Filler {
   virtual void FillGPU(TensorPtr<T> tensor) = 0;
 };  // class Filler
 
-template <typename T = float>
+template <Arithmetic T = float>
 class ZeroFiller final : public Filler<T> {
  public:
   explicit ZeroFiller(FillerParameterPtr param) : Filler<T>(param) {
@@ -55,7 +55,7 @@ class ZeroFiller final : public Filler<T> {
   void FillGPU(TensorPtr<T> tensor) override;
 };  // class ZeroFiller
 
-template <typename T = float>
+template <Arithmetic T = float>
 class ConstantFiller final : public Filler<T> {
  public:
   explicit ConstantFiller(FillerParameterPtr param) : Filler<T>(param) {
@@ -72,7 +72,7 @@ class ConstantFiller final : public Filler<T> {
   T val_;
 };  // class ConstantFiller
 
-template <typename T = float>
+template <Arithmetic T = float>
 class XavierFiller final : public Filler<T> {
  public:
   explicit XavierFiller(FillerParameterPtr param) : Filler<T>(param) {
@@ -95,7 +95,7 @@ class XavierFiller final : public Filler<T> {
   int n_out_;
 };  // class XavierFiller
 
-template <typename T = float>
+template <Arithmetic T = float>
 class HeFiller final : public Filler<T> {
  public:
   explicit HeFiller(FillerParameterPtr param) : Filler<T>(param) {
@@ -116,10 +116,10 @@ class HeFiller final : public Filler<T> {
   int n_;
 };  // class HeFiller
 
-template <typename T = float>
+template <Arithmetic T = float>
 using FillerPtr = std::shared_ptr<Filler<T>>;
 
-template <typename T = float>
+template <Arithmetic T = float>
 inline FillerPtr<T> CreateFiller(FillerParameterPtr param) {
   auto mode = param->init_mode_;
   switch (mode) {

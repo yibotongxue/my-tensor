@@ -9,12 +9,12 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 void ZeroFiller<T>::FillCPU(TensorPtr<T> tensor) {
   std::ranges::fill(SPAN_DATA(tensor, T), 0);
 }
 
-template <typename T>
+template <Arithmetic T>
 void ConstantFiller<T>::FillCPU(TensorPtr<T> tensor) {
   std::ranges::fill(SPAN_DATA(tensor, T), val_);
 }

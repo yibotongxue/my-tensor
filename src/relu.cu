@@ -12,18 +12,18 @@
 namespace my_tensor {
 
 namespace {
-template <typename T>
+template <Arithmetic T>
 struct ReluOperator {
   __device__ T operator()(T x) { return x > 0 ? x : 0; }
 };
 
-template <typename T>
+template <Arithmetic T>
 struct ReluGradOperator {
   __device__ T operator()(T data, T diff) { return data > 0 ? diff : 0; }
 };
 }  // namespace
 
-template <typename T>
+template <Arithmetic T>
 void Relu<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                          const std::vector<TensorPtr<T>>& top) {
   CHECK_SAME_SHAPE(top[0], bottom[0])
@@ -33,7 +33,7 @@ void Relu<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                     ReluOperator<T>());
 }
 
-template <typename T>
+template <Arithmetic T>
 void Relu<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
                           const std::vector<TensorPtr<T>>& bottom) {
   CHECK_SAME_SHAPE(top[0], bottom[0])

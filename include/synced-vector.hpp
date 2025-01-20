@@ -6,11 +6,9 @@
 #include <memory>
 
 #include "error.hpp"
+#include "utils.hpp"
 
 namespace my_tensor {
-
-template <typename T>
-concept Arithmetic = std::is_arithmetic<T>::value;
 
 /**
  * @brief 同步向量，用于在CPU和GPU之间同步数据
@@ -208,7 +206,7 @@ class SyncedVector {
   void ToGPU();
 };
 
-template <typename T>
+template <Arithmetic T>
 using SyncedVectorPtr = std::shared_ptr<SyncedVector<T>>;
 
 extern template class SyncedVector<float>;

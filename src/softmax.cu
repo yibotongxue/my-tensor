@@ -18,7 +18,7 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 void Softmax<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                             const std::vector<TensorPtr<T>>& top) {
   auto bottom_data = PTR_CAST(bottom[0]->GetGPUDataPtr());

@@ -7,13 +7,13 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 void ZeroFiller<T>::FillGPU(TensorPtr<T> tensor) {
   T *data = tensor->GetGPUDataPtr();
   CUDA_CHECK(cudaMemset(data, 0, tensor->GetSize() * sizeof(T)));
 }
 
-template <typename T>
+template <Arithmetic T>
 void ConstantFiller<T>::FillGPU(TensorPtr<T> tensor) {
   auto data_ptr = PTR_CAST(tensor->GetGPUDataPtr());
   thrust::fill(data_ptr, data_ptr + tensor->GetSize(), val_);

@@ -11,7 +11,7 @@
 namespace my_tensor {
 
 namespace {
-template <typename T>
+template <Arithmetic T>
 __global__ void ComputeMeanAndVariance(const T* const mean_data,
                                        T* const standarded_cache,
                                        const T* const bottom_data,
@@ -28,7 +28,7 @@ __global__ void ComputeMeanAndVariance(const T* const mean_data,
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 __global__ void ComputeCache(T* const variance_data, const T* const mean_data,
                              T* const mean_cache, T* const variance_cache,
                              const T move_scale_factor, const int channels,
@@ -42,7 +42,7 @@ __global__ void ComputeCache(T* const variance_data, const T* const mean_data,
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 __global__ void ComputeTopData(T* const top_data,
                                const T* const standared_cache,
                                const T* const gama_data,
@@ -65,7 +65,7 @@ __global__ void ComputeTopData(T* const top_data,
 }
 }  // namespace
 
-template <typename T>
+template <Arithmetic T>
 void BatchNorm<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
                               const std::vector<TensorPtr<T>>& top) {
   const T* bottom_data = bottom[0]->GetGPUDataPtr();
@@ -119,7 +119,7 @@ void BatchNorm<T>::ForwardGPU(const std::vector<TensorPtr<T>>& bottom,
 }
 
 namespace {
-template <typename T>
+template <Arithmetic T>
 __global__ void MutiplyRowVectorAndAssign(
     T* const target, const T* const source, const T* const vec,
     const int channels, const int spatial_size, const int batch_size) {
@@ -131,7 +131,7 @@ __global__ void MutiplyRowVectorAndAssign(
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 __global__ void ScaleBottomAndUpdateTempCache2(
     T* const bottom_diff, T* const temp_cache2, const T* const temp_cache,
     const T* const standarded_cache, const int batch_size, const int channels,
@@ -147,7 +147,7 @@ __global__ void ScaleBottomAndUpdateTempCache2(
   }
 }
 
-template <typename T>
+template <Arithmetic T>
 __global__ void ComputeBottomDiff(const T* const standarded_cache,
                                   const T* const temp_cache,
                                   T* const bottom_diff,
@@ -173,7 +173,7 @@ __global__ void ComputeBottomDiff(const T* const standarded_cache,
 }
 }  // namespace
 
-template <typename T>
+template <Arithmetic T>
 void BatchNorm<T>::BackwardGPU(const std::vector<TensorPtr<T>>& top,
                                const std::vector<TensorPtr<T>>& bottom) {
   const T* top_diff = top[0]->GetGPUDiffPtr();

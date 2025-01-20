@@ -12,7 +12,7 @@
 
 namespace my_tensor {
 
-template <typename T>
+template <Arithmetic T>
 class Solver {
  public:
   explicit Solver(SolverParameterPtr param)
@@ -56,7 +56,7 @@ class Solver {
 
 extern template class Solver<float>;
 
-template <typename T>
+template <Arithmetic T>
 using SolverPtr = std::shared_ptr<Solver<T>>;
 
 }  // namespace my_tensor
