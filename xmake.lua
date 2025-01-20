@@ -9,7 +9,7 @@ add_rules("mode.debug", "mode.release", "mode.profile")
 add_cuflags("-G", "--extended-lambda")
 add_cugencodes("native")
 
-add_requires("gtest", "nlohmann_json", "openblas", "spdlog")
+add_requires("gtest", "nlohmann_json", "openblas", "spdlog", "opencv")
 
 local tensor_src = {
     "src/memory-util.cu",
@@ -76,6 +76,7 @@ target("tensor_lib")
 
 target("data_lib")
     set_kind("static")
+    add_packages("opencv", {public = true})
     add_deps("tensor_lib")
     add_includedirs("include", {public = true})
     add_files(data_src)
@@ -209,6 +210,7 @@ target("batchnorm_test")
 
 target("main")
     set_kind("binary")
+    add_ldflags("-lz", {force = true})
     add_deps("layer_lib")
     add_deps("data_lib")
     add_deps("solver_lib")

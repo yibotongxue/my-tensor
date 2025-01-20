@@ -8,8 +8,11 @@
 #include <cstdint>
 #include <fstream>
 #include <iostream>
+#include <random>
 #include <ranges>  // NOLINT
 #include <vector>
+
+#include "opencv2/opencv.hpp"
 
 namespace my_tensor {
 namespace {
@@ -92,4 +95,100 @@ void Cifar10Dataset::LoadData() {
   this->width_ = 32;
   spdlog::info("Load data done");
 }
+
+std::span<const float> ImageNetDataset::GetImageSpanBetweenAnd(int start,
+                                                               int end) const {
+  if (start < 0 || end > data_set_size_ || start >= end) {
+    throw std::runtime_error("Invalid start and end index");
+  }
+
+  loaded_images_.clear();
+
+  for (int i = start; i < end; ++i) {
+    const std::string& image_path = image_paths_[indices_[i]];
+    std::vector<float> image = LoadImage(image_path);
+    loaded_images_.insert(loaded_images_.end(), image.begin(), image.end());
+  }
+
+  return {loaded_images_.data(), static_cast<size_t>(loaded_images_.size())};
+}
+
+std::span<const float> ImageNetDataset::GetLabelSpanBetweenAnd(int start,
+                                                               int end) const {
+  if (start < 0 || end > data_set_size_ || start >= end) {
+    throw std::runtime_error("Invalid start and end index");
+  }
+
+  loaded_labels_.clear();
+
+  for (int i = start; i < end; ++i) {
+    const std::string& image_path = image_paths_[indices_[i]];
+    int label = GetImageFolderIndex(indices_[i]);
+    loaded_labels_.push_back(static_cast<float>(label));
+  }
+
+  return {loaded_labels_.data(), static_cast<size_t>(loaded_labels_.size())};
+}
+
+void ImageNetDataset::LoadData() {
+  image_paths_.clear();
+  image_indices_prefix_sum_.clear();
+
+  for (const auto& entry :
+       std::filesystem::directory_iterator(real_root_path_)) {
+    if (entry.is_directory()) {
+      const std::string folder_name = entry.path().filename().string();
+
+      std::vector<std::string> images_in_folder =
+          GetImagesInFolder(entry.path());
+      image_paths_.insert(image_paths_.end(), images_in_folder.begin(),
+                          images_in_folder.end());
+      image_indices_prefix_sum_.push_back(image_paths_.size());
+    }
+  }
+  data_set_size_ = image_paths_.size();
+  indices_.resize(data_set_size_);
+  std::ranges::copy(std::views::iota(0, data_set_size_), indices_.begin());
+  std::random_device rd;
+  std::mt19937 g(rd());
+  std::ranges::shuffle(indices_, g);
+  spdlog::info("Load data done");
+}
+
+std::vector<std::string> ImageNetDataset::GetImagesInFolder(
+    const std::filesystem::path& folder_path) const {
+  std::vector<std::string> image_paths;
+  for (const auto& entry : std::filesystem::directory_iterator(folder_path)) {
+    if (entry.is_regular_file() && IsImageFile(entry.path())) {
+      image_paths.push_back(entry.path().string());
+    }
+  }
+  return image_paths;
+}
+
+bool ImageNetDataset::IsImageFile(
+    const std::filesystem::path& file_path) const {
+  std::string extension = file_path.extension().string();
+  std::ranges::transform(extension, extension.begin(), ::tolower);
+  return extension == ".jpg" || extension == ".jpeg" || extension == ".png";
+}
+
+std::vector<float> ImageNetDataset::LoadImage(
+    const std::string& image_path) const {
+  cv::Mat image = cv::imread(image_path, cv::IMREAD_COLOR);
+  if (image.empty()) {
+    throw std::runtime_error("Failed to load image: " + image_path);
+  }
+
+  cv::Mat resized_image;
+  cv::resize(image, resized_image, cv::Size(224, 224));
+
+  resized_image.convertTo(resized_image, CV_32F, 1.0 / 255.0);
+
+  std::vector<float> image_data(resized_image.begin<float>(),
+                                resized_image.end<float>());
+
+  return image_data;
+}
+
 }  // namespace my_tensor

@@ -4,6 +4,7 @@
 #define INCLUDE_DATASET_HPP_
 
 #include <cstdint>
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <span>  // NOLINT
@@ -144,6 +145,59 @@ class Cifar10Dataset final : public LoadInMemoryDataset {
   std::vector<std::string> data_batches_;
 };  // class Cifar10Dataset
 
+class ImageNetDataset final : public Dataset {
+ public:
+  explicit ImageNetDataset(const std::string& data_files_root, bool is_train)
+      : Dataset(data_files_root, is_train) {
+    if (is_train) {
+      real_root_path_ = data_files_root + "/train";
+    } else {
+      real_root_path_ = data_files_root + "/val";
+    }
+  }
+
+  [[nodiscard]] int GetHeight() const override { return 224; }
+  [[nodiscard]] int GetWidth() const override { return 224; }
+  [[nodiscard]] int GetChannel() const override { return 3; }
+  [[nodiscard]] int GetSize() const override { return data_set_size_; }
+
+  [[nodiscard]] std::span<const float> GetImageSpanBetweenAnd(
+      int start, int end) const override;
+
+  [[nodiscard]] std::span<const float> GetLabelSpanBetweenAnd(
+      int start, int end) const override;
+
+  void LoadData() override;
+
+ private:
+  std::vector<int> indices_;
+  std::vector<std::string> image_paths_;
+  std::vector<int> image_indices_prefix_sum_;
+  int data_set_size_;
+  std::string real_root_path_;
+
+  mutable std::vector<float> loaded_images_;
+  mutable std::vector<float> loaded_labels_;
+
+  [[nodiscard]] constexpr int GetImageFolderIndex(int index) const {
+    auto it = std::upper_bound(image_indices_prefix_sum_.begin(),
+                               image_indices_prefix_sum_.end(), index);
+    return static_cast<int>(it - image_indices_prefix_sum_.begin()) - 1;
+  }
+
+  [[nodiscard]] constexpr int GetImageIndexInFolder(int index) const {
+    return index - image_indices_prefix_sum_[GetImageFolderIndex(index)];
+  }
+
+  [[nodiscard]] std::vector<std::string> GetImagesInFolder(
+      const std::filesystem::path& folder_path) const;
+
+  [[nodiscard]] bool IsImageFile(const std::filesystem::path& file_path) const;
+
+  [[nodiscard]] std::vector<float> LoadImage(
+      const std::string& image_path) const;
+};  // class ImageNetDataset
+
 using DatasetPtr = std::shared_ptr<Dataset>;
 
 /**
@@ -163,6 +217,10 @@ GetDatasetCreater(const std::string& type) {
   } else if (type == "cifar-10") {
     return [](const std::string& data_files_root, bool is_train) -> DatasetPtr {
       return std::make_shared<Cifar10Dataset>(data_files_root, is_train);
+    };
+  } else if (type == "imagenet") {
+    return [](const std::string& data_files_root, bool is_train) -> DatasetPtr {
+      return std::make_shared<ImageNetDataset>(data_files_root, is_train);
     };
   } else {
     throw DataError("Unsupported data set type.");
