@@ -1,5 +1,5 @@
 {
-  "name": "vgg19",
+  "name": "vgg16",
   "batch_size": 4,
   "base_lr": 0.01,
   "l2": 5e-4,
@@ -10,8 +10,8 @@
   "max_iter": 10000,
   "test_step": 1000,
   "save_step": 5000,
-  "save_model_path": "../../../../model/vgg19.model",
-  "load_model_path": "../../../../model/vgg19.model",
+  "save_model_path": "../../../../model/vgg16.model",
+  "load_model_path": "../../../../model/vgg16.model",
   "scheduler": {
     "type": "step",
     "gama": 0.1,
@@ -37,12 +37,20 @@
         }
       ],
       "bottom": ["input"],
+      "top": ["bn1_1"]
+    },
+    {
+      "name": "bn1_1",
+      "type": "BatchNorm",
+      "channels": 64,
+      "move_scale_factor": 0.9,
+      "bottom": ["conv1_1"],
       "top": ["relu1_1"]
     },
     {
       "name": "relu1_1",
       "type": "Relu",
-      "bottom": ["conv1_1"],
+      "bottom": ["bn1_1"],
       "top": ["conv1_2"]
     },
     {
@@ -62,12 +70,20 @@
         }
       ],
       "bottom": ["relu1_1"],
+      "top": ["bn1_2"]
+    },
+    {
+      "name": "bn1_2",
+      "type": "BatchNorm",
+      "channels": 64,
+      "move_scale_factor": 0.9,
+      "bottom": ["conv1_2"],
       "top": ["relu1_2"]
     },
     {
       "name": "relu1_2",
       "type": "Relu",
-      "bottom": ["conv1_2"],
+      "bottom": ["bn1_2"],
       "top": ["pool1"]
     },
     {
@@ -98,12 +114,20 @@
         }
       ],
       "bottom": ["pool1"],
+      "top": ["bn2_1"]
+    },
+    {
+      "name": "bn2_1",
+      "type": "BatchNorm",
+      "channels": 128,
+      "move_scale_factor": 0.9,
+      "bottom": ["conv2_1"],
       "top": ["relu2_1"]
     },
     {
       "name": "relu2_1",
       "type": "Relu",
-      "bottom": ["conv2_1"],
+      "bottom": ["bn2_1"],
       "top": ["conv2_2"]
     },
     {
@@ -123,12 +147,20 @@
         }
       ],
       "bottom": ["relu2_1"],
+      "top": ["bn2_2"]
+    },
+    {
+      "name": "bn2_2",
+      "type": "BatchNorm",
+      "channels": 128,
+      "move_scale_factor": 0.9,
+      "bottom": ["conv2_2"],
       "top": ["relu2_2"]
     },
     {
       "name": "relu2_2",
       "type": "Relu",
-      "bottom": ["conv2_2"],
+      "bottom": ["bn2_2"],
       "top": ["pool2"]
     },
     {
@@ -159,12 +191,20 @@
         }
       ],
       "bottom": ["pool2"],
+      "top": ["bn3_1"]
+    },
+    {
+      "name": "bn3_1",
+      "type": "BatchNorm",
+      "channels": 256,
+      "move_scale_factor": 0.9,
+      "bottom": ["conv3_1"],
       "top": ["relu3_1"]
     },
     {
       "name": "relu3_1",
       "type": "Relu",
-      "bottom": ["conv3_1"],
+      "bottom": ["bn3_1"],
       "top": ["conv3_2"]
     },
     {
@@ -184,12 +224,20 @@
         }
       ],
       "bottom": ["relu3_1"],
+      "top": ["bn3_2"]
+    },
+    {
+      "name": "bn3_2",
+      "type": "BatchNorm",
+      "channels": 256,
+      "move_scale_factor": 0.9,
+      "bottom": ["conv3_2"],
       "top": ["relu3_2"]
     },
     {
       "name": "relu3_2",
       "type": "Relu",
-      "bottom": ["conv3_2"],
+      "bottom": ["bn3_2"],
       "top": ["pool3"]
     },
     {
@@ -201,12 +249,172 @@
       "stride_h": 2,
       "input_channels": 256,
       "bottom": ["relu3_2"],
+      "top": ["conv4_1"]
+    },
+    {
+      "name": "conv4_1",
+      "type": "Convolution",
+      "input_channels": 256,
+      "output_channels": 512,
+      "kernel_size": 3,
+      "params": [
+        {
+          "name": "conv_kernel",
+          "init": "he"
+        },
+        {
+          "name": "conv_bias",
+          "init": "zero"
+        }
+      ],
+      "bottom": ["pool3"],
+      "top": ["bn4_1"]
+    },
+    {
+      "name": "bn4_1",
+      "type": "BatchNorm",
+      "channels": 512,
+      "move_scale_factor": 0.9,
+      "bottom": ["conv4_1"],
+      "top": ["relu4_1"]
+    },
+    {
+      "name": "relu4_1",
+      "type": "Relu",
+      "bottom": ["bn4_1"],
+      "top": ["conv4_2"]
+    },
+    {
+      "name": "conv4_2",
+      "type": "Convolution",
+      "input_channels": 512,
+      "output_channels": 512,
+      "kernel_size": 3,
+      "params": [
+        {
+          "name": "conv_kernel",
+          "init": "he"
+        },
+        {
+          "name": "conv_bias",
+          "init": "zero"
+        }
+      ],
+      "bottom": ["relu4_1"],
+      "top": ["bn4_2"]
+    },
+    {
+      "name": "bn4_2",
+      "type": "BatchNorm",
+      "channels": 512,
+      "move_scale_factor": 0.9,
+      "bottom": ["conv4_2"],
+      "top": ["relu4_2"]
+    },
+    {
+      "name": "relu4_2",
+      "type": "Relu",
+      "bottom": ["bn4_2"],
+      "top": ["pool4"]
+    },
+    {
+      "name": "pool4",
+      "type": "Pooling",
+      "kernel_w": 2,
+      "kernel_h": 2,
+      "stride_w": 2,
+      "stride_h": 2,
+      "input_channels": 512,
+      "bottom": ["relu4_2"],
+      "top": ["conv5_1"]
+    },
+    {
+      "name": "conv5_1",
+      "type": "Convolution",
+      "input_channels": 512,
+      "output_channels": 512,
+      "kernel_size": 3,
+      "params": [
+        {
+          "name": "conv_kernel",
+          "init": "he"
+        },
+        {
+          "name": "conv_bias",
+          "init": "zero"
+        }
+      ],
+      "bottom": ["pool4"],
+      "top": ["bn5_1"]
+    },
+    {
+      "name": "bn5_1",
+      "type": "BatchNorm",
+      "channels": 512,
+      "move_scale_factor": 0.9,
+      "bottom": ["conv5_1"],
+      "top": ["relu5_1"]
+    },
+    {
+      "name": "relu5_1",
+      "type": "Relu",
+      "bottom": ["bn5_1"],
+      "top": ["conv5_2"]
+    },
+    {
+      "name": "conv5_2",
+      "type": "Convolution",
+      "input_channels": 512,
+      "output_channels": 512,
+      "kernel_size": 3,
+      "params": [
+        {
+          "name": "conv_kernel",
+          "init": "he"
+        },
+        {
+          "name": "conv_bias",
+          "init": "zero"
+        }
+      ],
+      "bottom": ["relu5_1"],
+      "top": ["bn5_2"]
+    },
+    {
+      "name": "bn5_2",
+      "type": "BatchNorm",
+      "channels": 512,
+      "move_scale_factor": 0.9,
+      "bottom": ["conv5_2"],
+      "top": ["relu5_2"]
+    },
+    {
+      "name": "relu5_2",
+      "type": "Relu",
+      "bottom": ["bn5_2"],
+      "top": ["pool5"]
+    },
+    {
+      "name": "pool5",
+      "type": "Pooling",
+      "kernel_w": 2,
+      "kernel_h": 2,
+      "stride_w": 2,
+      "stride_h": 2,
+      "input_channels": 512,
+      "bottom": ["relu5_2"],
+      "top": ["flatten"]
+    },
+    {
+      "name": "flatten",
+      "type": "Flatten",
+      "bottom": ["pool5"],
       "top": ["fc1"]
     },
     {
       "name": "fc1",
       "type": "Linear",
-      "input_feature": 4096,
+      "input_feature": 25088,
       "output_feature": 4096,
       "params": [
         {
@@ -218,7 +426,7 @@
           "init": "zero"
         }
       ],
-      "bottom": ["pool3"],
+      "bottom": ["flatten"],
       "top": ["relu_fc1"]
     },
     {

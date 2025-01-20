@@ -16,7 +16,7 @@
 - `src` 目录包含源文件
 - `test` 目录，包括一些测试文件
 
-和文件[xmake.lua](./xmake.lua)，`README.md` 说明文件，`Doxyfile` 文档生成文件等。
+和文件[xmake.lua](./xmake.lua)，`README.md` 说明文件，`Doxyfile` 文档生成文件等。项目使用C++和CUDA实现。
 
 ## 环境
 
@@ -32,14 +32,14 @@
 
 可以使用我打包的 `Docker` 镜像，使用命令
 
-<!-- TODO -->
 ```bash
+docker pull 10.129.81.243:5000/my_tensor:latest
 ```
 
 拉取，然后创建并进入容器
 
 ```bash
-docker run -it -v /dev/shm:/dev/shm --name mytensor --gpus all 10.129.81.243:5000/mytensor:latest /bin/bash
+docker run -it -v /dev/shm:/dev/shm --name mytensor --gpus all 10.129.81.243:5000/my_tensor:latest /bin/bash
 ```
 
 ## 编译运行
@@ -178,8 +178,8 @@ xmake run main --config=../../../../examples/mnist.json --device=gpu --phase=tra
 
 首先需要下载数据，但我没有找到可以通过命令行下载的方法，所以请手动下载到 `data` 目录下的imagenet目录或者其他任意你喜欢的目录（这个目录下应该有train和test子目录），然后修改[imagenet.json](./examples/imagenet.json)中的对应路径，类似上面的方法即可运行。
 
-在 `ImageNet` 数据集上，我们定义了一个 `VGG-19` 网络，配置文件为[imagenet.json](./examples/imagenet.json)，但训练没有取的好的效果。
+在 `ImageNet` 数据集上，我们定义了一个 `VGG-16` 网络，配置文件为[imagenet.json](./examples/imagenet.json)，但训练没有取的好的效果。
 
 如果你只是想验证代码能运行，可以尝试运行一下，确实是可以运行的，但这个网络并没有好的效果，所以请不要浪费时间在这上面，不必等训练结束，可以直接当这份作业的ImageNet部分的训练没有效果，然后继续其他的批阅工作。
 
-关于为什么训练得不到好的效果，我的猜测是迭代次数不够，或者参数需要调整。我添加了批量归一化层（文件[batchnorm.hpp](./include/batchnorm.hpp)）和对模型参数进行 `Xavier` 初始化和 `Kaiming` 初始化（文件[filler.hpp](./include/filler.hpp)），也确对数据进行了处理（文件[dataset.cc](./src/dataset.cc)），所有的网络层都经过充分的测试，并在MNIST数据集上取得较好的效果，而模型设计使用的也是[ImageNet挑战赛](https://image-net.org/challenges/LSVRC/)上取得很好效果的`VGG-19`，所以我相信这个模型如果进行调试是可能较好地完成ImageNet的分类任务的，后续需要针对的进行改进。
+关于为什么训练得不到好的效果，我的猜测是迭代次数不够，或者参数需要调整。我添加了批量归一化层（文件[batchnorm.hpp](./include/batchnorm.hpp)）和对模型参数进行 `Xavier` 初始化和 `Kaiming` 初始化（文件[filler.hpp](./include/filler.hpp)），也确对数据进行了处理（文件[dataset.cc](./src/dataset.cc)），所有的网络层都经过充分的测试，并在MNIST数据集上取得较好的效果，而模型设计使用的也是[ImageNet挑战赛](https://image-net.org/challenges/LSVRC/)上取得很好效果的`VGG-16`，所以我相信这个模型如果进行调试是可能较好地完成ImageNet的分类任务的，后续需要针对的进行改进。
