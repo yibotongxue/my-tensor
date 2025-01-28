@@ -30,18 +30,6 @@
 
 一般地，使用其他 Linux 发行版或者使用 WSL2 ，gcc/g++ 和 nvcc 版本支持 C++20 或以上，是可以完成项目的编译构建的。如果使用 Windows 操作系统，一般使用 MinGW 也可以（这没有经过实验，不推荐这样做），MSVC 不确定能否编译构建本项目。
 
-可以使用我打包的 `Docker` 镜像，使用命令
-
-```bash
-docker pull 10.129.81.243:5000/my_tensor:latest
-```
-
-拉取，然后创建并进入容器
-
-```bash
-docker run -it -v /dev/shm:/dev/shm --name mytensor --gpus all 10.129.81.243:5000/my_tensor:latest /bin/bash
-```
-
 ## 编译运行
 
 项目使用[xmake](https://xmake.io)构建，你需要安装有 `xmake` 。
